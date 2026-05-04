@@ -30,3 +30,8 @@ export const getAllBookingsByForwarding = async (id) => {
     const res = await api.get(`${BASE_URL}/all/forwarding/${id}`);
     return res.data;
 }
+
+export const getAllBookingsByHaulier = async (id) => {
+    const res = await api.get(`${BASE_URL}/all/haulier/${id}`);
+    return res.data;
+}

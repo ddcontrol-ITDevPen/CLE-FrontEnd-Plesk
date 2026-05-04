@@ -11,6 +11,7 @@ export function ViewBookings() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [data, setData] = useState(null);
+    const [forwarding, setForwarding] = useState(null);
     const [companyDetails, setCompanyDetails] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [billingPartyName, setBillingPartyName] = useState(null);
@@ -21,6 +22,9 @@ export function ViewBookings() {
                 const result = await getContainerById(id);
                 console.log(result);
                 setData(result);
+                const forwardingId = result.booking?.forwardingId;
+                const forwardingInfo = await getCompanyById(forwardingId);
+                setForwarding(forwardingInfo);
                 if (result.booking?.billingParty) {
                     try {
                         const company = await getCompanyById(result.booking.billingParty);
@@ -146,12 +150,12 @@ export function ViewBookings() {
                         <InfoRow label="Trailer Type" value={data.trailerType} />
                     </Section>
 
-                    <Section title="Haulier Information">
-                        <InfoRow label="Name" value={data.haulierName} />
-                        <InfoRow label="Address" value={data.haulier?.address} />
-                        <InfoRow label="PIC Name" value={data.haulier?.picName} />
-                        <InfoRow label="PIC Number" value={data.haulier?.handphoneNumber} />
-                        <InfoRow label="PIC Email" value={data.haulier?.emailAddress} />
+                    <Section title="Forwarding Information">
+                        <InfoRow label="Name" value={forwarding.companyName} />
+                        <InfoRow label="Address" value={forwarding.address} />
+                        <InfoRow label="PIC Name" value={forwarding.picName} />
+                        <InfoRow label="PIC Number" value={forwarding.handphoneNumber} />
+                        <InfoRow label="PIC Email" value={forwarding.emailAddress} />
                     </Section>
 
                     <Section title="Consignee Information">

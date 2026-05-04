@@ -47,20 +47,61 @@ export function HaulierDashboard() {
 
     // Metric Calculations
     const stats = useMemo(() => {
-        const active = containers.filter(c => ["Enroute", "GatedIn", "GatedOut"].includes(c.status));
-        const avgTat = containers
-            .filter(c => c.turnAroundTime > 0)
-            .reduce((acc, curr, _, arr) => acc + (curr.turnAroundTime / arr.length), 0);
+        let totalTurnAround = 0;
+        let tatCount = 0;
+        let activeCount = 0;
+        let inDepotCount = 0;
+        let completedTodayCount = 0;
+        let currentWeekTAT = [];
+        let previousWeekTAT = [];
+        const now = new Date();
+        const today = now.toDateString();
+        const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
-        return {
-            totalActive: active.length,
-            inDepot: containers.filter(c => c.status.toLowerCase() === "gatedin").length,
-            completedToday: containers.filter(c =>
-                c.status === "Completed" &&
-                new Date(c.deliveredTime).toDateString() === new Date().toDateString()
-            ).length,
-            avgTat: avgTat.toFixed(1)
+        containers.forEach(c => {
+            const status = c.status || "";
+            const statusLower = status.toLowerCase();
+
+            if (["enroute", "gatedin", "gatedout"].includes(statusLower)) activeCount++;
+            if (statusLower === "gatedin") inDepotCount++;
+            if (status === "Completed" && c.deliveredTime) {
+                if (new Date(c.deliveredTime).toDateString() === today) completedTodayCount++;
+            }
+            if (c.turnAroundTime > 0) {
+                totalTurnAround += c.turnAroundTime;
+                tatCount++;
+            }
+            if (c.turnAroundTime > 0 && c.deliveredTime) {
+                const deliveryDate = new Date(c.deliveredTime);
+                if (deliveryDate >= oneWeekAgo) {
+                    currentWeekTAT.push(c.turnAroundTime);
+                } else if (deliveryDate >= twoWeeksAgo && deliveryDate < oneWeekAgo) {
+                    previousWeekTAT.push(c.turnAroundTime);
+                }
+            }
+        });
+
+        const currentAvg = currentWeekTAT.length > 0
+            ? currentWeekTAT.reduce((a, b) => a + b, 0) / currentWeekTAT.length
+            : 0;
+
+        const previousAvg = previousWeekTAT.length > 0
+            ? previousWeekTAT.reduce((a, b) => a + b, 0) / previousWeekTAT.length
+            : 0;
+
+        let efficiencyGap = 0;
+        if (previousAvg > 0) efficiencyGap = ((previousAvg - currentAvg) / previousAvg) * 100;
+
+        const result = {
+            totalActive: activeCount,
+            inDepot: inDepotCount,
+            completedToday: completedTodayCount,
+            avgTat: tatCount > 0 ? (totalTurnAround / tatCount).toFixed(1) : "0.0",
+            efficiency: Math.abs(efficiencyGap).toFixed(1),
+            isImproving: efficiencyGap >= 0,
         };
+        return result;
     }, [containers]);
 
     const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
@@ -116,11 +157,11 @@ export function HaulierDashboard() {
                             <p className="text-gray-500 text-sm font-medium">Monitoring {stats.totalActive} active containers across the network.</p>
                         </div>
                     </div>
-                    <div className="flex gap-2">
-                        <button className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 transition-colors">
-                            <ArrowRightLeft size={16} /> Gate Logs
-                        </button>
-                    </div>
+                    {/*<div className="flex gap-2">*/}
+                    {/*    <button className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 transition-colors">*/}
+                    {/*        <ArrowRightLeft size={16} /> Gate Logs*/}
+                    {/*    </button>*/}
+                    {/*</div>*/}
                 </div>
 
                 {/* Logistics Stats */}
@@ -161,8 +202,8 @@ export function HaulierDashboard() {
                         <div className="flex justify-between items-center mb-8">
                             <h3 className="text-lg font-bold text-gray-800">Performance Efficiency</h3>
                             <div className="flex gap-2">
-                                <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
-                                    +12% Efficiency
+                                <span className={`flex items-center gap-1 text-xs font-bold ${stats.isImproving ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50'} px-2 py-1 rounded-md`}>
+                                   {stats.isImproving ? `+${stats.efficiency}%` : `${stats.efficiency}%`} Efficiency
                                 </span>
                             </div>
                         </div>

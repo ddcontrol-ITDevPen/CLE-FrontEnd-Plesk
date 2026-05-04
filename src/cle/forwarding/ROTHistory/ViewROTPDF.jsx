@@ -30,7 +30,7 @@ export function ViewROTPDF() {
                     }
                 }
                 console.log(result);
-                const companyData = await getCompanyById(result.booking.forwardingId);
+                const companyData = await getCompanyById(result.haulierId);
                 console.log(companyData);
                 setCompany(companyData);
             } catch (err) {

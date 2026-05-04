@@ -490,7 +490,7 @@ export function YourBookings ()  {
                                                 {/* Horizontal Action Icons */}
                                                 <div className="flex items-center justify-center gap-3">
                                                     {cont.status === "Assigned" && (
-                                                        <button onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Enroute" })} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Enroute">
+                                                        <button onClick={() => navigate(`/haulier/booking/assign`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Enroute">
                                                             <Check size={18} />
                                                         </button>
                                                     )}
@@ -503,10 +503,10 @@ export function YourBookings ()  {
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/haulier/booking/view/${cont.containerId}`)}/>
                                                     <Edit size={18}
                                                           className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/haulier/booking/edit/form1/${cont.containerId}`)}/>
-                                                   {/*<FileText*/}
-                                                    {/*    size={18}*/}
-                                                    {/*    className="text-blue-600-600 cursor-pointer hover:text-blue-800"*/}
-                                                    {/*    onClick={() => navigate(`/forwarding/rot/view/pdf/${cont.containerId}`)}/>*/}
+                                                   <FileText
+                                                        size={18}
+                                                        className="text-blue-600-600 cursor-pointer hover:text-blue-800"
+                                                        onClick={() => navigate(`/forwarding/rot/view/pdf/${cont.containerId}`)}/>
                                                 </div>
                                             </td>
                                         </tr>

@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     LucideArchive,
-    LucideArchiveX, LucideClipboardCheck, LucideClipboardClock, LucideFile,
+    LucideArchiveX, LucideBolt, LucideClipboardCheck, LucideClipboardClock, LucideFile,
     LucideHistory,
     LucideHome,
     LucideLogOut,
@@ -20,11 +20,11 @@ export default function HaulierNavBar({ role = "haulier" }) {
 
     const menuItems = [
         { icon: LucideHome, label: "Dashboard", path: "/haulier/dashboard" },
-        { icon: LucideUserCheck, label: "Assign ROT", path: "/haulier/rot/assign" },
         { icon: LucideTruck, label: "Create Booking", path: "/haulier/add/form1" },
         { icon: LucideClipboardClock, label: "Your Bookings", path: "/haulier/booking" },
         { icon: LucideClipboardCheck, label: "Accepted Bookings", path: "/haulier/booking/accepted" },
         { icon: LucideMapPinned, label: "Track & Trace", path: "/haulier/booking/track" },
+        { icon: LucideBolt, label: "Haulier Management", path: "/haulier/management/configure" },
     ];
 
     return (

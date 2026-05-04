@@ -473,14 +473,14 @@ export function AcceptedBookings ()  {
                                                             <LucideX size={18} />
                                                         </button>
                                                     )}
-                                                    <Eye size={18}
-                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/forwarding/rot/view/${cont.containerId}`)}/>
+                                                    {/*<Eye size={18}*/}
+                                                    {/*     className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/forwarding/rot/view/${cont.containerId}`)}/>*/}
                                                     <Edit size={18}
                                                           className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/forwarding/rot/edit/form1/${cont.containerId}`)}/>
-                                                    {/*<FileText*/}
-                                                    {/*    size={18}*/}
-                                                    {/*    className="text-blue-600-600 cursor-pointer hover:text-blue-800"*/}
-                                                    {/*    onClick={() => navigate(`/forwarding/rot/view/pdf/${cont.containerId}`)}/>*/}
+                                                    <FileText
+                                                        size={18}
+                                                        className="text-blue-600-600 cursor-pointer hover:text-blue-800"
+                                                        onClick={() => navigate(`/forwarding/rot/view/pdf/${cont.containerId}`)}/>
                                                 </div>
                                             </td>
                                         </tr>
