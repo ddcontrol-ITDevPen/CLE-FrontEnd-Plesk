@@ -1,0 +1,174 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute.jsx";
+import LoginPage from "../cle/auth/LoginPage.jsx";
+import {ForwarderDashboard} from "../cle/forwarding/dashboard/ForwarderDashboard.jsx";
+import {AddROTForm} from "../cle/forwarding/ROT/AddROTForm.jsx";
+import {AddROTForm2} from "../cle/forwarding/ROT/AddROTForm2.jsx";
+import {ROTHistory} from "../cle/forwarding/ROTHistory/ROTHistory.jsx";
+import {ViewROTDetails} from "../cle/forwarding/ROTHistory/ViewROTDetails.jsx";
+import {EditROTForm} from "../cle/forwarding/ROT/EditROT1.jsx";
+import {EditROTForm2} from "../cle/forwarding/ROT/EditROT2.jsx";
+import {ViewROTPDF} from "../cle/forwarding/ROTHistory/ViewROTPDF.jsx";
+import {TrackROT} from "../cle/forwarding/TrackROT/TrackROT.jsx";
+import {ViewROTDocument} from "../cle/forwarding/Document/ViewROTDocument.jsx";
+import {ForwardingProfile} from "../cle/forwarding/profile/ForwardingProfile.jsx";
+import {ForwardingEditProfile} from "../cle/forwarding/profile/ForwardingEditProfile.jsx";
+import {ForwardingDashboard} from "../ale/forwarding/ForwardingDashboard.jsx";
+import {HaulierDashboard} from "../cle/haulier/dashboard/HaulierDashboard.jsx";
+import {YourBookings} from "../cle/haulier/booking/YourBookings.jsx";
+import {AcceptedBookings} from "../cle/haulier/booking/AcceptedBookings.jsx";
+import {ViewBookings} from "../cle/haulier/booking/ViewBookings.jsx";
+
+export default function AppRouter() {
+    return (
+        <BrowserRouter>
+            <Routes>
+                {/* Auth Routes */}
+                <Route path="/login" element={<LoginPage />}/>
+
+                {/* Forwarder Routes */}
+                <Route
+                    path="/forwarding/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <ForwarderDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/forwarding/rot/add/form1"
+                    element={
+                        <ProtectedRoute>
+                            <AddROTForm />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/forwarding/rot/add/form2"
+                    element={
+                        <ProtectedRoute>
+                            <AddROTForm2 />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/forwarding/rot/history"
+                    element={
+                        <ProtectedRoute>
+                            <ROTHistory />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/forwarding/rot/view/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ViewROTDetails />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/forwarding/rot/edit/form1/:id"
+                    element={
+                        <ProtectedRoute>
+                            <EditROTForm />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/forwarding/rot/edit/form2/:id"
+                    element={
+                        <ProtectedRoute>
+                            <EditROTForm2 />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/forwarding/rot/view/pdf/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ViewROTPDF />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/forwarding/rot/track"
+                    element={
+                        <ProtectedRoute>
+                            <TrackROT />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/forwarding/rot/document/view"
+                    element={
+                        <ProtectedRoute>
+                            <ViewROTDocument />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/forwarding/profile"
+                    element={
+                        <ProtectedRoute>
+                            <ForwardingProfile />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/forwarding/profile/edit"
+                    element={
+                        <ProtectedRoute>
+                            <ForwardingEditProfile />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <HaulierDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/booking"
+                    element={
+                        <ProtectedRoute>
+                            <YourBookings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/booking/view/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ViewBookings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/booking/accepted"
+                    element={
+                        <ProtectedRoute>
+                            <AcceptedBookings />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* ALE */}
+                <Route
+                    path="/ale/forwarding/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <ForwardingDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                
+                {/* Fallback */}
+                <Route path="*" element={<LoginPage />} />
+            </Routes>
+        </BrowserRouter>
+    )
+}
