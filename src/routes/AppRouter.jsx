@@ -18,6 +18,14 @@ import {HaulierDashboard} from "../cle/haulier/dashboard/HaulierDashboard.jsx";
 import {YourBookings} from "../cle/haulier/booking/YourBookings.jsx";
 import {AcceptedBookings} from "../cle/haulier/booking/AcceptedBookings.jsx";
 import {ViewBookings} from "../cle/haulier/booking/ViewBookings.jsx";
+import {AssignBooking} from "../cle/haulier/booking/AssignBooking.jsx";
+import {HaulierManagement} from "../cle/haulier/management/HaulierManagement.jsx";
+import {DriverManagement} from "../cle/haulier/management/DriverManagement.jsx";
+import {AddDriver} from "../cle/haulier/management/AddDriver.jsx";
+import {PrimeMoverManagement} from "../cle/haulier/management/PrimeMoverManagement.jsx";
+import {TrailerManagement} from "../cle/haulier/management/TrailerManagement.jsx";
+import {AddPrimeMover} from "../cle/haulier/management/AddPrimeMover.jsx";
+import {AddTrailer} from "../cle/haulier/management/AddTrailer.jsx";
 
 export default function AppRouter() {
     return (
@@ -148,10 +156,74 @@ export default function AppRouter() {
                     }
                 />
                 <Route
+                    path="/haulier/booking/assign/:id"
+                    element={
+                        <ProtectedRoute>
+                            <AssignBooking />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
                     path="/haulier/booking/accepted"
                     element={
                         <ProtectedRoute>
                             <AcceptedBookings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/management/configure"
+                    element={
+                        <ProtectedRoute>
+                            <HaulierManagement />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/manage/drivers"
+                    element={
+                        <ProtectedRoute>
+                            <DriverManagement />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/add/driver"
+                    element={
+                        <ProtectedRoute>
+                            <AddDriver />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/manage/prime-movers"
+                    element={
+                        <ProtectedRoute>
+                            <PrimeMoverManagement />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/add/prime-mover"
+                    element={
+                        <ProtectedRoute>
+                            <AddPrimeMover />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/manage/trailers"
+                    element={
+                        <ProtectedRoute>
+                            <TrailerManagement />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/add/trailer"
+                    element={
+                        <ProtectedRoute>
+                            <AddTrailer />
                         </ProtectedRoute>
                     }
                 />
