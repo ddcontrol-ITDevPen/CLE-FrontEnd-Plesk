@@ -18,6 +18,9 @@ import {HaulierDashboard} from "../cle/haulier/dashboard/HaulierDashboard.jsx";
 import {YourBookings} from "../cle/haulier/booking/YourBookings.jsx";
 import {AcceptedBookings} from "../cle/haulier/booking/AcceptedBookings.jsx";
 import {ViewBookings} from "../cle/haulier/booking/ViewBookings.jsx";
+import {TerminalDashboard} from "../ale/terminal/TerminalDashboard.jsx";
+import {CustomsDashboard} from "../ale/customs/CustomsDashboard.jsx";
+import {AKPSDashboard} from "../ale/akps/AKPSDashboard.jsx";
 
 export default function AppRouter() {
     return (
@@ -165,7 +168,30 @@ export default function AppRouter() {
                         </ProtectedRoute>
                     }
                 />
-                
+                <Route
+                    path="/ale/terminal/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <TerminalDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/customs/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <CustomsDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/akps/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <AKPSDashboard />
+                        </ProtectedRoute>
+                    }
+                />
                 {/* Fallback */}
                 <Route path="*" element={<LoginPage />} />
             </Routes>
