@@ -9,6 +9,7 @@ import {getUserById} from "../../../services/userService.js";
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
     "Enroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
+    "Accepted":   { bg: "bg-accepted",  text: "text-green",  border: "border-green-200" },
     "Gated-In":   { bg: "bg-gate-in-out",   text: "text-blue-900",   border: "border-indigo-200" },
     "Gated-Out":  { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
     "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
@@ -17,6 +18,7 @@ const STATUS_CONFIG = {
     "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
     "RTAssigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
     "RTEnroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
+    "RTAccepted":   { bg: "bg-accepted",  text: "text-green",  border: "border-green-200" },
     "RTGated-In":   { bg: "bg-gate-in-out",   text: "text-blue-900",   border: "border-indigo-200" },
     "RTGated-Out":  { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
     "RTDelivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },

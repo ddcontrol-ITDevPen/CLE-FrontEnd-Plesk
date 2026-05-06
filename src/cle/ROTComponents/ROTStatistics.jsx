@@ -9,6 +9,7 @@ const StatusInfographic = ({ containers }) => {
         const counts = {
             Assigned: 0,
             Enroute: 0,
+            Accepted: 0,
             "Gate-In": 0,
             "Gate-Out": 0,
             Delivered: 0,

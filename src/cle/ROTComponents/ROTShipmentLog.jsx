@@ -1,5 +1,5 @@
 import React from "react";
-import {ClipboardCheck, Truck, LogIn, LogOut, CheckCircle2, PackageCheck, XCircle, Trash2} from "lucide-react";
+import {ClipboardCheck, Truck, LogIn, LogOut, CheckCircle2, PackageCheck, XCircle, Trash2, Check} from "lucide-react";
 
 const ShipmentLog = (data) => {
     // Timeline statuses in reverse order
@@ -8,6 +8,7 @@ const ShipmentLog = (data) => {
         {label: "Drop-off Delivered", time: data.rtDeliveredTime},
         {label: "Drop-off Gated Out", time: data.rtGatedOutTime},
         {label: "Drop-off Gated In", time: data.rtGatedInTime},
+        {label: "Drop-off Accepted", time: data.rtAcceptedTime},
         {label: "Drop-off Enroute", time: data.rtEnrouteTime},
         {label: "Drop-off Assigned", time: data.rtAssignedTime},
         {label: "Rejected", time: data.rejectedTime},
@@ -16,6 +17,7 @@ const ShipmentLog = (data) => {
         {label: "Delivered", time: data.deliveredTime},
         {label: "Gated Out", time: data.gatedOutTime},
         {label: "Gated In", time: data.gatedInTime},
+        {label: "Accepted", time: data.acceptedTime},
         {label: "Enroute", time: data.enrouteTime},
         {label: "Assigned", time: data.assignedTime},
     ].filter(t => t.time);
@@ -27,6 +29,8 @@ const ShipmentLog = (data) => {
             return { icon: <ClipboardCheck size={14} />, color: "bg-assigned", text: "text-assigned" };
         if (lowerLabel.includes("enroute"))
             return { icon: <Truck size={14} />, color: "bg-enroute", text: "text-enroute" };
+        if (lowerLabel.includes("accepted"))
+            return { icon: <Check size={14} />, color: "bg-accepted", text: "text-enroute" };
         if (lowerLabel.includes("gate in"))
             return { icon: <LogIn size={14} />, color: "bg-gate-in-out", text: "gate-in-out" };
         if (lowerLabel.includes("gate out"))
