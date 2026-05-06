@@ -11,13 +11,14 @@ import {
     Save,
     ArrowLeft
 } from "lucide-react";
-import { getContainerById } from "../../../services/containerService.js";
+import {getContainerById, updateContainer} from "../../../services/containerService.js";
 import { toast, Toaster } from "sonner";
 import { getDrivers } from "../../../services/driverService.js";
 import { getPrimeMovers } from "../../../services/primeMoverService.js";
 import { getTrailers } from "../../../services/trailerService.js";
-import { getTimeSlots } from "../../../services/timeSLotService.js";
+import {getTimeSlots, updateTimeSlot} from "../../../services/timeSLotService.js";
 import { registerAssignedHaulier } from "../../../services/assignedHaulier.js";
+import {getUserById} from "../../../services/userService.js";
 
 export function AssignBooking() {
     const { id } = useParams(); 
@@ -27,15 +28,19 @@ export function AssignBooking() {
     const [primeMovers, setPrimeMovers] = useState([]);
     const [trailers, setTrailers] = useState([]);
     const [timeSlots, setTimeSlots] = useState([]);
+    const [availableDates, setAvailableDates] = useState([]);
+    const [selectedDate, setSelectedDate] = useState("");
+    const [filteredSlots, setFilteredSlots] = useState([]);
+    const [container, setContainer] = useState(null);
 
     const [formData, setFormData] = useState({
         blNumber: "",        
         houseBLNumber: "",   
         containerNumber: "", 
-        driverName: "",      
-        pmNumber: "",        
-        trailerNumber: "",   
-        timeSlot: "",        
+        driverId: "",      
+        pmId: "",        
+        trailerId: "",   
+        timeSlotId: "",        
         containerId: id,     
         rotNumber: "",       
         haulierId: localStorage.getItem("companyCode") || "" 
@@ -48,6 +53,7 @@ export function AssignBooking() {
             try {
                 setIsLoading(true);
                 const container = await getContainerById(id);
+                setContainer(container);
                 const [driverData, pmData, trailerData, slotData] = await Promise.all([
                     getDrivers(),
                     getPrimeMovers(),
@@ -64,10 +70,15 @@ export function AssignBooking() {
                     containerId: id
                 }));
 
-                setDrivers(driverData || []);
-                setPrimeMovers(pmData || []);
-                setTrailers(trailerData || []);
+                const user = await getUserById(localStorage.getItem("userId"));
+                const haulierId = user.companyCode
+                setDrivers(driverData.filter(x => x.haulierId === haulierId) || []);
+                setPrimeMovers(pmData.filter(x => x.haulierId === haulierId) || []);
+                setTrailers(trailerData.filter(x => x.haulierId === haulierId) || []);
                 setTimeSlots(slotData || []);
+                
+                const uniqueDates = [...new Set(slotData.map(s => s.date))].sort();
+                setAvailableDates(uniqueDates);
             } catch (error) {
                 toast.error("Failed to load assignment data");
                 console.error(error);
@@ -84,14 +95,22 @@ export function AssignBooking() {
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
     };
 
+    const handleDateChange = (e) => {
+        const date = e.target.value;
+        setSelectedDate(date);
+        const slotsForDate = timeSlots.filter(s => s.date === date).sort((a, b) => a.time.localeCompare(b.time));
+        setFilteredSlots(slotsForDate);
+        setFormData(prev => ({ ...prev, timeSlot: "" }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = {};
 
-        if (!formData.driverName) newErrors.driverName = "Driver Selection is required";
-        if (!formData.pmNumber) newErrors.pmNumber = "Prime Mover is required";
-        if (!formData.trailerNumber) newErrors.trailerNumber = "Trailer selection is required";
-        if (!formData.timeSlot) newErrors.timeSlot = "Time Slot is required";
+        if (!formData.driverId) newErrors.driverId = "Driver Selection is required";
+        if (!formData.pmId) newErrors.pmId = "Prime Mover is required";
+        if (!formData.trailerId) newErrors.trailerId = "Trailer selection is required";
+        if (!formData.timeSlotId) newErrors.timeSlotId = "Time Slot is required";
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -99,11 +118,27 @@ export function AssignBooking() {
         }
 
         try {
-            await registerAssignedHaulier(formData);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedData = {...formData, haulierId: user.companyCode};
+            await registerAssignedHaulier(updatedData);
+            const updatedContainerData = {...container, containerId: id, status: "Enroute", enrouteTime: new Date().toISOString()}
+            await updateContainer(id, updatedContainerData);
+            const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
+            if (selectedSlot) {
+                const updatedSlotData = {
+                    id: selectedSlot.id,
+                    date: selectedSlot.date,
+                    time: selectedSlot.time,
+                    totalSlot: selectedSlot.totalSlot - 1,
+                    depotId: selectedSlot.depotId,
+                };
+                await updateTimeSlot(formData.timeSlotId, updatedSlotData)
+            }
             toast.success("Haulier assigned successfully!");
             setTimeout(() => navigate("/haulier/booking/accepted"), 1500);
         } catch (error) {
             toast.error("Failed to save assignment");
+            console.error(error);
         }
     };
 
@@ -111,7 +146,7 @@ export function AssignBooking() {
 
     return (
         <Layout role="haulier">
-            <Toaster richColors />
+            <Toaster richColors position="top-right"/>
             <div className="max-w-5xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
@@ -150,46 +185,62 @@ export function AssignBooking() {
                         <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                             <SelectField
                                 label="Driver Name"
-                                name="driverName"
+                                name="driverId"
                                 icon={<User size={18}/>}
-                                value={formData.driverName}
+                                value={formData.driverId}
                                 onChange={handleChange}
-                                error={errors.driverName}
+                                error={errors.driverId}
                                 required
-                                options={drivers.map(d => ({ label: d.fullName, value: d.fullName }))}
+                                options={drivers.map(d => ({ label: d.name, value: d.id }))}
                             />
 
                             <SelectField
                                 label="PM No. (Prime Mover)"
-                                name="pmNumber"
+                                name="pmId"
                                 icon={<Hash size={18}/>}
-                                value={formData.pmNumber}
+                                value={formData.pmId}
                                 onChange={handleChange}
-                                error={errors.pmNumber}
+                                error={errors.pmId}
                                 required
-                                options={primeMovers.map(p => ({ label: p.plateNumber, value: p.plateNumber }))}
+                                options={primeMovers.map(p => ({ label: p.plateNumber, value: p.id }))}
                             />
 
                             <SelectField
-                                label="Trailer No."
-                                name="trailerNumber"
-                                icon={<LucideTruck size={18}/>}
-                                value={formData.trailerNumber}
-                                onChange={handleChange}
-                                error={errors.trailerNumber}
+                                label="Booking Date"
+                                name="bookingDate"
+                                icon={<Clock size={18}/>}
+                                value={selectedDate}
+                                onChange={handleDateChange}
                                 required
-                                options={trailers.map(t => ({ label: t.trailerPlate, value: t.trailerPlate }))}
+                                options={availableDates.map(d => ({ label: d, value: d }))}
                             />
 
                             <SelectField
                                 label="Time Slot"
-                                name="timeSlot"
+                                name="timeSlotId"
                                 icon={<Clock size={18}/>}
-                                value={formData.timeSlot}
+                                value={formData.timeSlotId}
                                 onChange={handleChange}
-                                error={errors.timeSlot}
+                                error={errors.timeSlotId}
                                 required
-                                options={timeSlots.map(s => ({ label: s.slotRange, value: s.slotRange }))}
+                                disabled={!selectedDate}
+                                options={filteredSlots
+                                    .filter(s => s.totalSlot > 0)
+                                    .map(s => ({
+                                    label: `${s.time} (${s.totalSlot} left)`,
+                                    value: s.id
+                                }))}
+                            />
+                            
+                            <SelectField
+                                label="Trailer No."
+                                name="trailerId"
+                                icon={<LucideTruck size={18}/>}
+                                value={formData.trailerId}
+                                onChange={handleChange}
+                                error={errors.trailerId}
+                                required
+                                options={trailers.map(t => ({ label: `${t.plateNumber} - ${t.type}`, value: t.id }))}
                             />
                         </div>
                     </div>

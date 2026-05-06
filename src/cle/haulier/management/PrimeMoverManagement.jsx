@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { getPrimeMovers, deletePrimeMover, updatePrimeMover } from "../../../services/primeMoverService.js";
 import { toast, Toaster } from "sonner";
+import {getUserById} from "../../../services/userService.js";
 
 export function PrimeMoverManagement() {
     const navigate = useNavigate();
@@ -32,8 +33,11 @@ export function PrimeMoverManagement() {
     const loadPrimeMovers = async () => {
         try {
             setIsLoading(true);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const haulierId = user.companyCode;
             const data = await getPrimeMovers();
-            setPrimeMovers(data || []);
+            const filteredData = data.filter(p => p.haulierId === haulierId);
+            setPrimeMovers(filteredData || []);
         } catch (error) {
             toast.error("Failed to fetch prime mover records");
         } finally {

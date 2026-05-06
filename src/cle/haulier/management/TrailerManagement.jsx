@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {Search, UserPlus, Edit3, Trash2, X, Save, Clock, FileDigit, Shapes, Weight} from "lucide-react";
 import { getTrailers, deleteTrailer, updateTrailer } from "../../../services/trailerService.js";
 import { toast, Toaster } from "sonner";
+import {getUserById} from "../../../services/userService.js";
 
 export function TrailerManagement() {
     const navigate = useNavigate();
@@ -22,8 +23,11 @@ export function TrailerManagement() {
     const loadTrailers = async () => {
         try {
             setIsLoading(true);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const haulierId = user.companyCode;
             const data = await getTrailers();
-            setTrailers(data || []);
+            const filteredData = data.filter(t => t.haulierId === haulierId);
+            setTrailers(filteredData || []);
         } catch (error) {
             toast.error("Failed to fetch trailer records");
         } finally {

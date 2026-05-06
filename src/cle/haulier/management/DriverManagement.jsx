@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { getDrivers, deleteDriver, updateDriver } from "../../../services/driverService.js";
 import { toast, Toaster } from "sonner";
+import {getUserById} from "../../../services/userService.js";
 
 export function DriverManagement() {
     const navigate = useNavigate();
@@ -32,8 +33,11 @@ export function DriverManagement() {
     const loadDrivers = async () => {
         try {
             setIsLoading(true);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const haulierId = user.companyCode;
             const data = await getDrivers();
-            setDrivers(data || []);
+            const filteredData = data.filter(d => d.haulierId === haulierId)
+            setDrivers(filteredData || []);
         } catch (error) {
             toast.error("Failed to fetch driver records");
         } finally {

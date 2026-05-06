@@ -272,7 +272,7 @@ export function AddTrailer() {
                         <PlusCircle size={18} />
                     </div>
                     <p className="text-sm text-indigo-900/70 font-medium leading-relaxed">
-                        Registered trailers can be linked to active bookings and assigned to specific prime movers within the Container Ledger Environment.
+                        Registered trailers can be linked to active bookings and assigned to specific prime movers within the Container Logistic Ecosystem.
                     </p>
                 </div>
             </div>
