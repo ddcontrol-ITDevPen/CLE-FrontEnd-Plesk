@@ -26,6 +26,8 @@ import {PrimeMoverManagement} from "../cle/haulier/management/PrimeMoverManageme
 import {TrailerManagement} from "../cle/haulier/management/TrailerManagement.jsx";
 import {AddPrimeMover} from "../cle/haulier/management/AddPrimeMover.jsx";
 import {AddTrailer} from "../cle/haulier/management/AddTrailer.jsx";
+import {EditAssignBooking} from "../cle/haulier/booking/EditAssignBooking.jsx";
+import {ViewECsnPDF} from "../cle/haulier/booking/ViewBookingPDF.jsx";
 
 export default function AppRouter() {
     return (
@@ -92,7 +94,7 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/forwarding/rot/view/pdf/:id"
+                    path="/rot/view/pdf/:id"
                     element={
                         <ProtectedRoute>
                             <ViewROTPDF />
@@ -100,7 +102,7 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/forwarding/rot/track"
+                    path="/rot/track"
                     element={
                         <ProtectedRoute>
                             <TrackROT />
@@ -168,6 +170,22 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <AcceptedBookings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/booking/accepted/edit/:id"
+                    element={
+                        <ProtectedRoute>
+                            <EditAssignBooking />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/booking/view/eCSN/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ViewECsnPDF />
                         </ProtectedRoute>
                     }
                 />

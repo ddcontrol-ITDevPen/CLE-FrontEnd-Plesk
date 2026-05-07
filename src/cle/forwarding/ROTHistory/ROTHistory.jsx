@@ -492,7 +492,7 @@ export function ROTHistory ()  {
                                             <FileText 
                                                 size={18} 
                                                 className="text-blue-600-600 cursor-pointer hover:text-blue-800"
-                                                onClick={() => navigate(`/forwarding/rot/view/pdf/${cont.containerId}`)}/>
+                                                onClick={() => navigate(`/rot/view/pdf/${cont.containerId}`)}/>
                                         </div>
                                     </td>
                                 </tr>

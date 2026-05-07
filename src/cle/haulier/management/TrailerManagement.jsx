@@ -79,8 +79,8 @@ export function TrailerManagement() {
                 {/* Header & Search Bar */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-15">
                     <div>
-                        <h1 className="text-3xl font-black text-gray-800">Trailer Management</h1>
-                        <p className="text-gray-500 font-medium">View and manage your active trailers</p>
+                        <h1 className="text-2xl font-bold">Trailer Management</h1>
+                        <p className="text-gray-500 text-sm">View and manage your active trailers</p>
                     </div>
 
                     <div className="flex items-center gap-3">

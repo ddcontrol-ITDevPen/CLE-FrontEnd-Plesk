@@ -43,16 +43,14 @@ export function HaulierManagement() {
         <Layout role="haulier">
             <div className="spacy-y-6 mx-auto">
                 {/* Header Section */}
-                <div className="mb-12">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                            <Settings2 size={24} />
-                        </div>
-                        <h1 className="text-3xl font-black text-gray-800 tracking-tight">
+                <div className="mb-12 gap-0">
+                        {/*<div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">*/}
+                        {/*    <Settings2 size={24} />*/}
+                        {/*</div>*/}
+                        <h1 className="text-2xl font-bold">
                             Asset Management
                         </h1>
-                    </div>
-                    <p className="text-gray-500 font-medium ml-12">
+                    <p className="text-gray-500 text-sm">
                         Configure and monitor your core resources.
                     </p>
                 </div>

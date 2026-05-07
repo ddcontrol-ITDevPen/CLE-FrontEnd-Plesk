@@ -42,7 +42,11 @@ export function TrackROT () {
             const user = await getUserById(localStorage.getItem("userId"));
             const companyCode = user.companyCode;
             const allContainers = await getContainers();
-            const containers = allContainers.filter(c => c.booking.forwardingId === companyCode);
+            const containers = allContainers.filter(container => {
+                const isForwarder = container.booking?.forwardingId === companyCode;
+                const isHaulier = container.haulierId === companyCode;
+                return isForwarder || isHaulier;
+            });
 
             const filtered = containers.filter(cont =>
                 cont.booking?.blOrBookingNumber?.toLowerCase() === searchQuery.toLowerCase() ||

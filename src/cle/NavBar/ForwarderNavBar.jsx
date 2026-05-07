@@ -23,7 +23,7 @@ export default function ForwarderNavBar({ role = "forwarder" }) {
         { icon: LucideTruck, label: "Create ROT", path: "/forwarding/rot/add/form1" },
         { icon: LucideHistory, label: "Your ROTs", path: "/forwarding/rot/history" },
         { icon: LucideArchive, label: "Archived ROTs", path: "/" },
-        { icon: LucideMapPinned, label: "Track & Trace", path: "/forwarding/rot/track" },
+        { icon: LucideMapPinned, label: "Track & Trace", path: "/rot/track" },
         { icon: LucideFile, label: "View Document", path: "/forwarding/rot/document/view" },
     ];
 

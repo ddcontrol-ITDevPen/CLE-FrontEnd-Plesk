@@ -219,7 +219,6 @@ export function AcceptedBookings ()  {
                 }
 
                 if (sortConfig.key === 'rotDate') {
-                    // Treat null/undefined as very old dates so they move to the bottom
                     const dateA = a.rotDate ? new Date(a.rotDate).getTime() : 0;
                     const dateB = b.rotDate ? new Date(b.rotDate).getTime() : 0;
 
@@ -479,11 +478,11 @@ export function AcceptedBookings ()  {
                                                     {/*<Eye size={18}*/}
                                                     {/*     className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/forwarding/rot/view/${cont.containerId}`)}/>*/}
                                                     <Edit size={18}
-                                                          className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/forwarding/rot/edit/form1/${cont.containerId}`)}/>
+                                                          className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/haulier/booking/accepted/edit/${cont.containerId}`)}/>
                                                     <FileText
                                                         size={18}
                                                         className="text-blue-600-600 cursor-pointer hover:text-blue-800"
-                                                        onClick={() => navigate(`/forwarding/rot/view/pdf/${cont.containerId}`)}/>
+                                                        onClick={() => navigate(`/haulier/booking/view/eCSN/${cont.containerId}`)}/>
                                                 </div>
                                             </td>
                                         </tr>

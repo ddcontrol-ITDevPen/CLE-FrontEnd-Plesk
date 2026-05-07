@@ -25,3 +25,8 @@ export const updateAssignedHaulier = async (id, assignedHaulier) => {
 export const deleteAssignedHaulier = async (id) => {
     const res = await api.delete(`${BASE_URL}/delete/${id}`);
 }
+
+export const getAssignedHaulierByContainerId = async (id) => {
+    const res = await api.get(`${BASE_URL}/container/${id}`);
+    return res.data;
+}
