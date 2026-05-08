@@ -82,94 +82,93 @@ export function TrackROT () {
                     <p className="text-gray-500 text-sm">Track your shipments in real-time</p>
                 </div>
 
-            {/* Search Input Section - Card Design from your screenshot */}
-            {!selectedShipment && (
-                <div className="bg-gradient-to-br from-blue-100 to-teal-50 p-12 rounded-3xl border border-blue-100 flex flex-col items-center justify-center space-y-6 shadow-sm">
-                    <div className="bg-gradient-to-br from-blue-400 to-system-color-dark p-4 rounded-full shadow-lg">
-                        <Search className="text-white" size={32} />
+                {/* Search Input Section - Card Design from your screenshot */}
+                {!selectedShipment && (
+                    <div className="bg-gradient-to-br from-blue-100 to-teal-50 p-12 rounded-3xl border border-blue-100 flex flex-col items-center justify-center space-y-6 shadow-sm">
+                        <div className="bg-gradient-to-br from-blue-400 to-system-color-dark p-4 rounded-full shadow-lg">
+                            <Search className="text-white" size={32} />
+                        </div>
+                        <div className="text-center space-y-2">
+                            <h2 className="text-xl font-bold text-gray-800">Container Logistics Ecosystem Track & Trace</h2>
+                            <p className="text-sm text-gray-500">Enter your Booking No., BL No., or Container No. to track your shipment</p>
+                        </div>
+                        <form onSubmit={handleSearch} className="flex w-full max-w-2xl gap-2">
+                            <input
+                                type="text"
+                                placeholder="Booking No. / BL No. / Container No."
+                                className="flex-1 p-4 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all shadow-md active:scale-95"
+                            >
+                                <Search size={20} />
+                                {loading ? "Searching..." : "Search"}
+                            </button>
+                        </form>
                     </div>
-                    <div className="text-center space-y-2">
-                        <h2 className="text-xl font-bold text-gray-800">Container Logistics Ecosystem Track & Trace</h2>
-                        <p className="text-sm text-gray-500">Enter your Booking No., BL No., or Container No. to track your shipment</p>
-                    </div>
-                    <form onSubmit={handleSearch} className="flex w-full max-w-2xl gap-2">
-                        <input
-                            type="text"
-                            placeholder="Booking No. / BL No. / Container No."
-                            className="flex-1 p-4 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all shadow-md active:scale-95"
-                        >
-                            <Search size={20} />
-                            {loading ? "Searching..." : "Search"}
-                        </button>
-                    </form>
-                </div>
-            )}
+                )}
 
-            {/* Selection Results - Card List */}
-            {!selectedShipment && hasSearched && results.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {results.map((item) => {
-                        const statusStyle = STATUS_CONFIG[item.status] || { bg: "bg-gray-100", text: "text-gray-600", border: "border-gray-200" };
-                        return (
-                        <div
-                            key={item.containerId}
-                            onClick={() => handleSelect(item)}
-                            className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 cursor-pointer transition-all group"
-                        >
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="p-3 bg-blue-50 rounded-xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                    <Package size={24} />
-                                </div>
-                                <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
+                {/* Selection Results - Card List */}
+                {!selectedShipment && hasSearched && results.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {results.map((item) => {
+                            const statusStyle = STATUS_CONFIG[item.status] || { bg: "bg-gray-100", text: "text-gray-600", border: "border-gray-200" };
+                            return (
+                                <div
+                                    key={item.containerId}
+                                    onClick={() => handleSelect(item)}
+                                    className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 cursor-pointer transition-all group"
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="p-3 bg-blue-50 rounded-xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                            <Package size={24} />
+                                        </div>
+                                        <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
                                     {item.status}
                                 </span>
-                            </div>
-                            <h3 className="font-bold text-lg text-gray-800 mb-1">{item.containerNumber || "No Container No."}</h3>
-                            <p className="text-sm text-gray-500 mb-4">Booking: {item.blOrBookingNumber}</p>
+                                    </div>
+                                    <h3 className="font-bold text-lg text-gray-800 mb-1">{item.containerNumber || "No Container No."}</h3>
+                                    <p className="text-sm text-gray-500 mb-4">Booking: {item.blOrBookingNumber}</p>
 
-                            <div className="space-y-2 border-t pt-4">
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <MapPin size={14} className="text-gray-400" />
-                                    <span className="truncate">Consignee: {item.consigneeName || "N/A"}</span>
+                                    <div className="space-y-2 border-t pt-4">
+                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                            <MapPin size={14} className="text-gray-400" />
+                                            <span className="truncate">Consignee: {item.consigneeName || "N/A"}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                            <Calendar size={14} className="text-gray-400" />
+                                            <span>ROT Date: {item.rotDate || "N/A"}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <Calendar size={14} className="text-gray-400" />
-                                    <span>ROT Date: {item.rotDate || "N/A"}</span>
-                                </div>
-                            </div>
-                        </div>
-            );
-            })}
-                </div>
-            )}
+                            );
+                        })}
+                    </div>
+                )}
 
-            {/* Individual Shipment View - Shipment Log */}
-            {selectedShipment && (
-                <div className="space-y-6">
-                    <button
-                        onClick={() => setSelectedShipment(null)}
-                        className="flex items-center gap-2 text-gray-500 hover:text-blue-600 font-medium transition-colors"
-                    >
-                        <ArrowLeft size={18} />
-                        Back to results
-                    </button>
+                {/* Individual Shipment View - Shipment Log */}
+                {selectedShipment && (
+                    <div className="w-full space-y-6">
+                        <button
+                            onClick={() => setSelectedShipment(null)}
+                            className="flex items-center gap-2 text-gray-500 hover:text-blue-600 font-medium transition-colors"
+                        >
+                            <ArrowLeft size={18} />
+                            Back to results
+                        </button>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Summary Card */}
-                        <div className="lg:col-span-1 space-y-6">
+                        <div className="space-y-6">
                             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                                 <h3 className="font-bold text-gray-800 mb-4 border-b pb-2">Shipment Details</h3>
-                                <div className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                     <div>
                                         <p className="text-xs text-gray-400 uppercase font-bold">Booking No</p>
-                                        <p className="font-semibold">{selectedShipment.blOrBookingNumber}</p>
+                                        <p className="font-semibold">{selectedShipment.booking.blOrBookingNumber}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs text-gray-400 uppercase font-bold">Container No</p>
@@ -184,13 +183,12 @@ export function TrackROT () {
                         </div>
 
                         {/* Log Component */}
-                        <div className="lg:col-span-2">
+                        <div className="w-full">
                             <ShipmentLog {...selectedShipment} />
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+            </div>
         </Layout>
     );
 };

@@ -155,6 +155,7 @@ export function YourBookings ()  {
                 status: statusModal.nextStatus,
                 enrouteTime: statusModal.nextStatus === "Enroute" ? now : currentContainer.enrouteTime,
                 rejectedTime: statusModal.nextStatus === "Rejected" ? now : currentContainer.rejectedTime,
+                rejectedRemarks: statusModal.remarks,
                 UpdatedBy: updatedBy,
             };
             await updateContainer(statusModal.id, payload);
@@ -578,6 +579,16 @@ export function YourBookings ()  {
                                     ? "Confirming this will set the container status to Enroute."
                                     : "Are you sure you want to reject this assigned job?"}
                             </p>
+
+                            <div className="text-left mb-6">
+                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Reason for RejectionF *</label>
+                                <textarea
+                                    className="w-full mt-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm min-h-[100px]"
+                                    placeholder="e.g., Incorrect Booking Number provided by client..."
+                                    value={statusModal.remarks}
+                                    onChange={(e) => setStatusModal({ ...statusModal, remarks: e.target.value })}
+                                />
+                            </div>
 
                             <div className="flex gap-4">
                                 <button
