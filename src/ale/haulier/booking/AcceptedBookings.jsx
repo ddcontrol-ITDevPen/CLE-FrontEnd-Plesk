@@ -13,18 +13,18 @@ import {useNavigate} from "react-router-dom";
 import StatusInfographic from "../../ROTComponents/ROTStatistics.jsx";
 
 const STATUS_CONFIG = {
-    "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
+    //"Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
     "Enroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
     "Accepted":   { bg: "bg-accepted",  text: "text-green",  border: "border-green-200" },
     "Gated-In":   { bg: "bg-gate-in-out",   text: "text-blue-900",   border: "border-indigo-200" },
     "Gated-Out":  { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
     "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
     "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
-    "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
-    "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" }
-};
+    //"Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
+    //"Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" }
+}; 
 
-export function YourBookings ()  {
+export function ALEAcceptedBookings ()  {
     const [containers, setContainers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -155,7 +155,6 @@ export function YourBookings ()  {
                 status: statusModal.nextStatus,
                 enrouteTime: statusModal.nextStatus === "Enroute" ? now : currentContainer.enrouteTime,
                 rejectedTime: statusModal.nextStatus === "Rejected" ? now : currentContainer.rejectedTime,
-                rejectedRemarks: statusModal.remarks,
                 UpdatedBy: updatedBy,
             };
             await updateContainer(statusModal.id, payload);
@@ -173,7 +172,6 @@ export function YourBookings ()  {
                 cont.containerNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.rotNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.booking.blOrBookingNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                cont.booking.haulierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.booking.movementType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.consigneeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.portName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -196,7 +194,7 @@ export function YourBookings ()  {
 
             let matchesStatus = false;
             if(filterStatus === "All")
-                matchesStatus = cont.status !== "Deleted" && !isExpiredGateOut;
+                matchesStatus = cont.status !== "Assigned" && cont.status !== "Rejected" && cont.status !== "Deleted" && !isExpiredGateOut;
             else
                 matchesStatus = cont.status === filterStatus;
             const rotDate = cont.rotDate;
@@ -223,7 +221,6 @@ export function YourBookings ()  {
                 }
 
                 if (sortConfig.key === 'rotDate') {
-                    // Treat null/undefined as very old dates so they move to the bottom
                     const dateA = a.rotDate ? new Date(a.rotDate).getTime() : 0;
                     const dateB = b.rotDate ? new Date(b.rotDate).getTime() : 0;
 
@@ -276,43 +273,15 @@ export function YourBookings ()  {
         }
     };
 
-    const handleDelete = async () => {
-        const toastId = toast.loading("Deleting record...");
-        const user = await getUserById(localStorage.getItem("userId"));
-        const updatedBy = user.fullName + " - " + user.companyName;
-        try {
-            const currentContainer = await getContainerById(deleteModal.id);
-            console.log(currentContainer);
-            const payload = {
-                ...currentContainer,
-                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
-                status: "Deleted",
-                deletedTime: new Date().toISOString(),
-                deletedRemarks: deleteModal.remarks,
-                UpdatedBy: updatedBy,
-            };
-            await updateContainer(deleteModal.id, payload);
-            toast.success("Record deleted successfully", { id: toastId });
-            setDeleteModal({ isOpen: false, id: null, remarks: "" });
-            fetchData();
-        } catch (error) {
-            const serverMessage = error.response?.data?.message || error.response?.data || "Unknown Error";
-            console.log("Deleted Error: ", serverMessage);
-            toast.error("Deletion failed. Please try again.", { id: toastId });
-        }
-    };
-
     return (
         <Layout role="forwarder">
             <Toaster richColors position="top-right" />
 
             <div className="space-y-6">
                 <div className="flex flex-col gap-0">
-                    <h1 className="text-2xl font-bold">Request for Transport (ROT) Bookings</h1>
-                    <p className="text-gray-500 text-sm">Manage all your assigned ROTS here</p>
+                    <h1 className="text-2xl font-bold">Accepted ROTs</h1>
+                    <p className="text-gray-500 text-sm">Manage all your accepted/enroute ROTs here</p>
                 </div>
-
-                <StatusInfographic containers={containers} />
 
                 {/* Toolbar */}
                 <div className="flex flex-wrap items-center gap-4">
@@ -499,7 +468,7 @@ export function YourBookings ()  {
                                                 {/* Horizontal Action Icons */}
                                                 <div className="flex items-center justify-center gap-3">
                                                     {cont.status === "Assigned" && (
-                                                        <button onClick={() => navigate(`/haulier/booking/assign/${cont.containerId}`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Enroute">
+                                                        <button onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Enroute" })} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Enroute">
                                                             <Check size={18} />
                                                         </button>
                                                     )}
@@ -508,10 +477,14 @@ export function YourBookings ()  {
                                                             <LucideX size={18} />
                                                         </button>
                                                     )}
-                                                    <Eye size={18}
-                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/haulier/booking/view/${cont.containerId}`)}/>
+                                                    {/*<Eye size={18}*/}
+                                                    {/*     className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/forwarding/rot/view/${cont.containerId}`)}/>*/}
                                                     <Edit size={18}
-                                                          className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/haulier/booking/edit/form1/${cont.containerId}`)}/>
+                                                          className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/ale/haulier/booking/accepted/edit/${cont.containerId}`)}/>
+                                                    <FileText
+                                                        size={18}
+                                                        className="text-blue-600-600 cursor-pointer hover:text-blue-800"
+                                                        onClick={() => navigate(`/ale/haulier/booking/view/eCSN/${cont.containerId}`)}/>
                                                 </div>
                                             </td>
                                         </tr>
@@ -579,16 +552,6 @@ export function YourBookings ()  {
                                     ? "Confirming this will set the container status to Enroute."
                                     : "Are you sure you want to reject this assigned job?"}
                             </p>
-
-                            <div className="text-left mb-6">
-                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Reason for RejectionF *</label>
-                                <textarea
-                                    className="w-full mt-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm min-h-[100px]"
-                                    placeholder="e.g., Incorrect Booking Number provided by client..."
-                                    value={statusModal.remarks}
-                                    onChange={(e) => setStatusModal({ ...statusModal, remarks: e.target.value })}
-                                />
-                            </div>
 
                             <div className="flex gap-4">
                                 <button

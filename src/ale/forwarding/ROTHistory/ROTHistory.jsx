@@ -3,7 +3,7 @@ import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search, Calendar, FileDown, Eye, Edit, Trash2,
-    FileText, AlertCircle, CheckCircle2, LucideX, Check
+    FileText, AlertCircle, CheckCircle2
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import {getContainers, deleteContainer, updateContainer, getContainerById} from "../../../services/containerService.js";
@@ -24,11 +24,11 @@ const STATUS_CONFIG = {
     "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" }
 };
 
-export function YourBookings ()  {
+export function ALEROTHistory ()  {
     const [containers, setContainers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
-    const [statusModal, setStatusModal] = useState({ isOpen: false, id: null, nextStatus: "", remarks: "" });
+    const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null, remarks: "" });
     const [filterStatus, setFilterStatus] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
@@ -54,7 +54,7 @@ export function YourBookings ()  {
             "Status": cont.status,
             "PickUpAssignedTime": cont.assignedTime ? new Date(cont.assignedTime).toLocaleString() : "N/A",
             "PickUpEnrouteTime": cont.enrouteTime ? new Date(cont.enrouteTime).toLocaleString() : "N/A",
-            "PickUpAcceptedTime": cont.acceptedTime  ? new Date(cont.acceptedTime).toLocaleString() : "N/A",
+            "PickUpAcceptedTime": cont.acceptedTime ? new Date(cont.acceptedTime).toLocaleString() : "N/A",
             "PickUpGated In": cont.gatedInTime  ? new Date(cont.gatedInTime).toLocaleString() : "N/A",
             "PickUpGated Out": cont.gatedOutTime  ? new Date(cont.gatedOutTime).toLocaleString() : "N/A",
             "PickUpDeliveredTime": cont.deliveredTime ? new Date(cont.deliveredTime).toLocaleString() : "N/A",
@@ -63,7 +63,7 @@ export function YourBookings ()  {
             "DeletedTime": cont.deletedTime ? new Date(cont.deletedTime).toLocaleString() : "N/A",
             "DropOffAssignedTime": cont.rtAssignedTime ? new Date(cont.rtAssignedTime).toLocaleString() : "N/A",
             "DropOffEnrouteTime": cont.rtEnrouteTime ? new Date(cont.rtEnrouteTime).toLocaleString() : "N/A",
-            "DropOffAcceptedTime": cont.rtAcceptedTime  ? new Date(cont.rtAcceptedTime).toLocaleString() : "N/A",
+            "DropOffAcceptedTime": cont.rtAcceptedTime ? new Date(cont.rtAcceptedTime).toLocaleString() : "N/A",
             "DropOffGated In": cont.rtGatedInTime ? new Date(cont.rtGatedInTime).toLocaleString() :"N/A",
             "DropOffGated Out": cont.rtGatedOutTime ? new Date(cont.rtGatedOutTime).toLocaleString() : "N/A",
             "DropOffDeliveredTime": cont.rtDeliveredTime ? new Date(cont.rtDeliveredTime).toLocaleString() : "N/A",
@@ -97,16 +97,15 @@ export function YourBookings ()  {
         XLSX.writeFile(workbook, `ROT_History_${new Date().toISOString().split('T')[0]}.xlsx`);
         toast.success("Excel file downloaded");
     };
-
+    
     const fetchData = async () => {
         try {
             setIsLoading(true);
             const user = await getUserById(localStorage.getItem("userId"));
-            const haulierId = user.companyCode;
-            console.log(haulierId);
+            const forwardingId = user.companyCode;
             const data = await getContainers();
             const filteredData = await data
-                .filter(c => c.haulierId === haulierId)
+                .filter(c => c.booking.forwardingId === forwardingId)
                 .sort((a, b) => {
                     const dateA = new Date(getStatusTimestamp(a) || 0);
                     const dateB = new Date(getStatusTimestamp(b) || 0);
@@ -130,43 +129,18 @@ export function YourBookings ()  {
     };
 
     const getStatusTimestamp = (container) => {
-        if (container.status === "Assigned") return container.rtAssignedTime || container.assignedTime;
-        if (container.status === "Enroute")  return container.rtEnrouteTime || container.enrouteTime;
-        if (container.status === "Gate-In")  return container.rtGatedInTime || container.gatedInTime;
-        if (container.status === "Gate-Out") return container.rtGatedOutTime || container.gatedOutTime;
-        if (container.status === "Delivered") return container.rtDeliveredTime || container.deliveredTime;
-        if (container.status === "RFC") return container.rtRFCTime || container.rfcTime;
+        if (container.status === "Assigned") return container.assignedTime;
+        if (container.status === "Enroute") return container.enrouteTime;
+        if (container.status === "Accepted") return container.acceptedTime;
+        if (container.status === "Gate-In") return container.gatedInTime;
+        if (container.status === "Gate-Out") return container.gatedOutTime;
+        if (container.status === "Delivered") return container.deliveredTime;
+        if (container.status === "RFC") return container.rfcTime;
         if (container.status === "Rejected") return container.rejectedTime;
         if (container.status === "Deleted") return container.deletedTime;
         return null;
     };
-
-    const handleStatusUpdate = async () => {
-        const toastId = toast.loading(`Updating status to ${statusModal.nextStatus}...`);
-        try {
-            const currentContainer = await getContainerById(statusModal.id);
-            const now = new Date().toISOString();
-            const user = await getUserById(localStorage.getItem("userId"));
-            const updatedBy = user.fullName + " - " + user.companyName;
-
-            const payload = {
-                ...currentContainer,
-                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
-                status: statusModal.nextStatus,
-                enrouteTime: statusModal.nextStatus === "Enroute" ? now : currentContainer.enrouteTime,
-                rejectedTime: statusModal.nextStatus === "Rejected" ? now : currentContainer.rejectedTime,
-                rejectedRemarks: statusModal.remarks,
-                UpdatedBy: updatedBy,
-            };
-            await updateContainer(statusModal.id, payload);
-            toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
-            setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
-            fetchData();
-        } catch (error) {
-            toast.error("Update failed", { id: toastId });
-        }
-    };
-
+    
     const filteredContainers = useMemo(() => {
         let result = containers.filter(cont => {
             const matchesSearch =
@@ -193,12 +167,12 @@ export function YourBookings ()  {
                     isExpiredGateOut = true;
                 }
             }
-
+            
             let matchesStatus = false;
-            if(filterStatus === "All")
-                matchesStatus = cont.status !== "Deleted" && !isExpiredGateOut;
-            else
-                matchesStatus = cont.status === filterStatus;
+                if(filterStatus === "All")
+                    matchesStatus = cont.status !== "Deleted" && !isExpiredGateOut;
+                else
+                    matchesStatus = cont.status === filterStatus;
             const rotDate = cont.rotDate;
             let matchesDate = true;
 
@@ -207,7 +181,7 @@ export function YourBookings ()  {
             } else if (startDate) {
                 matchesDate = rotDate === startDate;
             }
-
+            
             return matchesSearch && matchesStatus && matchesDate;
         });
         if (sortConfig.key !== null) {
@@ -275,20 +249,20 @@ export function YourBookings ()  {
             return cont.toName || "N/A";
         }
     };
-
+    
     const handleDelete = async () => {
         const toastId = toast.loading("Deleting record...");
-        const user = await getUserById(localStorage.getItem("userId"));
-        const updatedBy = user.fullName + " - " + user.companyName;
         try {
             const currentContainer = await getContainerById(deleteModal.id);
             console.log(currentContainer);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = user.fullName + " - " + user.companyName
             const payload = {
                 ...currentContainer,
                 toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
                 status: "Deleted",
                 deletedTime: new Date().toISOString(),
-                deletedRemarks: deleteModal.remarks,
+                deletedRemarks: deleteModal.remarks, 
                 UpdatedBy: updatedBy,
             };
             await updateContainer(deleteModal.id, payload);
@@ -308,7 +282,7 @@ export function YourBookings ()  {
 
             <div className="space-y-6">
                 <div className="flex flex-col gap-0">
-                    <h1 className="text-2xl font-bold">Request for Transport (ROT) Bookings</h1>
+                    <h1 className="text-2xl font-bold">Request for Transport (ROT) History</h1>
                     <p className="text-gray-500 text-sm">Manage all your assigned ROTS here</p>
                 </div>
 
@@ -398,11 +372,11 @@ export function YourBookings ()  {
                             <th className="p-4 border-b w-10 text-center">No.</th>
                             <th className="p-4 border-b w-32">
                                 <div className="flex items-center gap-1" onClick={() => handleSort('blOrBookingNumber')}>
-                                    BL/Booking Number
-                                    {sortConfig.key === 'blOrBookingNumber' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
+                                BL/Booking Number
+                                {sortConfig.key === 'blOrBookingNumber' && (
+                                    <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                )}
+                            </div>
                             </th>
                             <th className="p-4 border-b w-32">
                                 <div className="flex items-center gap-1" onClick={() => handleSort('containerNumber')}>
@@ -416,6 +390,14 @@ export function YourBookings ()  {
                                 <div className="flex items-center gap-1" onClick={() => handleSort('booking.movementType')}>
                                     Movement Type
                                     {sortConfig.key === 'booking.movementType' && (
+                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                    )}
+                                </div>
+                            </th>
+                            <th className="p-4 border-b">
+                                <div className="flex items-center gap-1" onClick={() => handleSort('booking.haulier')}>
+                                    Haulier
+                                    {sortConfig.key === 'booking.haulier' && (
                                         <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                                     )}
                                 </div>
@@ -474,49 +456,51 @@ export function YourBookings ()  {
                                 </td>
                             </tr>
                         ) : filteredContainers.length > 0 ? (
-                                filteredContainers.map((cont, index) => {
-                                    const theme = STATUS_CONFIG[cont.status] || {bg: "bg-gray-100", text: "text-gray-700"};
-                                    return (
-                                        <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
-                                            <td className="p-4">{index + 1}</td>
-                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight">{cont.booking.blOrBookingNumber}</td>
-                                            <td className="p-4">{cont.containerNumber}</td>
-                                            <td className="p-4">{cont.booking?.tripType ? `${cont.booking?.movementType} - ${cont.booking?.tripType}` : cont.booking?.movementType}</td>
-                                            <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
-                                            <td className="p-4 text-center">
-                                                {/* Status Badge using Theme Colors */}
-                                                <span
-                                                    className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase tracking-wider whitespace-nowrap ${theme.bg} ${theme.text}`}>
+                        filteredContainers.map((cont, index) => {
+                            const theme = STATUS_CONFIG[cont.status] || {bg: "bg-gray-100", text: "text-gray-700"};
+                            return (
+                                <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
+                                    <td className="p-4">{index + 1}</td>
+                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight">{cont.booking.blOrBookingNumber}</td>
+                                    <td className="p-4">{cont.containerNumber}</td>
+                                    <td className="p-4">{cont.booking?.tripType ? `${cont.booking?.movementType} - ${cont.booking?.tripType}` : cont.booking?.movementType}</td>
+                                    <td className="p-4 whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>
+                                    <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
+                                    <td className="p-4 text-center">
+                                        {/* Status Badge using Theme Colors */}
+                                        <span
+                                            className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase tracking-wider whitespace-nowrap ${theme.bg} ${theme.text}`}>
                                                 {cont.status}
                                             </span>
-                                            </td>
-                                            <td className="p-4 text-[12px] whitespace-normal break-words leading-tight text-gray-600">
-                                                {getStatusTimestamp(cont) ? new Date(getStatusTimestamp(cont)).toLocaleString() : "-"}
-                                            </td>
-                                            <td className="p-4">{getLocationName(cont, 'from')}</td>
-                                            <td className="p-4">{getLocationName(cont, 'to')}</td>
-                                            <td className="p-4">
-                                                {/* Horizontal Action Icons */}
-                                                <div className="flex items-center justify-center gap-3">
-                                                    {cont.status === "Assigned" && (
-                                                        <button onClick={() => navigate(`/haulier/booking/assign/${cont.containerId}`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Enroute">
-                                                            <Check size={18} />
-                                                        </button>
-                                                    )}
-                                                    {cont.status === "Assigned" && (
-                                                        <button onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Rejected" })} className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors" title="Reject">
-                                                            <LucideX size={18} />
-                                                        </button>
-                                                    )}
-                                                    <Eye size={18}
-                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/haulier/booking/view/${cont.containerId}`)}/>
-                                                    <Edit size={18}
-                                                          className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/haulier/booking/edit/form1/${cont.containerId}`)}/>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                }))
+                                    </td>
+                                    <td className="p-4 text-[12px] whitespace-normal break-words leading-tight text-gray-600">
+                                        {getStatusTimestamp(cont) ? new Date(getStatusTimestamp(cont)).toLocaleString() : "-"}
+                                    </td>
+                                    <td className="p-4">{getLocationName(cont, 'from')}</td>
+                                    <td className="p-4">{getLocationName(cont, 'to')}</td>
+                                    <td className="p-4">
+                                        {/* Horizontal Action Icons */}
+                                        <div className="flex items-center justify-center gap-3">
+                                            <Eye size={18}
+                                                 className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}/>
+                                            <Edit size={18}
+                                                  className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/ale/forwarding/rot/edit/form1/${cont.containerId}`)}/>
+                                            {cont.status !== "Deleted" &&
+                                            <Trash2
+                                                size={18}
+                                                className="text-red-500 cursor-pointer hover:text-red-700"
+                                                onClick={() => setDeleteModal({isOpen: true, id: cont.containerId, remarks: ""})}
+                                            />
+                                            }
+                                            <FileText 
+                                                size={18} 
+                                                className="text-blue-600-600 cursor-pointer hover:text-blue-800"
+                                                onClick={() => navigate(`/ale/rot/view/pdf/${cont.containerId}`)}/>
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        }))
                             : (
                                 <tr>
                                     <td colSpan="11" className="p-12 text-center">
@@ -554,54 +538,47 @@ export function YourBookings ()  {
                 </div>
             </div>
 
+            {/* Deletion Confirmation Modal */}
             <AnimatePresence>
-                {statusModal.isOpen && (
+                {deleteModal.isOpen && (
                     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center"
+                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center relative"
                         >
                             <div className="mb-6 flex justify-center">
-                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                                    statusModal.nextStatus === "Enroute" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-                                }`}>
-                                    {statusModal.nextStatus === "Enroute" ? <CheckCircle2 size={40} /> : <AlertCircle size={40} />}
+                                <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+                                    <AlertCircle size={40} />
                                 </div>
                             </div>
 
-                            <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                                {statusModal.nextStatus === "Enroute" ? "Accept Job?" : "Reject Job?"}
-                            </h2>
-                            <p className="text-gray-600 mb-8">
-                                {statusModal.nextStatus === "Enroute"
-                                    ? "Confirming this will set the container status to Enroute."
-                                    : "Are you sure you want to reject this assigned job?"}
+                            <h2 className="text-2xl font-bold text-system-color mb-4">Deletion Confirmation</h2>
+                            <p className="text-gray-700 mb-8 leading-relaxed">
+                                Are you sure you want to delete this record? We recommend only deleting if the BL or Booking Number is incorrect.
                             </p>
 
                             <div className="text-left mb-6">
-                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Reason for RejectionF *</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Reason for Deletion *</label>
                                 <textarea
                                     className="w-full mt-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm min-h-[100px]"
                                     placeholder="e.g., Incorrect Booking Number provided by client..."
-                                    value={statusModal.remarks}
-                                    onChange={(e) => setStatusModal({ ...statusModal, remarks: e.target.value })}
+                                    value={deleteModal.remarks}
+                                    onChange={(e) => setDeleteModal({ ...deleteModal, remarks: e.target.value })}
                                 />
                             </div>
 
                             <div className="flex gap-4">
                                 <button
-                                    onClick={() => setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" })}
+                                    onClick={() => setDeleteModal({ isOpen: false, id: null })}
                                     className="flex-1 py-3 border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={handleStatusUpdate}
-                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
-                                        statusModal.nextStatus === "Enroute" ? "bg-green-600 hover:bg-green-700" : "bg-red-500 hover:bg-red-600"
-                                    }`}
+                                    onClick={handleDelete}
+                                    className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold shadow-lg hover:bg-system-color-dark transition-all"
                                 >
                                     Confirm
                                 </button>

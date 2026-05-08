@@ -25,7 +25,7 @@ const STATUS_CONFIG = {
     "RTRFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
 };
 
-export function TrackROT () {
+export function ALETrackROT () {
     const [searchQuery, setSearchQuery] = useState("");
     const [results, setResults] = useState([]);
     const [selectedShipment, setSelectedShipment] = useState(null);

@@ -29,7 +29,7 @@ export default function AKPSNavBar({ role = "akps" }) {
             {/* Logo/Brand */}
             <div className="p-1 border-system-color-hover flex justify-center items-center mt-3">
                 <Link to={`/${role === "forwarder" ? "forwarding" : role}/dashboard`} className="flex items-center gap-3">
-                    {<img src="/assets/ALE-Logo-White.png" alt="CLE Logo" className="w-45 h-auto content-center" />}
+                    {<img src="/assets/ALE-Logo-White.png" alt="ALE Logo" className="w-45 h-auto content-center" />}
                 </Link>
             </div>
 

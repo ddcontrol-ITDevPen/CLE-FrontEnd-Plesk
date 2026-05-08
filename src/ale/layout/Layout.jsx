@@ -6,6 +6,8 @@ import ForwarderNavBar from "../navBar/ForwardingNavBar.jsx";
 import {Icon, LucideCircleUser, LucideLogOut, LucideRotateCcw, LucideShoppingCart, LucideUsers} from "lucide-react";
 import {FaCartPlus} from "react-icons/fa";
 import {logout} from "../../services/authService.js";
+import ForwardingNavBar from "../navbar/ForwardingNavBar.jsx";
+import HaulierNavBar from "../navbar/HaulierNavBar.jsx";
 import TerminalNavBar from "../navBar/TerminalNavBar.jsx";
 import CustomsNavBar from "../navBar/CustomsNavBar.jsx";
 import AKPSNavBar from "../navBar/AKPSNavBar.jsx";
@@ -49,6 +51,8 @@ export default function Layout({ children, role }) {
             <div className={`fixed left-0 top-0 h-full z-20 transition-all duration-300 ease-in-out w-64 shadow-lg
                             transform -translate-x-full lg:translate-x-0 lg:block`}>
                 {/* Sidebar */}
+                {user?.Role === "forwarding" && <ForwardingNavBar />}
+                {user?.Role === "haulier" && <HaulierNavBar />}
                 {user?.Role === "forwarding" && <ForwarderNavBar />}
                 {user?.Role === "terminal" && <TerminalNavBar />}
                 {user?.Role === "customs" && <CustomsNavBar />}

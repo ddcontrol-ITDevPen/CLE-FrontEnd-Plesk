@@ -13,7 +13,6 @@ import {TrackROT} from "../cle/forwarding/TrackROT/TrackROT.jsx";
 import {ViewROTDocument} from "../cle/forwarding/Document/ViewROTDocument.jsx";
 import {ForwardingProfile} from "../cle/forwarding/profile/ForwardingProfile.jsx";
 import {ForwardingEditProfile} from "../cle/forwarding/profile/ForwardingEditProfile.jsx";
-import {ForwardingDashboard} from "../ale/forwarding/ForwardingDashboard.jsx";
 import {HaulierDashboard} from "../cle/haulier/dashboard/HaulierDashboard.jsx";
 import {YourBookings} from "../cle/haulier/booking/YourBookings.jsx";
 import {AcceptedBookings} from "../cle/haulier/booking/AcceptedBookings.jsx";
@@ -33,6 +32,37 @@ import {EditAssignBooking} from "../cle/haulier/booking/EditAssignBooking.jsx";
 import {ViewECsnPDF} from "../cle/haulier/booking/ViewBookingPDF.jsx";
 import {CreateBookingForm} from "../cle/haulier/booking/CreateBookingForm.jsx";
 import {EditCreateBooking} from "../cle/haulier/booking/EditCreateBooking.jsx";
+import {ALEForwardingDashboard} from "../ale/forwarding/dashboard/ForwardingDashboard.jsx";
+import {ALEAddROTForm} from "../ale/forwarding/ROT/AddROTForm.jsx";
+import {ALEAddROTForm2} from "../ale/forwarding/ROT/AddROTForm2.jsx";
+import {ALEROTHistory} from "../ale/forwarding/ROTHistory/ROTHistory.jsx";
+import {ALEViewROTDetails} from "../ale/forwarding/ROTHistory/ViewROTDetails.jsx";
+import {ALEEditROTForm} from "../ale/forwarding/ROT/EditROT1.jsx";
+import {ALEEditROTForm2} from "../ale/forwarding/ROT/EditROT2.jsx";
+import {ALEViewROTPDF} from "../ale/forwarding/ROTHistory/ViewROTPDF.jsx";
+import {ALETrackROT} from "../ale/forwarding/TrackROT/TrackROT.jsx";
+import {ALEViewROTDocument} from "../ale/forwarding/Document/ViewROTDocument.jsx";
+import {ALEForwardingProfile} from "../ale/forwarding/profile/ForwardingProfile.jsx";
+import {ALEForwardingEditProfile} from "../ale/forwarding/profile/ForwardingEditProfile.jsx";
+import {ALEHaulierDashboard} from "../ale/haulier/dashboard/HaulierDashboard.jsx";
+import {ALEYourBookings} from "../ale/haulier/booking/YourBookings.jsx";
+import {ALEAcceptedBookings} from "../ale/haulier/booking/AcceptedBookings.jsx";
+import {ALEViewBookings} from "../ale/haulier/booking/ViewBookings.jsx";
+import {ALEAssignBooking} from "../ale/haulier/booking/AssignBooking.jsx";
+import {ALEHaulierManagement} from "../ale/haulier/management/HaulierManagement.jsx";
+import {ALEDriverManagement} from "../ale/haulier/management/DriverManagement.jsx";
+import {ALEAddDriver} from "../ale/haulier/management/AddDriver.jsx";
+import {ALEPrimeMoverManagement} from "../ale/haulier/management/PrimeMoverManagement.jsx";
+import {ALETrailerManagement} from "../ale/haulier/management/TrailerManagement.jsx";
+import {ALEAddPrimeMover} from "../ale/haulier/management/AddPrimeMover.jsx";
+import {ALEAddTrailer} from "../ale/haulier/management/AddTrailer.jsx";
+import {ALEEditAssignBooking} from "../ale/haulier/booking/EditAssignBooking.jsx";
+import {ALEViewECsnPDF} from "../ale/haulier/booking/ViewBookingPDF.jsx";
+import {ALECreateBookingForm} from "../ale/haulier/booking/CreateBookingForm.jsx";
+import {ALEEditCreateBooking} from "../ale/haulier/booking/EditCreateBooking.jsx";
+// import {TerminalDashboard} from "../ale/terminal/TerminalDashboard.jsx";
+// import {CustomsDashboard} from "../ale/customs/CustomsDashboard.jsx";
+// import {AKPSDashboard} from "../ale/akps/AKPSDashboard.jsx";
 import {ViewTerminal} from "../ale/terminal/ViewTerminal.jsx"
 
 export default function AppRouter() {
@@ -42,7 +72,8 @@ export default function AppRouter() {
                 {/* Auth Routes */}
                 <Route path="/login" element={<LoginPage />}/>
 
-                {/* Forwarder Routes */}
+                {/* CLE */}
+                {/* Forwarding Routes */}
                 <Route
                     path="/forwarding/dashboard"
                     element={
@@ -269,11 +300,228 @@ export default function AppRouter() {
                 />
 
                 {/* ALE */}
+                {/* Forwarding Routes */}
                 <Route
                     path="/ale/forwarding/dashboard"
                     element={
                         <ProtectedRoute>
-                            <ForwardingDashboard />
+                            <ALEForwardingDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/forwarding/rot/add/form1"
+                    element={
+                        <ProtectedRoute>
+                            <ALEAddROTForm />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/forwarding/rot/add/form2"
+                    element={
+                        <ProtectedRoute>
+                            <ALEAddROTForm2 />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/forwarding/rot/history"
+                    element={
+                        <ProtectedRoute>
+                            <ALEROTHistory />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/forwarding/rot/view/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ALEViewROTDetails />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/forwarding/rot/edit/form1/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ALEEditROTForm />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/forwarding/rot/edit/form2/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ALEEditROTForm2 />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/rot/view/pdf/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ALEViewROTPDF />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/rot/track"
+                    element={
+                        <ProtectedRoute>
+                            <ALETrackROT />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/forwarding/rot/document/view"
+                    element={
+                        <ProtectedRoute>
+                            <ALEViewROTDocument />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/forwarding/profile"
+                    element={
+                        <ProtectedRoute>
+                            <ALEForwardingProfile />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/forwarding/profile/edit"
+                    element={
+                        <ProtectedRoute>
+                            <ALEForwardingEditProfile />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <ALEHaulierDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/booking/add/form1"
+                    element={
+                        <ProtectedRoute>
+                            <ALECreateBookingForm />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/booking"
+                    element={
+                        <ProtectedRoute>
+                            <ALEYourBookings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/booking/view/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ALEViewBookings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/booking/assign/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ALEAssignBooking />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/booking/accepted"
+                    element={
+                        <ProtectedRoute>
+                            <ALEAcceptedBookings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/booking/accepted/edit/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ALEEditAssignBooking />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/booking/view/eCSN/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ALEViewECsnPDF />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/booking/edit/form1/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ALEEditCreateBooking />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/management/configure"
+                    element={
+                        <ProtectedRoute>
+                            <ALEHaulierManagement />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/manage/drivers"
+                    element={
+                        <ProtectedRoute>
+                            <ALEDriverManagement />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/add/driver"
+                    element={
+                        <ProtectedRoute>
+                            <ALEAddDriver />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/manage/prime-movers"
+                    element={
+                        <ProtectedRoute>
+                            <ALEPrimeMoverManagement />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/add/prime-mover"
+                    element={
+                        <ProtectedRoute>
+                            <ALEAddPrimeMover />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/manage/trailers"
+                    element={
+                        <ProtectedRoute>
+                            <ALETrailerManagement />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/haulier/add/trailer"
+                    element={
+                        <ProtectedRoute>
+                            <ALEAddTrailer />
                         </ProtectedRoute>
                     }
                 />
