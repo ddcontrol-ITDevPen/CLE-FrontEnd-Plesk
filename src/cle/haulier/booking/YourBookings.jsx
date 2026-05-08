@@ -146,6 +146,8 @@ export function YourBookings ()  {
         try {
             const currentContainer = await getContainerById(statusModal.id);
             const now = new Date().toISOString();
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = user.fullName + " - " + user.companyName;
 
             const payload = {
                 ...currentContainer,
@@ -153,8 +155,8 @@ export function YourBookings ()  {
                 status: statusModal.nextStatus,
                 enrouteTime: statusModal.nextStatus === "Enroute" ? now : currentContainer.enrouteTime,
                 rejectedTime: statusModal.nextStatus === "Rejected" ? now : currentContainer.rejectedTime,
+                UpdatedBy: updatedBy,
             };
-
             await updateContainer(statusModal.id, payload);
             toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
             setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
@@ -193,7 +195,7 @@ export function YourBookings ()  {
 
             let matchesStatus = false;
             if(filterStatus === "All")
-                matchesStatus = cont.status === "Assigned" && !isExpiredGateOut;
+                matchesStatus = cont.status !== "Deleted" && !isExpiredGateOut;
             else
                 matchesStatus = cont.status === filterStatus;
             const rotDate = cont.rotDate;
@@ -275,6 +277,8 @@ export function YourBookings ()  {
 
     const handleDelete = async () => {
         const toastId = toast.loading("Deleting record...");
+        const user = await getUserById(localStorage.getItem("userId"));
+        const updatedBy = user.fullName + " - " + user.companyName;
         try {
             const currentContainer = await getContainerById(deleteModal.id);
             console.log(currentContainer);
@@ -284,6 +288,7 @@ export function YourBookings ()  {
                 status: "Deleted",
                 deletedTime: new Date().toISOString(),
                 deletedRemarks: deleteModal.remarks,
+                UpdatedBy: updatedBy,
             };
             await updateContainer(deleteModal.id, payload);
             toast.success("Record deleted successfully", { id: toastId });
@@ -475,7 +480,7 @@ export function YourBookings ()  {
                                             <td className="p-4">{index + 1}</td>
                                             <td className="p-4 font-semibold text-blue-600 break-all leading-tight">{cont.booking.blOrBookingNumber}</td>
                                             <td className="p-4">{cont.containerNumber}</td>
-                                            <td className="p-4">{cont.booking?.tripType ? cont.booking?.movementType - cont.booking?.tripType : cont.booking?.movementType}</td>
+                                            <td className="p-4">{cont.booking?.tripType ? `${cont.booking?.movementType} - ${cont.booking?.tripType}` : cont.booking?.movementType}</td>
                                             <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
                                             <td className="p-4 text-center">
                                                 {/* Status Badge using Theme Colors */}
@@ -506,10 +511,6 @@ export function YourBookings ()  {
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/haulier/booking/view/${cont.containerId}`)}/>
                                                     <Edit size={18}
                                                           className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/haulier/booking/edit/form1/${cont.containerId}`)}/>
-                                                   <FileText
-                                                        size={18}
-                                                        className="text-blue-600-600 cursor-pointer hover:text-blue-800"
-                                                        onClick={() => navigate(`/rot/view/pdf/${cont.containerId}`)}/>
                                                 </div>
                                             </td>
                                         </tr>

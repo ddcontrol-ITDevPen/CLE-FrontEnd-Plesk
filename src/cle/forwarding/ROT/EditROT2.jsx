@@ -7,6 +7,7 @@ import { toast, Toaster } from "sonner";
 import { getCompanies } from "../../../services/companyService.js";
 import { getContainerById, updateContainer } from "../../../services/containerService.js";
 import { registerBookingDocument } from "../../../services/bookingDocumentService.js";
+import {getUserById} from "../../../services/userService.js";
 
 export function EditROTForm2() {
     const navigate = useNavigate();
@@ -91,6 +92,7 @@ export function EditROTForm2() {
                         status: container.status || "Assigned", 
                         assignedTime: container.assignedTime,
                         enrouteTime: container.enrouteTime || null,
+                        acceptedTime: container.acceptedTime || null,
                         gatedInTime: container.gatedInTime || null,
                         gatedOutTime: container.gatedOutTime || null,
                         deliveredTime: container.deliveredTime || null,
@@ -99,6 +101,7 @@ export function EditROTForm2() {
                         deletedTime: container.deletedTime || null,
                         rtAssignedTime: container.rtAssignedTime || null,
                         rtEnrouteTime: container.rtEnrouteTime || null,
+                        rtAcceptedTime: container.rtAcceptedTime || null,
                         rtGatedInTime: container.rtGatedInTime || null,
                         rtGatedOutTime: container.rtGatedOutTime || null,
                         rtDeliveredTime: container.rtDeliveredTime || null,
@@ -156,6 +159,8 @@ export function EditROTForm2() {
             return;
         }
 
+        const user = await getUserById(localStorage.getItem("userId"));
+        const updatedBy = user.fullName + " - " + user.companyName
         setIsSubmitting(true);
         try {
             const containerPayload = {
@@ -188,6 +193,7 @@ export function EditROTForm2() {
                 RtGatedOutTime: containerData.rtGatedOutTime || null,
                 RtDeliveredTime: containerData.rtDeliveredTime || null,
                 RtRFCTime: containerData.rtRFCTime || null,
+                UpdatedBy: updatedBy,
             };
 
             await updateContainer(id, containerPayload);

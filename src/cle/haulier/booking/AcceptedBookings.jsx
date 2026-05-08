@@ -146,6 +146,8 @@ export function AcceptedBookings ()  {
         try {
             const currentContainer = await getContainerById(statusModal.id);
             const now = new Date().toISOString();
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = user.fullName + " - " + user.companyName;
 
             const payload = {
                 ...currentContainer,
@@ -153,8 +155,8 @@ export function AcceptedBookings ()  {
                 status: statusModal.nextStatus,
                 enrouteTime: statusModal.nextStatus === "Enroute" ? now : currentContainer.enrouteTime,
                 rejectedTime: statusModal.nextStatus === "Rejected" ? now : currentContainer.rejectedTime,
+                UpdatedBy: updatedBy,
             };
-
             await updateContainer(statusModal.id, payload);
             toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
             setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
@@ -277,8 +279,8 @@ export function AcceptedBookings ()  {
 
             <div className="space-y-6">
                 <div className="flex flex-col gap-0">
-                    <h1 className="text-2xl font-bold">Accepted Bookings</h1>
-                    <p className="text-gray-500 text-sm">Manage all your accepted/enroute bookings here</p>
+                    <h1 className="text-2xl font-bold">Accepted ROTs</h1>
+                    <p className="text-gray-500 text-sm">Manage all your accepted/enroute ROTs here</p>
                 </div>
 
                 {/* Toolbar */}
@@ -448,7 +450,7 @@ export function AcceptedBookings ()  {
                                             <td className="p-4">{index + 1}</td>
                                             <td className="p-4 font-semibold text-blue-600 break-all leading-tight">{cont.booking.blOrBookingNumber}</td>
                                             <td className="p-4">{cont.containerNumber}</td>
-                                            <td className="p-4">{cont.booking?.tripType ? cont.booking?.movementType - cont.booking?.tripType : cont.booking?.movementType}</td>
+                                            <td className="p-4">{cont.booking?.tripType ? `${cont.booking?.movementType} - ${cont.booking?.tripType}` : cont.booking?.movementType}</td>
                                             <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
                                             <td className="p-4 text-center">
                                                 {/* Status Badge using Theme Colors */}
