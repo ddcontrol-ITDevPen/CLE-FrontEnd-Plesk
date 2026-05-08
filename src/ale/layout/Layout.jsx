@@ -2,10 +2,11 @@ import { useNavigate } from "react-router-dom";
 import {FaArrowRightFromBracket, FaArrowsRotate, FaCircleUser, FaGear, FaRightFromBracket} from "react-icons/fa6";
 import {useContext, useEffect, useRef, useState} from "react";
 import cle_logo from "../../../public/assets/CLE-Logo.png";
-import ForwarderNavBar from "../NavBar/ForwardingNavBar.jsx";
 import {Icon, LucideCircleUser, LucideLogOut, LucideRotateCcw, LucideShoppingCart, LucideUsers} from "lucide-react";
 import {FaCartPlus} from "react-icons/fa";
 import {logout} from "../../services/authService.js";
+import ForwardingNavBar from "../navbar/ForwardingNavBar.jsx";
+import HaulierNavBar from "../navbar/HaulierNavBar.jsx";
 
 export default function Layout({ children, role }) {
 
@@ -46,7 +47,8 @@ export default function Layout({ children, role }) {
             <div className={`fixed left-0 top-0 h-full z-20 transition-all duration-300 ease-in-out w-64 shadow-lg
                             transform -translate-x-full lg:translate-x-0 lg:block`}>
                 {/* Sidebar */}
-                {user?.Role === "forwarding" && <ForwarderNavBar />}
+                {user?.Role === "forwarding" && <ForwardingNavBar />}
+                {user?.Role === "haulier" && <HaulierNavBar />}
                 {/*other roles*/}
             </div>
 
