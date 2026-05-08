@@ -119,9 +119,10 @@ export function AssignBooking() {
 
         try {
             const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = user.fullName + " - " + user.companyName;
             const updatedData = {...formData, haulierId: user.companyCode};
             await registerAssignedHaulier(updatedData);
-            const updatedContainerData = {...container, containerId: id, status: "Enroute", enrouteTime: new Date().toISOString()}
+            const updatedContainerData = {...container, containerId: id, status: "Enroute", enrouteTime: new Date().toISOString(), UpdatedBy: updatedBy}
             await updateContainer(id, updatedContainerData);
             const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
             if (selectedSlot) {

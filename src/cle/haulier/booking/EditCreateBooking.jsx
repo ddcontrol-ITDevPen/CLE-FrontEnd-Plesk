@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,18 +12,23 @@ import {
     User
 } from "lucide-react";
 import {getCompanies} from "../../../services/companyService.js";
-import {getBookings, registerBooking} from "../../../services/bookingService.js";
+import {getBookingById, getBookings, registerBooking, updateBooking} from "../../../services/bookingService.js";
 import {getUserById} from "../../../services/userService.js";
 import {getDrivers} from "../../../services/driverService.js";
 import {getPrimeMovers} from "../../../services/primeMoverService.js";
 import {getTrailers} from "../../../services/trailerService.js";
-import {getTimeSlots, updateTimeSlot} from "../../../services/timeSlotService.js";
+import {getTimeSlotById, getTimeSlots, updateTimeSlot} from "../../../services/timeSlotService.js";
 import {registerBookingDocument} from "../../../services/bookingDocumentService.js";
-import {registerContainer, updateContainer} from "../../../services/containerService.js";
+import {getContainerById, registerContainer, updateContainer} from "../../../services/containerService.js";
 import {toast, Toaster} from "sonner";
-import {registerAssignedHaulier} from "../../../services/assignedHaulier.js";
+import {
+    getAssignedHaulierByContainerId,
+    registerAssignedHaulier,
+    updateAssignedHaulier
+} from "../../../services/assignedHaulier.js";
 
-export function CreateBookingForm() {
+export function EditCreateBooking() {
+    const { id } = useParams();
     const navigate = useNavigate();
     const [ports, setPorts] = useState([]);
     const [bookings, setBookings] = useState([]);
@@ -36,6 +41,8 @@ export function CreateBookingForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [addresses, setAddresses] = useState([""]);
     const [allCompanies, setAllCompanies] = useState([]);
+    const [originalData, setOriginalData] = useState(null);
+    const [user, setUser] = useState(null);
 
     const [drivers, setDrivers] = useState([]);
     const [primeMovers, setPrimeMovers] = useState([]);
@@ -77,12 +84,14 @@ export function CreateBookingForm() {
         forwarding: "",
         consignee: "",
         depot: "",
+        addresses: [""],
         // depotChoice: "Single",
         // haulierChoice: "Single",
         driverId: "",
         pmId: "",
         trailerId: "",
         timeSlotId: "",
+        assignedHaulierId: "",
     });
 
     const [documents, setDocuments] = useState({
@@ -95,54 +104,18 @@ export function CreateBookingForm() {
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
-        const savedData = JSON.parse(localStorage.getItem("pendingROT") || "{}");
-        setFormData(prev => ({
-            ...prev,
-            movementType: savedData.movementType || "Import",
-            tripType: savedData.tripType || "Pick-up",
-            rotNumber: savedData.rotNumber || rotNumberGenerator(),
-            bookingNumber: savedData.bookingNumber || "",
-            houseBLNumber: savedData.houseBLNumber || "",
-            scn: savedData.scn || "",
-            portLocation: savedData.portLocation || "",
-            eta: savedData.eta || "",
-            sealNo: savedData.sealNo || "",
-            haulierRemarks: savedData.haulierRemarks || "",
-            customFormNo: savedData.customFormNo || "",
-            customReceiptNo: savedData.customReceiptNo || "",
-            dicNumber: savedData.dicNumber || "",
-            zbNumber: savedData.zbNumber || "",
-            forwarding: savedData.forwarding || "",
-            shippingAgent: savedData.shippingAgent || "",
-            billingParty: savedData.billingParty || "",
-            containerQuantity: savedData.containerQuantity || 1,
-            containerNo: savedData.containerNo || "",
-            containerType: savedData.containerType || "",
-            containerSize: savedData.containerSize || "",
-            vgm: savedData.vgm || "",
-            trailerType: savedData.trailerType || "",
-            rotDate: savedData.rotDate || "",
-            haulier: savedData.haulier || localStorage.getItem("companyName") ||"",
-            consignee: savedData.consignee || "",
-            depot: savedData.depot || "",
-            // depotChoice: savedData.depotChoice || "Single",
-            // haulierChoice: savedData.haulierChoice || "Single",
-            driverId: savedData.driverId || "",
-            pmId: savedData.pmId || "",
-            trailerId: savedData.trailerId || "",
-            timeSlotId: savedData.timeSlotId || "",
-        }));
         const fetchData = async () => {
             setIsLoadingPorts(true);
             try {
                 const data = await getCompanies();
-                setAllCompanies(data);
                 if (Array.isArray(data)) {
+                    setAllCompanies(data);
                     const portLocations = data.filter(c => c.role === "Port").map(c => ({companyName: c.companyName, companyCode: c.companyCode}));
                     const depots = data.filter(h => h.role === "Depot").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
                     const shippingAgent = data.filter(h => h.role === "Shipping Line").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
                     const currentForwardingName = localStorage.getItem("companyName") || "Forwarding";
                     const user = await getUserById(localStorage.getItem("userId"));
+                    setUser(user);
                     const currentForwardingCode = user.companyCode;
                     const consignees = data.filter(h => h.role === "Consignee").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
                     const forwardings = data.filter(h => h.role === "Forwarding").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
@@ -156,21 +129,82 @@ export function CreateBookingForm() {
                 }
                 const bookings = await getBookings();
                 setBookings(bookings || []);
-                const [driverData, pmData, trailerData, slotData] = await Promise.all([
+                const [allCompanies, allSlots, containerData] = await Promise.all([
+                    getCompanies(),
+                    getTimeSlots(),
+                    getContainerById(id)
+                ]);
+                const [bookingData, assignmentData] = await Promise.all([
+                    getBookingById(containerData.rotNumber),
+                    getAssignedHaulierByContainerId(id)
+                ]);
+                setOriginalData({ container: containerData, booking: bookingData, assignment: assignmentData });
+                
+                const [driverData, pmData, trailerData] = await Promise.all([
                     getDrivers(),
                     getPrimeMovers(),
                     getTrailers(),
-                    getTimeSlots()
                 ]);
                 const user = await getUserById(localStorage.getItem("userId"));
                 const haulierId = user.companyCode
                 setDrivers(driverData.filter(x => x.haulierId === haulierId) || []);
                 setPrimeMovers(pmData.filter(x => x.haulierId === haulierId) || []);
                 setTrailers(trailerData.filter(x => x.haulierId === haulierId) || []);
-                setTimeSlots(slotData || []);
+                setTimeSlots(allSlots || []);
 
-                const uniqueDates = [...new Set(slotData.map(s => s.date))].sort();
+                const uniqueDates = [...new Set(allSlots.map(s => s.date))].sort();
                 setAvailableDates(uniqueDates);
+
+                const currentSlot = allSlots.find(s => s.id === assignmentData?.timeSlotId);
+                if (currentSlot) {
+                    setSelectedDate(currentSlot.date);
+                    setFilteredSlots(allSlots.filter(s => s.date === currentSlot.date));
+                }
+
+                const loadedAddresses = containerData.toAddress?.length > 0
+                    ? containerData.toAddress.map(a => a.address)
+                    : [""];
+                setAddresses(loadedAddresses)
+                console.log("Hello");
+                console.log(assignmentData);
+                setFormData({
+                    movementType: bookingData.movementType || "Import",
+                    tripType: bookingData.tripType || "Pick-up",
+                    rotNumber: bookingData.rotNumber || "",
+                    bookingNumber: bookingData.bookingNumber || "",
+                    houseBLNumber: bookingData.houseBLNumber || "",
+                    scn: bookingData.scn || "",
+                    portLocation: bookingData.portLocation || "",
+                    eta: bookingData.eta || "",
+                    sealNo: bookingData.sealNo || "",
+                    haulierRemarks: bookingData.haulierRemarks || "",
+                    customFormNo: bookingData.customFormNo || "",
+                    customReceiptNo: bookingData.customReceiptNo || "",
+                    dicNumber: bookingData.dicNumber || "",
+                    zbNumber: bookingData.zbNumber || "",
+                    forwarding: bookingData.forwardingId || "",
+                    shippingAgent: bookingData.shippingAgentId || "",
+                    billingParty: bookingData.billingParty || "",
+                    containerQuantity: bookingData.containerQuantity || 1,
+                    containerNo: containerData.containerNumber || "",
+                    containerType: containerData.containerType || "",
+                    containerSize: containerData.containerSize || "",
+                    vgm: containerData.vgm || "",
+                    trailerType: containerData.trailerType || "",
+                    rotDate: containerData.rotDate || "",
+                    haulier: containerData.haulierId || localStorage.getItem("companyName") ||"",
+                    consignee: containerData.consigneeId || "",
+                    depot: containerData.depotId || "",
+                    // depotChoice: savedData.depotChoice || "Single",
+                    // haulierChoice: savedData.haulierChoice || "Single",
+                    addresses: loadedAddresses,
+                    driverId: assignmentData.driverId || "",
+                    pmId: assignmentData.pmId || "",
+                    trailerId: assignmentData.trailerId || "",
+                    timeSlotId: assignmentData.timeSlotId || "",
+                    assignedHaulierId: assignmentData?.id || "",
+                });
+                
             } catch (error) {
                 console.error("Failed to load data:", error);
                 setPorts([]);
@@ -211,7 +245,7 @@ export function CreateBookingForm() {
         setSelectedDate(date);
         const slotsForDate = timeSlots.filter(s => s.date === date).sort((a, b) => a.time.localeCompare(b.time));
         setFilteredSlots(slotsForDate);
-        setFormData(prev => ({ ...prev, timeSlot: "" }));
+        setFormData(prev => ({ ...prev, timeSlotId: "" }));
     };
 
     const addAddress = () => {
@@ -223,11 +257,9 @@ export function CreateBookingForm() {
     };
 
     const handleAddressChange = (addrIndex, value) => {
-        setAddresses(prev => {
-            const updated = [...prev];
-            updated[addrIndex] = value;
-            return updated;
-        });
+        const newAddresses = [...addresses];
+        newAddresses[addrIndex] = value;
+        setAddresses(newAddresses);
     };
 
     const handleFileChange = (e, type) => {
@@ -302,19 +334,12 @@ export function CreateBookingForm() {
             return;
         }
 
-        let finalRotNumber = formData.rotNumber;
-        const isROTNumberDuplicate = bookings.some(
-            (b) => b.rotNumber?.toLowerCase() === finalRotNumber.toLowerCase()
-        );
-        if (isROTNumberDuplicate) {
-            finalRotNumber = rotNumberGenerator();
-        }
-
         setIsSubmitting(true);
-        // Merge and Save
         try {
-            const userData = await getUserById(localStorage.getItem("userId"));
-            const companyCode = await userData.companyCode;
+            //const userData = await getUserById(localStorage.getItem("userId"));
+            const companyCode = user.companyCode;
+            const updatedBy = user.fullName + " - " + user.companyName;
+            console.log(updatedBy);
             const formattedEta = formData.eta ? new Date(formData.eta).toISOString().split('T')[0] : null;
             const bookingPayload = {
                 rotNumber: formData.rotNumber,
@@ -341,7 +366,7 @@ export function CreateBookingForm() {
             };
             console.log(bookingPayload);
 
-            const savedBooking = await registerBooking(bookingPayload);
+            const savedBooking = await updateBooking(formData.rotNumber, bookingPayload);
             const rotNumber = savedBooking.rotNumber;
 
             const docTypes = {
@@ -375,37 +400,33 @@ export function CreateBookingForm() {
                 HaulierId: companyCode,
                 ROTDate: formattedRotDate,
                 Status: "Enroute",
-                AssignedTime: new Date().toISOString(),
+                AssignedTime: formData.assignedTime || new Date().toISOString(),
                 EnrouteTime: new Date().toISOString(),
                 ROTNumber: formData.rotNumber,
                 ToAddress: addresses
                     .filter(addr => addr.trim() !== "")
-                    .map(addr => ({ Address: addr }))
+                    .map(addr => ({ Address: addr })),
+                UpdatedBy: updatedBy,
             };
             console.log(containerPayload);
-            const createdContainer = await registerContainer(containerPayload);
-            const containerId = createdContainer.containerId;
+            const createdContainer = await updateContainer(id, containerPayload);
 
             const assignedHaulierPayload = {
                 driverId: formData.driverId,
                 pmId: formData.pmId,
                 trailerId: formData.trailerId,
                 timeSlotId: formData.timeSlotId,
-                containerId: containerId,
+                containerId: id,
                 rotNumber: formData.rotNumber,
                 haulierId: companyCode,
             };
-            await registerAssignedHaulier(assignedHaulierPayload);
+            await updateAssignedHaulier(originalData.assignment.id, assignedHaulierPayload);
             const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
-            if (selectedSlot) {
-                const updatedSlotData = {
-                    id: selectedSlot.id,
-                    date: selectedSlot.date,
-                    time: selectedSlot.time,
-                    totalSlot: selectedSlot.totalSlot - 1,
-                    depotId: selectedSlot.depotId,
-                };
-                await updateTimeSlot(formData.timeSlotId, updatedSlotData)
+            if (formData.timeSlotId !== originalData.assignment.timeSlotId) {
+                const oldSlot = await getTimeSlotById(originalData.assignment.timeSlotId);
+                await updateTimeSlot(oldSlot.id, { ...oldSlot, totalSlot: oldSlot.totalSlot + 1 });
+                const newSlot = await getTimeSlotById(formData.timeSlotId);
+                await updateTimeSlot(newSlot.id, { ...newSlot, totalSlot: newSlot.totalSlot - 1 });
             }
 
             toast.success("ROT Booking created successfully!");
@@ -661,7 +682,7 @@ export function CreateBookingForm() {
 
                     <div className="flex justify-end pt-4">
                         <button type="submit" className="group flex items-center gap-3 bg-system-color text-white px-12 py-4 rounded-lg font-bold shadow-xl hover:bg-system-color-dark hover:-translate-y-1 transition-all active:scale-95">
-                            Submit Booking
+                            Update Booking
                             <LucideArrowBigRightDash size={24} className="group-hover:translate-x-1 transition-transform" />
                         </button>
                     </div>

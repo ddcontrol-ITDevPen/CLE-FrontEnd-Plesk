@@ -19,7 +19,6 @@ export function AddROTForm() {
     const [consignees, setConsignees] = useState([]);
     const [depotChoice, setDepotChoice] = useState([]);
     const [haulierChoice, setHaulierChoice] = useState([]);
-    const [consigneeChoice, setConsigneeChoice] = useState([]);
 
     const rotNumberGenerator = () => {
         const newNumber = (Math.floor(Math.random() * 9000000000) + 1).toString().padStart(10, "0");
@@ -133,7 +132,6 @@ export function AddROTForm() {
             const newData = { ...prev, [name]: value };
             if (name === "haulierChoice" && value === "Multiple") newData.haulier = "";
             if (name === "depotChoice" && value === "Multiple") newData.depot = "";
-            if (name === "consigneeChoice" && value === "Multiple") newData.consignee = "";
             return newData;
         });
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));

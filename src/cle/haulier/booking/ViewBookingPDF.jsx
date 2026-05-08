@@ -110,7 +110,7 @@ export function ViewECsnPDF() {
         <Layout role="forwarder">
             <div className="max-w-4xl mx-auto mb-10">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold">View Consignment PDF</h1>
+                    <h1 className="text-2xl font-bold">View Consignment Note PDF</h1>
                     <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-600 hover:text-system-color transition-colors">
                         <ArrowLeft size={20} /> Back to History
                     </button>
@@ -122,21 +122,21 @@ export function ViewECsnPDF() {
                         <div className="flex items-center gap-4">
                             <img src={company?.logoPath || "/public/assets/CLE-Logo.png"} alt="Company Logo" className="h-20 object-contain" style={{ height: '80px', objectFit: 'contain' }}/>
                             <div className="space-y-0.5">
-                                <h2 className="text-2xl font-bold" style={{ fontSize: '24px', fontWeight: 'bold', margin: '0' }}>{company.companyName}</h2>
+                                <h2 className="text-2xl font-bold" style={{ fontSize: '24px', fontWeight: 'bold', margin: '0' }}>{company?.companyName}</h2>
                                 <div className="flex items-start gap-2 text-[12px] max-w-md"
                                      style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', maxWidth: '448px', color: '#6a7282' }}>
                                     <MapPinned size={15} className="shrink-0" style={{ color: '#0054dc' }}/>
-                                    <span>{company.address}</span>
+                                    <span>{company?.address}</span>
                                 </div>
                                 <div className="flex items-start gap-2 text-[12px]"
                                      style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', color: '#6a7282' }}>
                                     <Phone size={15} className="shrink-0" style={{ color: '#0054dc' }}/>
-                                    <span>{company.telephoneNumber}</span>
+                                    <span>{company?.telephoneNumber}</span>
                                 </div>
                                 <div className="flex items-start gap-2 text-[12px]"
                                      style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', color: '#6a7282' }}>
                                     <Mail size={15} className="shrink-0" style={{ color: '#0054dc' }}/>
-                                    <span>{company.emailAddress}</span>
+                                    <span>{company?.emailAddress}</span>
                                 </div>
                             </div>
                         </div>
@@ -190,11 +190,11 @@ export function ViewECsnPDF() {
                     {/* Section: Assigned Haulier Details */}
                     <PDFSectionHeader title="Haulier Details" />
                     <div className="grid grid-cols-2 gap-x-4 mb-5" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: '16px', marginBottom: '20px' }}>
-                        <PDFRow label="PM/Plate Number" value={assignedHaulier.primeMover?.plateNumber} />
-                        <PDFRow label="Trailer Number" value={assignedHaulier.trailer?.pmCode} />
-                        <PDFRow label="Driver" value={`${assignedHaulier.driver.name} (${assignedHaulier.driver.mobileNumber} / ${assignedHaulier.driver.emailAddress})`} />
-                        <PDFRow label="Time Slot" value={`${assignedHaulier.timeSlot.date} @ ${assignedHaulier.timeSlot.time}`} />
-                        <PDFRow label="BTM/BGK" value={`${assignedHaulier.primeMover.btm || 'N/A'} / ${assignedHaulier.primeMover.bgk || 'N/A'}`} />
+                        <PDFRow label="PM/Plate Number" value={assignedHaulier?.primeMover?.plateNumber} />
+                        <PDFRow label="Trailer Number" value={`${assignedHaulier?.trailer?.plateNumber} - ${assignedHaulier?.trailer?.type}`} />
+                        <PDFRow label="Driver" value={`${assignedHaulier?.driver?.name} (${assignedHaulier?.driver?.mobileNumber} / ${assignedHaulier?.driver?.emailAddress})`} />
+                        <PDFRow label="Time Slot" value={`${assignedHaulier?.timeSlot?.date} @ ${assignedHaulier?.timeSlot?.time}`} />
+                        <PDFRow label="BTM/BGK" value={`${assignedHaulier?.primeMover?.btm || 'N/A'} / ${assignedHaulier?.primeMover?.bgk || 'N/A'}`} />
                         <PDFRow label="Haulier Remarks" value={booking.haulierRemarks} />
                     </div>
 
