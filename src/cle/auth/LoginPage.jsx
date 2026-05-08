@@ -48,11 +48,14 @@ export default function LoginPage() {
             localStorage.setItem("role", userData.role);
             localStorage.setItem("companyName", userData.companyName)
             setIsSuccess(true);
+            
             const dbAccess = userData.access || "";
-
+            
             if (access === 'CLE' && dbAccess.includes('CLE')) {
+                
                 setTimeout(() => {
                     navigate(`/${userData.role.toLowerCase()}/dashboard`);
+                    
                 }, 2000);
             } else if (access === 'ALE' && dbAccess.includes('ALE')) {
                 setTimeout(() => {

@@ -26,13 +26,14 @@ import {PrimeMoverManagement} from "../cle/haulier/management/PrimeMoverManageme
 import {TrailerManagement} from "../cle/haulier/management/TrailerManagement.jsx";
 import {AddPrimeMover} from "../cle/haulier/management/AddPrimeMover.jsx";
 import {AddTrailer} from "../cle/haulier/management/AddTrailer.jsx";
-// import {TerminalDashboard} from "../ale/terminal/TerminalDashboard.jsx";
-// import {CustomsDashboard} from "../ale/customs/CustomsDashboard.jsx";
-// import {AKPSDashboard} from "../ale/akps/AKPSDashboard.jsx";
+import {TerminalDashboard} from "../ale/terminal/TerminalDashboard.jsx";
+import {CustomsDashboard} from "../ale/customs/CustomsDashboard.jsx";
+import {AKPSDashboard} from "../ale/akps/AKPSDashboard.jsx";
 import {EditAssignBooking} from "../cle/haulier/booking/EditAssignBooking.jsx";
 import {ViewECsnPDF} from "../cle/haulier/booking/ViewBookingPDF.jsx";
 import {CreateBookingForm} from "../cle/haulier/booking/CreateBookingForm.jsx";
 import {EditCreateBooking} from "../cle/haulier/booking/EditCreateBooking.jsx";
+import {ViewTerminal} from "../ale/terminal/ViewTerminal.jsx"
 
 export default function AppRouter() {
     return (
@@ -99,7 +100,7 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/rot/view/pdf/:id"
+                    path="/forwarding/rot/view/pdf/:id"
                     element={
                         <ProtectedRoute>
                             <ViewROTPDF />
@@ -107,7 +108,7 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/rot/track"
+                    path="/forwarding/rot/track"
                     element={
                         <ProtectedRoute>
                             <TrackROT />
@@ -300,6 +301,38 @@ export default function AppRouter() {
                 {/*        </ProtectedRoute>*/}
                 {/*    }*/}
                 {/*/>*/}
+                <Route
+                    path="/ale/terminal/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <TerminalDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/customs/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <CustomsDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/akps/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <AKPSDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/terminal/view/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ViewTerminal />
+                        </ProtectedRoute>
+                    }
+                />
                 {/* Fallback */}
                 <Route path="*" element={<LoginPage />} />
             </Routes>
