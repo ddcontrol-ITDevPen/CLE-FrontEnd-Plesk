@@ -25,9 +25,6 @@ import {PrimeMoverManagement} from "../cle/haulier/management/PrimeMoverManageme
 import {TrailerManagement} from "../cle/haulier/management/TrailerManagement.jsx";
 import {AddPrimeMover} from "../cle/haulier/management/AddPrimeMover.jsx";
 import {AddTrailer} from "../cle/haulier/management/AddTrailer.jsx";
-import {TerminalDashboard} from "../ale/terminal/TerminalDashboard.jsx";
-import {CustomsDashboard} from "../ale/customs/CustomsDashboard.jsx";
-import {AKPSDashboard} from "../ale/akps/AKPSDashboard.jsx";
 import {EditAssignBooking} from "../cle/haulier/booking/EditAssignBooking.jsx";
 import {ViewECsnPDF} from "../cle/haulier/booking/ViewBookingPDF.jsx";
 import {CreateBookingForm} from "../cle/haulier/booking/CreateBookingForm.jsx";
@@ -60,10 +57,16 @@ import {ALEEditAssignBooking} from "../ale/haulier/booking/EditAssignBooking.jsx
 import {ALEViewECsnPDF} from "../ale/haulier/booking/ViewBookingPDF.jsx";
 import {ALECreateBookingForm} from "../ale/haulier/booking/CreateBookingForm.jsx";
 import {ALEEditCreateBooking} from "../ale/haulier/booking/EditCreateBooking.jsx";
-// import {TerminalDashboard} from "../ale/terminal/TerminalDashboard.jsx";
-// import {CustomsDashboard} from "../ale/customs/CustomsDashboard.jsx";
-// import {AKPSDashboard} from "../ale/akps/AKPSDashboard.jsx";
-import {ViewTerminal} from "../ale/terminal/ViewTerminal.jsx"
+import {TerminalDashboard} from "../ale/terminal/TerminalDashboard.jsx";
+import {CustomsDashboard} from "../ale/customs/dashboard/CustomsDashboard.jsx";
+import {AKPSDashboard} from "../ale/akps/dashboard/AKPSDashboard.jsx";
+import {ViewTerminal} from "../ale/terminal/ViewTerminal.jsx";
+import {AkpsbookingList} from "../ale/akps/booking/AkpsbookingList.jsx";
+import {AkpsbookingDetails} from "../ale/akps/booking/AkpsbookingDetails.jsx";
+import {AkpsbookingAction} from "../ale/akps/booking/AkpsbookingAction.jsx";
+import {CustomsbookingList} from "../ale/customs/booking/CustomsbookingList.jsx";
+import {CustomsbookingDetails} from "../ale/customs/booking/CustomsbookingDetails.jsx";
+import {CustomsbookingAction} from "../ale/customs/booking/CustomsbookingAction.jsx";
 
 export default function AppRouter() {
     return (
@@ -131,7 +134,7 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/forwarding/rot/view/pdf/:id"
+                    path="/rot/view/pdf/:id"
                     element={
                         <ProtectedRoute>
                             <ViewROTPDF />
@@ -322,6 +325,22 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <ALEAddROTForm2 />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/akps/bookinglist"
+                    element={
+                        <ProtectedRoute>
+                            <AkpsbookingList />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/customs/bookinglist"
+                    element={
+                        <ProtectedRoute>
+                            <CustomsbookingList />
                         </ProtectedRoute>
                     }
                 />
@@ -525,30 +544,7 @@ export default function AppRouter() {
                         </ProtectedRoute>
                     }
                 />
-                {/*<Route*/}
-                {/*    path="/ale/terminal/dashboard"*/}
-                {/*    element={*/}
-                {/*        <ProtectedRoute>*/}
-                {/*            <TerminalDashboard />*/}
-                {/*        </ProtectedRoute>*/}
-                {/*    }*/}
-                {/*/>*/}
-                {/*<Route*/}
-                {/*    path="/ale/customs/dashboard"*/}
-                {/*    element={*/}
-                {/*        <ProtectedRoute>*/}
-                {/*            <CustomsDashboard />*/}
-                {/*        </ProtectedRoute>*/}
-                {/*    }*/}
-                {/*/>*/}
-                {/*<Route*/}
-                {/*    path="/ale/akps/dashboard"*/}
-                {/*    element={*/}
-                {/*        <ProtectedRoute>*/}
-                {/*            <AKPSDashboard />*/}
-                {/*        </ProtectedRoute>*/}
-                {/*    }*/}
-                {/*/>*/}
+                
                 <Route
                     path="/ale/terminal/dashboard"
                     element={
@@ -578,6 +574,38 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <ViewTerminal />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/akps/booking/bookingdetails/:id"
+                    element={
+                        <ProtectedRoute>
+                            <AkpsbookingDetails />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/akps/booking/bookingaction/:id"
+                    element={
+                        <ProtectedRoute>
+                            <AkpsbookingAction />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/customs/booking/bookingdetails/:id"
+                    element={
+                        <ProtectedRoute>
+                            <CustomsbookingDetails />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/customs/booking/bookingaction/:id"
+                    element={
+                        <ProtectedRoute>
+                            <CustomsbookingAction />
                         </ProtectedRoute>
                     }
                 />

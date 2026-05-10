@@ -1,23 +1,26 @@
 import React, { useEffect, useState,useMemo } from "react";
-import Layout from "../../ale/layout/Layout.jsx";
+import Layout from "../../../ale/layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search, Calendar, FileDown, Eye, Edit, Trash2,
-    FileText, AlertCircle, CheckCircle2, LucideX, Check, LayoutDashboard, Clock, Truck, ClipboardCheck, XCircle
+    FileText, AlertCircle, CheckCircle2, LucideX, Check, Clock, ClipboardCheck, XCircle
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import {getContainers, deleteContainer, updateContainer, getContainerById} from "../../services/containerService.js";
+import {getContainers, deleteContainer, updateContainer, getContainerById} from "../../../services/alecontainerService.js";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from 'xlsx';
 
 const STATUS_CONFIG = {
     "Enroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
-    "Approved": { bg: "bg-accepted",text: "text-emerald-900",border: "border-teal-200" },
-    "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" }
-
+    "Approved-Custom": { bg: "bg-accepted",text: "text-emerald-900",border: "border-teal-200" },
+    "Approved-Akps": { bg: "bg-accepted",text: "text-emerald-900",border: "border-teal-200" },
+    "Approved-Complete": { bg: "bg-accepted",text: "text-emerald-900",border: "border-teal-200" },
+    "Rejected-Custom":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
+    "Rejected-Akps":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
+    "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
 
-export function CustomsDashboard() {
+export function CustomsbookingList() {
     const [containers, setContainers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -137,29 +140,52 @@ export function CustomsDashboard() {
                 return "bg-blue-50 text-blue-600 border-blue-100"; // Default blue
         }
     };
+
+    // AkpsbookingList.jsx
     const handleStatusUpdate = async () => {
         const toastId = toast.loading(`Updating status to ${statusModal.nextStatus}...`);
         try {
+            // 1. Get the current full container data
             const currentContainer = await getContainerById(statusModal.id);
             const now = new Date().toISOString();
 
+            // 2. Build the payload. 
+            // IMPORTANT: Use the exact property names the backend expects (casing matters)
             const payload = {
-                ...currentContainer,
-                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
+                ...currentContainer, // This keeps existing IDs like haulierId
+
+                // Explicitly set the status
                 status: statusModal.nextStatus,
-                enrouteTime: statusModal.nextStatus === "Enroute" ? now : currentContainer.enrouteTime,
-                rejectedTime: statusModal.nextStatus === "Rejected" ? now : currentContainer.rejectedTime,
+
+                // Rejection Logic for AKPS
+                ...(statusModal.nextStatus === "Rejected-Akps" && {
+                    akpsStatus: "Rejected",
+                    akpsRejectReason: statusModal.remarks,
+                    akpsRejectedTime: now
+                }),
+
+                // CRITICAL: Ensure Required IDs are definitely present and not null
+                haulierId: currentContainer.haulierId,
+                consigneeId: currentContainer.consigneeId,
+
+                // Fix addresses: Convert complex objects to simple objects for the DTO
+                toAddress: currentContainer.toAddress?.map(addr => ({
+                    address: addr.address
+                })) || []
             };
 
+            console.log("Submitting Payload:", payload);
+
             await updateContainer(statusModal.id, payload);
+
             toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
             setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
             fetchData();
         } catch (error) {
-            toast.error("Update failed", { id: toastId });
+            console.error("Update failed. Backend Error:", error.response?.data);
+            toast.error("Update failed. Required data missing.", { id: toastId });
         }
     };
-
     // ✅ Simple search (safe)
     const filteredContainers = useMemo(() => {
             let result = containers.filter(cont => {
@@ -174,6 +200,7 @@ export function CustomsDashboard() {
                     cont.depotName?.toLowerCase().includes(searchTerm.toLowerCase());
                 cont.customStatus?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.akpsStatus?.toLowerCase().includes(searchTerm.toLowerCase());
+
 
                 let isExpiredGateOut = false;
                 if (cont.status === "Gate-Out" && cont.gatedOutTime) {
@@ -191,11 +218,17 @@ export function CustomsDashboard() {
                 }
 
                 let matchesStatus = false;
-                if(filterStatus === "All")
-                   
-                matchesStatus = cont.status === "Enroute";
-                else
+
+                // ✅ Updated Logic starts here
+                if (filterStatus === "All") {
+                    // Only show records that are strictly "Enroute"
+                    matchesStatus = true;
+                } else {
+                    // Show records that exactly match the clicked filter status
+                    // (e.g., "Approved-Complete", "Approved-Custom", etc.)
                     matchesStatus = cont.status === filterStatus;
+                }
+
                 const rotDate = cont.rotDate;
                 let matchesDate = true;
 
@@ -274,52 +307,15 @@ export function CustomsDashboard() {
         }
     };
 
-    const StatCard = ({ title, value, icon: Icon, colorClass, borderClass }) => (
-        <div className={`bg-white p-6 rounded-xl shadow-sm border-l-4 ${borderClass} flex justify-between items-start hover:shadow-md transition-shadow`}>
-            <div>
-                <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">{title}</p>
-                <h3 className="text-2xl font-bold mt-1 text-gray-800">{value}</h3>
-            </div>
-            <div className={`p-3 rounded-lg ${colorClass}`}>
-                <Icon size={24} className="text-white" />
-            </div>
-        </div>
-    );
 
     return (
         <Layout role="customs">
             <Toaster position="top-right" richColors />
-           
+
             <div className="space-y-6">
                 <div className="flex flex-col gap-0">
                     <h1 className="text-2xl font-bold">Jabatan Kastam Diraja Malaysia</h1>
                     <p className="text-gray-500 text-sm">Approve/Reject Booking</p>
-                </div>
-
-                {/* Stat Cards - Bright Left Border Style */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-                    <StatCard
-                        title="Pending"
-                        value={containers.filter(c => c.status === "Enroute").length}
-                        icon={Clock}
-                        colorClass="bg-amber-500"
-                        borderClass="border-amber-500"
-                    />
-                    <StatCard
-                        title="Approved"
-                        value={containers.filter(c => c.status === "Approved").length}
-                        icon={ClipboardCheck}
-                        colorClass="bg-emerald-500"
-                        borderClass="border-emerald-500"
-                    />
-                    <StatCard
-                        title="Rejected"
-                        value={containers.filter(c => c.status === "Rejected").length}
-                        icon={XCircle}
-                        colorClass="bg-red-500"
-                        borderClass="border-red-500"
-                    />
                 </div>
 
 
@@ -529,23 +525,20 @@ export function CustomsDashboard() {
                                             <td className="p-4">
                                                 {/* Horizontal Action Icons */}
                                                 <div className="flex items-center justify-center gap-3">
-                                                    {cont.status === "Enroute" && (
-                                                        <button onClick={() => navigate(`/haulier/booking/assign`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Enroute">
-                                                            <Check size={18} />
-                                                        </button>
-                                                    )}
-                                                    {cont.status === "Enroute" && (
-                                                        <button onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Rejected" })} className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors" title="Reject">
-                                                            <LucideX size={18} />
-                                                        </button>
+                                                    {/* 1. Show Approve/Reject buttons ONLY IF Custom is Approved and AKPS is still pending (null or empty) */}
+                                                    {(cont.status === "Enroute" || cont.status === "Approved-Custom") && !cont.akpsStatus && (
+                                                        <>
+                                                            <button onClick={() => navigate(`/ale/customs/booking/bookingaction/${cont.containerId}`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Enroute">
+                                                                <Check size={18} />
+                                                            </button>
+                                                            <button onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Rejected" })} className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors" title="Reject">
+                                                                <LucideX size={18} />
+                                                            </button>                                                        </>
                                                     )}
                                                     <Eye size={18}
-                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/haulier/booking/view/${cont.containerId}`)}/>
-                                      
-                                                    <FileText
-                                                        size={18}
-                                                        className="text-blue-600-600 cursor-pointer hover:text-blue-800"
-                                                        onClick={() => navigate(`/forwarding/rot/view/pdf/${cont.containerId}`)}/>
+                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/customs/booking/bookingdetails/${cont.containerId}`)}/>
+
+
                                                 </div>
                                             </td>
                                         </tr>
@@ -607,11 +600,27 @@ export function CustomsDashboard() {
                             <h2 className="text-2xl font-bold text-gray-800 mb-2">
                                 {statusModal.nextStatus === "Enroute" ? "Accept Job?" : "Reject Job?"}
                             </h2>
-                            <p className="text-gray-600 mb-8">
-                                {statusModal.nextStatus === "Enroute"
-                                    ? "Confirming this will set the container status to Enroute."
-                                    : "Are you sure you want to reject this assigned job?"}
+                            <p className="text-gray-500 text-center mb-6">
+                                {statusModal.nextStatus.includes("Rejected")
+                                    ? "Please provide a reason for rejecting this booking."
+                                    : statusModal.nextStatus === "Enroute"
+                                        ? "Confirming this will set the container status to Enroute."
+                                        : "Are you sure you want to approve this booking?"}
                             </p>
+                            {/* ✅ ADDED: Rejection Reason Field */}
+                            {statusModal.nextStatus.includes("Rejected") && (
+                                <div className="mb-6">
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">
+                                        Rejection Reason
+                                    </label>
+                                    <textarea
+                                        className="w-full p-4 border-2 border-gray-100 rounded-2xl focus:border-red-500 outline-none resize-none h-28 text-sm transition-all"
+                                        placeholder="e.g., Incomplete documentation, incorrect container number..."
+                                        value={statusModal.remarks}
+                                        onChange={(e) => setStatusModal({ ...statusModal, remarks: e.target.value })}
+                                    />
+                                </div>
+                            )}
 
                             <div className="flex gap-4">
                                 <button
@@ -622,8 +631,12 @@ export function CustomsDashboard() {
                                 </button>
                                 <button
                                     onClick={handleStatusUpdate}
+                                    // ✅ Add the "?" before .includes to prevent the crash
+                                    disabled={statusModal.nextStatus?.includes("Rejected") && !statusModal.remarks?.trim()}
                                     className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
-                                        statusModal.nextStatus === "Enroute" ? "bg-green-600 hover:bg-green-700" : "bg-red-500 hover:bg-red-600"
+                                        statusModal.nextStatus?.includes("Rejected")
+                                            ? "bg-red-500 hover:bg-red-600 disabled:bg-gray-300"
+                                            : "bg-green-600 hover:bg-green-700"
                                     }`}
                                 >
                                     Confirm
