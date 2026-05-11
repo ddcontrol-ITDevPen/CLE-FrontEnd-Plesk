@@ -7,6 +7,7 @@ import {Icon, LucideCircleUser, LucideLogOut, LucideRotateCcw, LucideShoppingCar
 import {FaCartPlus} from "react-icons/fa";
 import {logout} from "../../services/authService.js";
 import HaulierNavBar from "../NavBar/HaulierNavbar.jsx";
+import DepotNavBar from "../NavBar/DepotNavBar.jsx";
 
 export default function Layout({ children, role }) {
 
@@ -49,6 +50,7 @@ export default function Layout({ children, role }) {
                 {/* Sidebar */}
                 {user?.Role === "forwarding" && <ForwarderNavBar />}
                 {user?.Role === "haulier" && <HaulierNavBar />}
+                {user?.Role === "depot" && <DepotNavBar />}
                 {/*other roles*/}
             </div>
 

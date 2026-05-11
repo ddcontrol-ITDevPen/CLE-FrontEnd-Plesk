@@ -284,7 +284,7 @@ export function EditROTForm() {
 
                     <div className="flex justify-end pt-4">
                         <button type="submit" className="group flex items-center gap-3 bg-system-color text-white px-12 py-4 rounded-lg font-bold shadow-xl hover:-translate-y-1 transition-all active:scale-95">
-                            Update & Continue to Addressing
+                            Continue to Container Information
                             <LucideArrowBigRightDash size={24} className="group-hover:translate-x-1 transition-transform" />
                         </button>
                     </div>

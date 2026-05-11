@@ -240,6 +240,18 @@ export function CreateBookingForm() {
         }
     };
 
+    const getTargetSlotType = () => {
+        const { tripType, movementType } = formData;
+
+        if (tripType === "Pick Up") return "pickUp";
+        if (tripType === "Drop Off") return "dropOff";
+
+        if (tripType === "Pick Up & Drop Off") {
+            return movementType === "Import" ? "dropOff" : "pickUp";
+        }
+        return 0;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = {};

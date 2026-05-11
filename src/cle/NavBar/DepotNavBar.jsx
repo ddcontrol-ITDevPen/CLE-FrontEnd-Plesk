@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import {logout} from "../../services/authService.js";
 
-export default function HaulierNavBar({ role = "haulier" }) {
+export default function DepotNavBar({ role = "haulier" }) {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -19,20 +19,19 @@ export default function HaulierNavBar({ role = "haulier" }) {
     };
 
     const menuItems = [
-        { icon: LucideHome, label: "Dashboard", path: "/ale/haulier/dashboard" },
-        { icon: LucideTruck, label: "Create Booking", path: "/ale/haulier/booking/add/form1" },
-        { icon: LucideClipboardClock, label: "Your ROTs", path: "/ale/haulier/booking" },
-        { icon: LucideArchive, label: "Archived ROTs", path: "/" },
-        { icon: LucideMapPinned, label: "Track & Trace", path: "/ale/rot/track" },
-        { icon: LucideBolt, label: "Haulier Management", path: "/ale/haulier/management/configure" },
+        { icon: LucideHome, label: "Dashboard", path: "/depot/dashboard" },
+        { icon: LucideTruck, label: "Create Booking", path: "/depot/booking/add/form1" },
+        { icon: LucideClipboardClock, label: "Your ROTs", path: "/depot/booking" },
+        { icon: LucideMapPinned, label: "Track & Trace", path: "/rot/track" },
+        { icon: LucideBolt, label: "Haulier Management", path: "/depot/management/configure" },
     ];
 
     return (
         <aside className="bg-system-color w-64 min-h-screen flex flex-col shadow-xl">
             {/* Logo/Brand */}
             <div className="p-1 border-system-color-hover flex justify-center items-center mt-3">
-                <Link to={`/ale/${role === "forwarder" ? "forwarding" : role}/dashboard`} className="flex items-center gap-3">
-                    {<img src="/assets/ALE-Logo-White.png" alt="ALE Logo" className="w-45 h-auto content-center" />}
+                <Link to={`/${role === "forwarder" ? "forwarding" : role}/dashboard`} className="flex items-center gap-3">
+                    {<img src="/assets/CLE-Logo-White.png" alt="CLE Logo" className="w-45 h-auto content-center" />}
                 </Link>
             </div>
 
