@@ -14,8 +14,8 @@ import {
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
-import {getAllBookingsByForwarding} from "../../../services/bookingService.js";
-import {getAllContainersByForwarding} from "../../../services/containerService.js";
+import {getAllAleBookingsByForwarding} from "../../../services/aleBookingService.js";
+import {getAllAleContainersByForwarding} from "../../../services/aleContainerService.js";
 import {toast} from "sonner";
 import {getUserById} from "../../../services/userService.js";
 
@@ -87,8 +87,8 @@ export function AKPSDashboard() {
                 }
 
                 const [bookingData, containerData] = await Promise.all([
-                    getAllBookingsByForwarding(forwardingId),
-                    getAllContainersByForwarding(forwardingId),
+                    getAllAleBookingsByForwarding(forwardingId),
+                    getAllAleContainersByForwarding(forwardingId),
                 ]);
                 setBookings(bookingData || []);
                 setContainers(containerData || []);
