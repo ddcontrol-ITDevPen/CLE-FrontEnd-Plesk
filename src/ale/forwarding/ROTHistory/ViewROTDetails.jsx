@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
-import { getContainerById } from "../../../services/containerService.js";
+import { getAleContainerById } from "../../../services/aleContainerService.js";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock } from "lucide-react";
 import ShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
@@ -18,7 +18,7 @@ export function ALEViewROTDetails() {
     useEffect(() => {
         const fetchDetails = async () => {
             try {
-                const result = await getContainerById(id);
+                const result = await getAleContainerById(id);
                 console.log(result);
                 setData(result);
                 if (result.booking?.billingParty) {

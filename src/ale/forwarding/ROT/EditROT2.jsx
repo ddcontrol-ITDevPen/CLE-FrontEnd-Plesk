@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CircleChevronDown, Trash2, Upload } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import { getCompanies } from "../../../services/companyService.js";
-import { getContainerById, updateContainer } from "../../../services/containerService.js";
-import { registerBookingDocument } from "../../../services/bookingDocumentService.js";
+import { getAleContainerById, updateAleContainer } from "../../../services/aleContainerService.js";
+import { registerAleBookingDocument } from "../../../services/aleBookingDocumentService.js";
 import {getUserById} from "../../../services/userService.js";
 
 export function ALEEditROTForm2() {
@@ -68,7 +68,7 @@ export function ALEEditROTForm2() {
                     setDepots(companies.filter(c => c.role === "Depot").map(c => ({ label: c.companyName, value: c.companyCode })));
                 }
 
-                const container = await getContainerById(id);
+                const container = await getAleContainerById(id);
                 const localEdits = JSON.parse(localStorage.getItem("updatedROT") || "null");
                 console.log(container);
                 if (container) {
@@ -196,7 +196,7 @@ export function ALEEditROTForm2() {
                 UpdatedBy: updatedBy,
             };
 
-            await updateContainer(id, containerPayload);
+            await updateAleContainer(id, containerPayload);
 
             const updatedROT = JSON.parse(localStorage.getItem("updatedROT") || "{}");
             for (const [key, file] of Object.entries(documents)) {
@@ -206,7 +206,7 @@ export function ALEEditROTForm2() {
                     docForm.append("ROTNumber", updatedROT.rotNumber || "UNKNOWN");
                     docForm.append("FileName", file.name);
                     docForm.append("File", file);
-                    await registerBookingDocument(docForm);
+                    await registerAleBookingDocument(docForm);
                 }
             }
 

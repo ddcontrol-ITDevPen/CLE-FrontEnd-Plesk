@@ -6,7 +6,7 @@ import {
     FileText, AlertCircle, CheckCircle2, LucideX, Check
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import {getContainers, deleteContainer, updateContainer, getContainerById} from "../../../services/containerService.js";
+import {getAleContainers, deleteAleContainer, updateAleContainer, getAleContainerById} from "../../../services/aleContainerService.js";
 import {getUserById} from "../../../services/userService.js";
 import * as XLSX from 'xlsx';
 import {useNavigate} from "react-router-dom";
@@ -104,7 +104,7 @@ export function ALEAcceptedBookings ()  {
             const user = await getUserById(localStorage.getItem("userId"));
             const haulierId = user.companyCode;
             console.log(haulierId);
-            const data = await getContainers();
+            const data = await getAleContainers();
             const filteredData = await data
                 .filter(c => c.haulierId === haulierId)
                 .sort((a, b) => {
@@ -144,7 +144,7 @@ export function ALEAcceptedBookings ()  {
     const handleStatusUpdate = async () => {
         const toastId = toast.loading(`Updating status to ${statusModal.nextStatus}...`);
         try {
-            const currentContainer = await getContainerById(statusModal.id);
+            const currentContainer = await getAleContainerById(statusModal.id);
             const now = new Date().toISOString();
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName;
@@ -157,7 +157,7 @@ export function ALEAcceptedBookings ()  {
                 rejectedTime: statusModal.nextStatus === "Rejected" ? now : currentContainer.rejectedTime,
                 UpdatedBy: updatedBy,
             };
-            await updateContainer(statusModal.id, payload);
+            await updateAleContainer(statusModal.id, payload);
             toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
             setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
             fetchData();

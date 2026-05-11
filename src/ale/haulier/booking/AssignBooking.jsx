@@ -11,13 +11,13 @@ import {
     Save,
     ArrowLeft
 } from "lucide-react";
-import {getContainerById, updateContainer} from "../../../services/containerService.js";
+import {getAleContainerById, updateAleContainer} from "../../../services/aleContainerService.js";
 import { toast, Toaster } from "sonner";
 import { getDrivers } from "../../../services/driverService.js";
 import { getPrimeMovers } from "../../../services/primeMoverService.js";
 import { getTrailers } from "../../../services/trailerService.js";
-import {getTimeSlots, updateTimeSlot} from "../../../services/timeSLotService.js";
-import { registerAssignedHaulier } from "../../../services/assignedHaulier.js";
+import {getAleTimeSlots, updateAleTimeSlot} from "../../../services/aleTimeSlotService.js";
+import { registerAleAssignedHaulier } from "../../../services/aleAssignedHaulierService.js";
 import {getUserById} from "../../../services/userService.js";
 
 export function ALEAssignBooking() {
@@ -52,13 +52,13 @@ export function ALEAssignBooking() {
         const fetchInitialData = async () => {
             try {
                 setIsLoading(true);
-                const container = await getContainerById(id);
+                const container = await getAleContainerById(id);
                 setContainer(container);
                 const [driverData, pmData, trailerData, slotData] = await Promise.all([
                     getDrivers(),
                     getPrimeMovers(),
                     getTrailers(),
-                    getTimeSlots()
+                    getAleTimeSlots()
                 ]);
 
                 setFormData(prev => ({
@@ -121,9 +121,9 @@ export function ALEAssignBooking() {
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName;
             const updatedData = {...formData, haulierId: user.companyCode};
-            await registerAssignedHaulier(updatedData);
+            await registerAleAssignedHaulier(updatedData);
             const updatedContainerData = {...container, containerId: id, status: "Enroute", enrouteTime: new Date().toISOString(), UpdatedBy: updatedBy}
-            await updateContainer(id, updatedContainerData);
+            await updateAleContainer(id, updatedContainerData);
             const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
             if (selectedSlot) {
                 const updatedSlotData = {
@@ -133,7 +133,7 @@ export function ALEAssignBooking() {
                     totalSlot: selectedSlot.totalSlot - 1,
                     depotId: selectedSlot.depotId,
                 };
-                await updateTimeSlot(formData.timeSlotId, updatedSlotData)
+                await updateAleTimeSlot(formData.timeSlotId, updatedSlotData)
             }
             toast.success("Haulier assigned successfully!");
             setTimeout(() => navigate("/ale/haulier/booking/accepted"), 1500);

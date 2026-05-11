@@ -11,17 +11,17 @@ import {
     Save,
     ArrowLeft
 } from "lucide-react";
-import { getContainerById, updateContainer } from "../../../services/containerService.js";
+import { getAleContainerById, updateAleContainer } from "../../../services/aleContainerService.js";
 import { toast, Toaster } from "sonner";
 import { getDrivers } from "../../../services/driverService.js";
 import { getPrimeMovers } from "../../../services/primeMoverService.js";
 import { getTrailers } from "../../../services/trailerService.js";
-import { getTimeSlots, updateTimeSlot, getTimeSlotById } from "../../../services/timeSLotService.js";
+import { getAleTimeSlots, updateAleTimeSlot, getAleTimeSlotById } from "../../../services/aleTimeSlotService.js";
 import {
-    getAssignedHaulierByContainerId,
-    getAssignedHauliers,
-    updateAssignedHaulier
-} from "../../../services/assignedHaulier.js";
+    getAleAssignedHaulierByContainerId,
+    getAleAssignedHauliers,
+    updateAleAssignedHaulier
+} from "../../../services/aleAssignedHaulierService.js";
 import { getUserById } from "../../../services/userService.js";
 
 export function ALEEditAssignBooking() {
@@ -61,12 +61,12 @@ export function ALEEditAssignBooking() {
                 setIsLoading(true);
 
                 const [containerData, driverData, pmData, trailerData, slotData, assignedHaulierData] = await Promise.all([
-                    getContainerById(id),
+                    getAleContainerById(id),
                     getDrivers(),
                     getPrimeMovers(),
                     getTrailers(),
-                    getTimeSlots(),
-                    getAssignedHaulierByContainerId(id)
+                    getAleTimeSlots(),
+                    getAleAssignedHaulierByContainerId(id)
                 ]);
 
                 setContainer(containerData);
@@ -143,14 +143,14 @@ export function ALEEditAssignBooking() {
         }
 
         try {
-            await updateAssignedHaulier(formData.id, formData);
+            await updateAleAssignedHaulier(formData.id, formData);
             if (formData.timeSlotId !== assignedHaulier.timeSlotId) {
                 // Revert OLD slot (+1)
-                const oldSlot = await getTimeSlotById(assignedHaulier.timeSlotId);
-                await updateTimeSlot(oldSlot.id, { ...oldSlot, totalSlot: oldSlot.totalSlot + 1 });
+                const oldSlot = await getAleTimeSlotById(assignedHaulier.timeSlotId);
+                await updateAleTimeSlot(oldSlot.id, { ...oldSlot, totalSlot: oldSlot.totalSlot + 1 });
                 // Deduct NEW slot (-1)
-                const newSlot = await getTimeSlotById(formData.timeSlotId);
-                await updateTimeSlot(newSlot.id, { ...newSlot, totalSlot: newSlot.totalSlot - 1 });
+                const newSlot = await getAleTimeSlotById(formData.timeSlotId);
+                await updateAleTimeSlot(newSlot.id, { ...newSlot, totalSlot: newSlot.totalSlot - 1 });
             }
             toast.success("Assignment updated successfully!");
             setTimeout(() => navigate("/ale/haulier/booking/accepted"), 1500);

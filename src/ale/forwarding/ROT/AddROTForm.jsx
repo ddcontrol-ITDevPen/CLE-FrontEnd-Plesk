@@ -4,7 +4,7 @@ import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {CircleChevronDown, LucideArrowBigRightDash, LucideShieldUser, LucideTruck} from "lucide-react";
 import {getCompanies} from "../../../services/companyService.js";
-import {getBookings} from "../../../services/bookingService.js";
+import {getAleBookings} from "../../../services/aleBookingService.js";
 import {getUserById} from "../../../services/userService.js";
 
 export function ALEAddROTForm() {
@@ -109,7 +109,7 @@ export function ALEAddROTForm() {
                     setConsignees(consignees);
                     setDepots(depots);
                 }
-                const bookings = await getBookings();
+                const bookings = await getAleBookings();
                 setBookings(bookings || []);
             } catch (error) {
                 console.error("Failed to load ports:", error);

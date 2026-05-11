@@ -6,11 +6,11 @@ import {
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import {
-    getBookingDocumentById,
-    getBookingDocumentByBookingNumber,
-    deleteBookingDocument,
-    updateBookingDocument
-} from "../../../services/bookingDocumentService.js";
+    getAleBookingDocumentById,
+    getAleBookingDocumentByBookingNumber,
+    deleteAleBookingDocument,
+    updateAleBookingDocument
+} from "../../../services/aleBookingDocumentService.js";
 import {getUserById} from "../../../services/userService.js";
 import axios from "axios";
 import {AnimatePresence, motion} from "framer-motion";
@@ -36,7 +36,7 @@ export function ALEViewROTDocument() {
         try {
             const user = await getUserById(localStorage.getItem("userId"));
             const companyCode = user?.companyCode;
-            const data = await getBookingDocumentByBookingNumber(rotNumber);
+            const data = await getAleBookingDocumentByBookingNumber(rotNumber);
             const filteredData = data.filter(b => b.booking?.forwardingId === companyCode);
             setDocuments(filteredData);
             setHasSearched(true);
@@ -100,7 +100,7 @@ export function ALEViewROTDocument() {
             if (editFile) {
                 formData.append("file", editFile);
             }
-            const updatedDoc = await updateBookingDocument(editModal.doc.bookingDocumentId, formData);
+            const updatedDoc = await updateAleBookingDocument(editModal.doc.bookingDocumentId, formData);
 
             setDocuments(prev => prev.map(d =>
                 d.bookingDocumentId === editModal.doc.bookingDocumentId ? updatedDoc : d
@@ -117,7 +117,7 @@ export function ALEViewROTDocument() {
     const handleDelete = async () => {
         const toastId = toast.loading("Deleting document...");
         try {
-            await deleteBookingDocument(deleteModal.docId);
+            await deleteAleBookingDocument(deleteModal.docId);
             setDocuments(prev => prev.filter(d => d.bookingDocumentId !== deleteModal.docId));
             toast.success("Document deleted", { id: toastId });
             setDeleteModal({ isOpen: false, docId: null });

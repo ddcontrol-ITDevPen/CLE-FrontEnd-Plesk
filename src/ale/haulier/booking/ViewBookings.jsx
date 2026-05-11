@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
-import { getContainerById } from "../../../services/containerService.js";
+import { getAleContainerById } from "../../../services/aleContainerService.js";
 import { motion } from "framer-motion";
 import {ArrowLeft, Clock, FileText} from "lucide-react";
 import ShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
 import {getCompanyById} from "../../../services/companyService.js";
-import {getAssignedHaulierByContainerId} from "../../../services/assignedHaulier.js";
+import {getAleAssignedHaulierByContainerId} from "../../../services/aleAssignedHaulierService.js";
 
 export function ALEViewBookings() {
     const { id } = useParams();
@@ -21,13 +21,13 @@ export function ALEViewBookings() {
     useEffect(() => {
         const fetchDetails = async () => {
             try {
-                const result = await getContainerById(id);
+                const result = await getAleContainerById(id);
                 console.log(result);
                 setData(result);
                 const forwardingId = result.booking?.forwardingId;
                 const forwardingInfo = await getCompanyById(forwardingId);
                 setForwarding(forwardingInfo);
-                const assignedHaulierData = await getAssignedHaulierByContainerId(id);
+                const assignedHaulierData = await getAleAssignedHaulierByContainerId(id);
                 setAssignedHaulier(assignedHaulierData);
                 if (result.booking?.billingParty) {
                     try {

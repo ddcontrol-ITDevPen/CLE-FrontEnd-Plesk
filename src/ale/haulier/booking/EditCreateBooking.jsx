@@ -12,20 +12,20 @@ import {
     User
 } from "lucide-react";
 import {getCompanies} from "../../../services/companyService.js";
-import {getBookingById, getBookings, registerBooking, updateBooking} from "../../../services/bookingService.js";
+import {getAleBookingById, getAleBookings, registerAleBooking, updateAleBooking} from "../../../services/aleBookingService.js";
 import {getUserById} from "../../../services/userService.js";
 import {getDrivers} from "../../../services/driverService.js";
 import {getPrimeMovers} from "../../../services/primeMoverService.js";
 import {getTrailers} from "../../../services/trailerService.js";
-import {getTimeSlotById, getTimeSlots, updateTimeSlot} from "../../../services/timeSlotService.js";
-import {registerBookingDocument} from "../../../services/bookingDocumentService.js";
-import {getContainerById, registerContainer, updateContainer} from "../../../services/containerService.js";
+import {getAleTimeSlotById, getAleTimeSlots, updateAleTimeSlot} from "../../../services/aleTimeSlotService.js";
+import {registerAleBookingDocument} from "../../../services/aleBookingDocumentService.js";
+import {getAleContainerById, registerAleContainer, updateAleContainer} from "../../../services/aleContainerService.js";
 import {toast, Toaster} from "sonner";
 import {
-    getAssignedHaulierByContainerId,
-    registerAssignedHaulier,
-    updateAssignedHaulier
-} from "../../../services/assignedHaulier.js";
+    getAleAssignedHaulierByContainerId,
+    registerAleAssignedHaulier,
+    updateAleAssignedHaulier
+} from "../../../services/aleAssignedHaulierService.js";
 
 export function ALEEditCreateBooking() {
     const { id } = useParams();
@@ -127,16 +127,16 @@ export function ALEEditCreateBooking() {
                     setConsignees(consignees);
                     setForwardings(forwardings);
                 }
-                const bookings = await getBookings();
+                const bookings = await getAleBookings();
                 setBookings(bookings || []);
                 const [allCompanies, allSlots, containerData] = await Promise.all([
                     getCompanies(),
-                    getTimeSlots(),
-                    getContainerById(id)
+                    getAleTimeSlots(),
+                    getAleContainerById(id)
                 ]);
                 const [bookingData, assignmentData] = await Promise.all([
-                    getBookingById(containerData.rotNumber),
-                    getAssignedHaulierByContainerId(id)
+                    getAleBookingById(containerData.rotNumber),
+                    getAleAssignedHaulierByContainerId(id)
                 ]);
                 setOriginalData({ container: containerData, booking: bookingData, assignment: assignmentData });
                 
@@ -366,7 +366,7 @@ export function ALEEditCreateBooking() {
             };
             console.log(bookingPayload);
 
-            const savedBooking = await updateBooking(formData.rotNumber, bookingPayload);
+            const savedBooking = await updateAleBooking(formData.rotNumber, bookingPayload);
             const rotNumber = savedBooking.rotNumber;
 
             const docTypes = {
@@ -383,7 +383,7 @@ export function ALEEditCreateBooking() {
                     docFormData.append("ROTNumber", formData.rotNumber);
                     docFormData.append("FileName", file.name);
                     docFormData.append("File", file);
-                    await registerBookingDocument(docFormData);
+                    await registerAleBookingDocument(docFormData);
                 }
             }
 
@@ -409,7 +409,7 @@ export function ALEEditCreateBooking() {
                 UpdatedBy: updatedBy,
             };
             console.log(containerPayload);
-            const createdContainer = await updateContainer(id, containerPayload);
+            const createdContainer = await updateAleContainer(id, containerPayload);
 
             const assignedHaulierPayload = {
                 driverId: formData.driverId,
@@ -420,13 +420,13 @@ export function ALEEditCreateBooking() {
                 rotNumber: formData.rotNumber,
                 haulierId: companyCode,
             };
-            await updateAssignedHaulier(originalData.assignment.id, assignedHaulierPayload);
+            await updateAleAssignedHaulier(originalData.assignment.id, assignedHaulierPayload);
             const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
             if (formData.timeSlotId !== originalData.assignment.timeSlotId) {
-                const oldSlot = await getTimeSlotById(originalData.assignment.timeSlotId);
-                await updateTimeSlot(oldSlot.id, { ...oldSlot, totalSlot: oldSlot.totalSlot + 1 });
-                const newSlot = await getTimeSlotById(formData.timeSlotId);
-                await updateTimeSlot(newSlot.id, { ...newSlot, totalSlot: newSlot.totalSlot - 1 });
+                const oldSlot = await getAleTimeSlotById(originalData.assignment.timeSlotId);
+                await updateAleTimeSlot(oldSlot.id, { ...oldSlot, totalSlot: oldSlot.totalSlot + 1 });
+                const newSlot = await getAleTimeSlotById(formData.timeSlotId);
+                await updateAleTimeSlot(newSlot.id, { ...newSlot, totalSlot: newSlot.totalSlot - 1 });
             }
 
             toast.success("ROT Booking created successfully!");

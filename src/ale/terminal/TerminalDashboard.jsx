@@ -5,7 +5,7 @@ import { Search, Calendar, FileDown, Eye, Edit, Trash2,
 FileText, AlertCircle, CheckCircle2, LucideX, Check, Clock
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import {getContainers, deleteContainer, updateContainer, getContainerById} from "../../services/alecontainerService.js";
+import {getAleContainers, deleteAleContainer, updateAleContainer, getAleContainerById} from "../../services/alecontainerService.js";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from 'xlsx';
 import StatusInfographic from "../../ale/ALEComponents/ALEStatistics.jsx";
@@ -100,7 +100,7 @@ export function TerminalDashboard() {
     const fetchData = async () => {
         try {
             setIsLoading(true);
-            const data = await getContainers();
+            const data = await getAleContainers();
             
             // Terminal usually sees ALL or filtered by location later
             setContainers(data || []);
@@ -152,7 +152,7 @@ export function TerminalDashboard() {
     const handleStatusUpdate = async () => {
         const toastId = toast.loading(`Updating status to ${statusModal.nextStatus}...`);
         try {
-            const currentContainer = await getContainerById(statusModal.id);
+            const currentContainer = await getAleContainerById(statusModal.id);
             const now = new Date().toISOString();
 
             const payload = {
@@ -163,7 +163,7 @@ export function TerminalDashboard() {
                 rejectedTime: statusModal.nextStatus === "Rejected" ? now : currentContainer.rejectedTime,
             };
 
-            await updateContainer(statusModal.id, payload);
+            await updateAleContainer(statusModal.id, payload);
             toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
             setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
             fetchData();

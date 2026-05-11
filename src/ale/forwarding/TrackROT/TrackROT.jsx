@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Search, Package, MapPin, Calendar, ArrowLeft } from "lucide-react";
 import ShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
-import { getContainers } from "../../../services/containerService.js";
+import { getAleContainers } from "../../../services/aleContainerService.js";
 import {toast, Toaster} from "sonner";
 import Layout from "../../layout/Layout.jsx";
 import {getUserById} from "../../../services/userService.js";
@@ -41,7 +41,7 @@ export function ALETrackROT () {
         try {
             const user = await getUserById(localStorage.getItem("userId"));
             const companyCode = user.companyCode;
-            const allContainers = await getContainers();
+            const allContainers = await getAleContainers();
             const containers = allContainers.filter(container => {
                 const isForwarder = container.booking?.forwardingId === companyCode;
                 const isHaulier = container.haulierId === companyCode;

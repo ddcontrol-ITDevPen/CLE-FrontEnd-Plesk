@@ -5,11 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CircleChevronDown, Trash2, Upload } from "lucide-react";
 import {toast, Toaster} from "sonner";
 import {getCompanies, getCompanyById} from "../../../services/companyService.js";
-import {registerBooking} from "../../../services/bookingService.js";
-import {registerContainer} from "../../../services/containerService.js";
-import {registerContainerAddress} from "../../../services/containerAddressService.js";
+import {registerAleBooking} from "../../../services/aleBookingService.js";
+import {registerAleContainer} from "../../../services/aleContainerService.js";
+import {registerAleContainerAddress} from "../../../services/aleContainerAddressService.js";
 import {getUserById} from "../../../services/userService.js";
-import {registerBookingDocument} from "../../../services/bookingDocumentService.js";
+import {registerAleBookingDocument} from "../../../services/aleBookingDocumentService.js";
 
 export function ALEAddROTForm2() {
     const navigate = useNavigate();
@@ -237,7 +237,7 @@ export function ALEAddROTForm2() {
             };
             console.log(bookingPayload);
 
-            const savedBooking = await registerBooking(bookingPayload);
+            const savedBooking = await registerAleBooking(bookingPayload);
             const rotNumber = savedBooking.rotNumber;
 
             const docTypes = {
@@ -254,7 +254,7 @@ export function ALEAddROTForm2() {
                     docFormData.append("ROTNumber", prevData.rotNumber);
                     docFormData.append("FileName", file.name);
                     docFormData.append("File", file);
-                    await registerBookingDocument(docFormData);
+                    await registerAleBookingDocument(docFormData);
                 }
             }
 
@@ -280,18 +280,7 @@ export function ALEAddROTForm2() {
                 };
                 console.log(containerPayload);
 
-                const savedContainer = await registerContainer(containerPayload);
-
-                // if (cont.addresses && cont.addresses.length > 0) {
-                //     for (const addr of cont.addresses) {
-                //         if (addr.trim() !== "") {
-                //             await registerContainerAddress({
-                //                 containerId: savedContainer.containerId,
-                //                 address: addr
-                //             });
-                //         }
-                //     }
-                // }
+                const savedContainer = await registerAleContainer(containerPayload);
             }
 
             toast.success("ROT Booking and all containers saved successfully!");

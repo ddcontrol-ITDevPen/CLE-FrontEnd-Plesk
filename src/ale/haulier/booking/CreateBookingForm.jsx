@@ -12,16 +12,16 @@ import {
     User
 } from "lucide-react";
 import {getCompanies} from "../../../services/companyService.js";
-import {getBookings, registerBooking} from "../../../services/bookingService.js";
+import {getAleBookings, registerAleBooking} from "../../../services/aleBookingService.js";
 import {getUserById} from "../../../services/userService.js";
 import {getDrivers} from "../../../services/driverService.js";
 import {getPrimeMovers} from "../../../services/primeMoverService.js";
 import {getTrailers} from "../../../services/trailerService.js";
-import {getTimeSlots, updateTimeSlot} from "../../../services/timeSlotService.js";
-import {registerBookingDocument} from "../../../services/bookingDocumentService.js";
-import {registerContainer, updateContainer} from "../../../services/containerService.js";
+import {getAleTimeSlots, updateAleTimeSlot} from "../../../services/aleTimeSlotService.js";
+import {registerAleBookingDocument} from "../../../services/aleBookingDocumentService.js";
+import {registerAleContainer, updateAleContainer} from "../../../services/aleContainerService.js";
 import {toast, Toaster} from "sonner";
-import {registerAssignedHaulier} from "../../../services/assignedHaulier.js";
+import {registerAleAssignedHaulier} from "../../../services/aleAssignedHaulierService.js";
 
 export function ALECreateBookingForm() {
     const navigate = useNavigate();
@@ -154,13 +154,13 @@ export function ALECreateBookingForm() {
                     setConsignees(consignees);
                     setForwardings(forwardings);
                 }
-                const bookings = await getBookings();
+                const bookings = await getAleBookings();
                 setBookings(bookings || []);
                 const [driverData, pmData, trailerData, slotData] = await Promise.all([
                     getDrivers(),
                     getPrimeMovers(),
                     getTrailers(),
-                    getTimeSlots()
+                    getAleTimeSlots()
                 ]);
                 const user = await getUserById(localStorage.getItem("userId"));
                 const haulierId = user.companyCode
@@ -341,7 +341,7 @@ export function ALECreateBookingForm() {
             };
             console.log(bookingPayload);
 
-            const savedBooking = await registerBooking(bookingPayload);
+            const savedBooking = await registerAleBooking(bookingPayload);
             const rotNumber = savedBooking.rotNumber;
 
             const docTypes = {
@@ -358,7 +358,7 @@ export function ALECreateBookingForm() {
                     docFormData.append("ROTNumber", formData.rotNumber);
                     docFormData.append("FileName", file.name);
                     docFormData.append("File", file);
-                    await registerBookingDocument(docFormData);
+                    await registerAleBookingDocument(docFormData);
                 }
             }
 
@@ -383,7 +383,7 @@ export function ALECreateBookingForm() {
                     .map(addr => ({ Address: addr }))
             };
             console.log(containerPayload);
-            const createdContainer = await registerContainer(containerPayload);
+            const createdContainer = await registerAleContainer(containerPayload);
             const containerId = createdContainer.containerId;
 
             const assignedHaulierPayload = {
@@ -395,7 +395,7 @@ export function ALECreateBookingForm() {
                 rotNumber: formData.rotNumber,
                 haulierId: companyCode,
             };
-            await registerAssignedHaulier(assignedHaulierPayload);
+            await registerAleAssignedHaulier(assignedHaulierPayload);
             const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
             if (selectedSlot) {
                 const updatedSlotData = {
@@ -405,7 +405,7 @@ export function ALECreateBookingForm() {
                     totalSlot: selectedSlot.totalSlot - 1,
                     depotId: selectedSlot.depotId,
                 };
-                await updateTimeSlot(formData.timeSlotId, updatedSlotData)
+                await updateAleTimeSlot(formData.timeSlotId, updatedSlotData)
             }
 
             toast.success("ROT Booking created successfully!");

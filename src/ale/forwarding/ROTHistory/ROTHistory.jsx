@@ -6,7 +6,7 @@ import {
     FileText, AlertCircle, CheckCircle2
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import {getContainers, deleteContainer, updateContainer, getContainerById} from "../../../services/containerService.js";
+import {getAleContainers, deleteAleContainer, updateAleContainer, getAleContainerById} from "../../../services/aleContainerService.js";
 import {getUserById} from "../../../services/userService.js";
 import * as XLSX from 'xlsx';
 import {useNavigate} from "react-router-dom";
@@ -103,7 +103,7 @@ export function ALEROTHistory ()  {
             setIsLoading(true);
             const user = await getUserById(localStorage.getItem("userId"));
             const forwardingId = user.companyCode;
-            const data = await getContainers();
+            const data = await getAleContainers();
             const filteredData = await data
                 .filter(c => c.booking.forwardingId === forwardingId)
                 .sort((a, b) => {
@@ -253,7 +253,7 @@ export function ALEROTHistory ()  {
     const handleDelete = async () => {
         const toastId = toast.loading("Deleting record...");
         try {
-            const currentContainer = await getContainerById(deleteModal.id);
+            const currentContainer = await getAleContainerById(deleteModal.id);
             console.log(currentContainer);
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName
@@ -265,7 +265,7 @@ export function ALEROTHistory ()  {
                 deletedRemarks: deleteModal.remarks, 
                 UpdatedBy: updatedBy,
             };
-            await updateContainer(deleteModal.id, payload);
+            await updateAleContainer(deleteModal.id, payload);
             toast.success("Record deleted successfully", { id: toastId });
             setDeleteModal({ isOpen: false, id: null, remarks: "" });
             fetchData();

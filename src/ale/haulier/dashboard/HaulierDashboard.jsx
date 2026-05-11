@@ -14,7 +14,7 @@ import {
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { getAllContainersByHaulier } from "../../../services/containerService.js";
+import { getAllAleContainersByHaulier } from "../../../services/aleContainerService.js";
 import { getUserById } from "../../../services/userService.js";
 import { toast } from "sonner";
 
@@ -33,7 +33,7 @@ export function ALEHaulierDashboard() {
                 const haulierId = userData?.companyCode;
 
                 if (haulierId) {
-                    const containerData = await getAllContainersByHaulier(haulierId);
+                    const containerData = await getAllAleContainersByHaulier(haulierId);
                     setContainers(containerData || []);
                 }
             } catch (error) {

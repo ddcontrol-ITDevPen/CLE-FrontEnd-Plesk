@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import {Printer, Download, ArrowLeft, MapPinned, Phone, Mail} from "lucide-react";
-import { getContainerById } from "../../../services/containerService.js";
+import { getAleContainerById } from "../../../services/aleContainerService.js";
 import {getCompanyById} from "../../../services/companyService.js";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas-pro";
-import {getAssignedHaulierByContainerId, getAssignedHaulierById} from "../../../services/assignedHaulier.js";
+import {getAleAssignedHaulierByContainerId, getAleAssignedHaulierById} from "../../../services/aleAssignedHaulierService.js";
 import {getUserById} from "../../../services/userService.js";
 
 export function ALEViewECsnPDF() {
@@ -23,9 +23,9 @@ export function ALEViewECsnPDF() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const result = await getContainerById(id);
+                const result = await getAleContainerById(id);
                 setData(result);
-                const assignedData = await getAssignedHaulierByContainerId(id);
+                const assignedData = await getAleAssignedHaulierByContainerId(id);
                 setAssignedHaulier(assignedData);
                 if (result?.receivedBy) {
                     const userData = await getUserById(result.receivedBy);

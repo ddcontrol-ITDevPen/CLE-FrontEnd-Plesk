@@ -4,8 +4,8 @@ import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import { CircleChevronDown, LucideArrowBigRightDash, LucideShieldUser, LucideTruck } from "lucide-react";
 import { getCompanies } from "../../../services/companyService.js";
-import { getContainerById } from "../../../services/containerService.js";
-import { updateBooking } from "../../../services/bookingService.js";
+import { getAleContainerById } from "../../../services/aleContainerService.js";
+import { updateAleBooking } from "../../../services/aleBookingService.js";
 import { getUserById } from "../../../services/userService.js";
 import { toast } from "sonner";
 
@@ -73,7 +73,7 @@ export function ALEEditROTForm() {
                 }
 
                 // 2. Fetch Existing Container/Booking Data
-                const container = await getContainerById(id);
+                const container = await getAleContainerById(id);
                 if (container) {
                     const b = container.booking;
                     setFormData({
@@ -148,7 +148,7 @@ export function ALEEditROTForm() {
             };
 
             localStorage.setItem("updatedROT", JSON.stringify(payload));
-            await updateBooking(formData.rotNumber, payload);
+            await updateAleBooking(formData.rotNumber, payload);
             navigate(`/ale/forwarding/rot/edit/form2/${id}`);
         } catch (err) {
             toast.error("Update failed");
