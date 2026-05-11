@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
-import Layout from "../../layout/Layout.jsx";
+import Layout from "../layout/Layout.jsx";
 import { motion } from "framer-motion";
 import {
     FaRegCircleUser, FaBuilding, FaEnvelope, FaPhone,
     FaShieldHalved, FaIdBadge, FaMapLocationDot, FaPenToSquare
 } from "react-icons/fa6";
-import { getUserById } from "../../../services/userService.js";
+import { getUserById } from "../../services/userService.js";
 import {useNavigate} from "react-router-dom";
 
-export function ALEForwardingProfile() {
+export function ForwardingProfile() {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -63,7 +63,7 @@ export function ALEForwardingProfile() {
                             </div>
                         </div>
                         <button className="md:ml-auto flex items-center gap-2 bg-white text-system-color px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-gray-100 transition-all active:scale-95"
-                        onClick={() => navigate("/ale/forwarding/profile/edit")}>
+                        onClick={() => navigate("/profile/edit")}>
                             <FaPenToSquare /> Edit Profile
                         </button>
                     </div>

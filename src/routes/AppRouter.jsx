@@ -11,8 +11,8 @@ import {EditROTForm2} from "../cle/forwarding/ROT/EditROT2.jsx";
 import {ViewROTPDF} from "../cle/forwarding/ROTHistory/ViewROTPDF.jsx";
 import {TrackROT} from "../cle/forwarding/TrackROT/TrackROT.jsx";
 import {ViewROTDocument} from "../cle/forwarding/Document/ViewROTDocument.jsx";
-import {ForwardingProfile} from "../cle/forwarding/profile/ForwardingProfile.jsx";
-import {ForwardingEditProfile} from "../cle/forwarding/profile/ForwardingEditProfile.jsx";
+import {ForwardingProfile} from "../cle/profile/ForwardingProfile.jsx";
+import {ForwardingEditProfile} from "../cle/profile/ForwardingEditProfile.jsx";
 import {HaulierDashboard} from "../cle/haulier/dashboard/HaulierDashboard.jsx";
 import {YourBookings} from "../cle/haulier/booking/YourBookings.jsx";
 import {AcceptedBookings} from "../cle/haulier/booking/AcceptedBookings.jsx";
@@ -39,8 +39,8 @@ import {ALEEditROTForm2} from "../ale/forwarding/ROT/EditROT2.jsx";
 import {ALEViewROTPDF} from "../ale/forwarding/ROTHistory/ViewROTPDF.jsx";
 import {ALETrackROT} from "../ale/forwarding/TrackROT/TrackROT.jsx";
 import {ALEViewROTDocument} from "../ale/forwarding/Document/ViewROTDocument.jsx";
-import {ALEForwardingProfile} from "../ale/forwarding/profile/ForwardingProfile.jsx";
-import {ALEForwardingEditProfile} from "../ale/forwarding/profile/ForwardingEditProfile.jsx";
+import {ALEForwardingProfile} from "../ale/profile/ForwardingProfile.jsx";
+import {ALEForwardingEditProfile} from "../ale/profile/ForwardingEditProfile.jsx";
 import {ALEHaulierDashboard} from "../ale/haulier/dashboard/HaulierDashboard.jsx";
 import {ALEYourBookings} from "../ale/haulier/booking/YourBookings.jsx";
 import {ALEAcceptedBookings} from "../ale/haulier/booking/AcceptedBookings.jsx";
@@ -158,7 +158,7 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/forwarding/profile"
+                    path="/profile"
                     element={
                         <ProtectedRoute>
                             <ForwardingProfile />
@@ -166,7 +166,7 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/forwarding/profile/edit"
+                    path="/profile/edit"
                     element={
                         <ProtectedRoute>
                             <ForwardingEditProfile />
@@ -401,7 +401,7 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/ale/forwarding/profile"
+                    path="/ale/profile"
                     element={
                         <ProtectedRoute>
                             <ALEForwardingProfile />
@@ -409,7 +409,7 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/ale/forwarding/profile/edit"
+                    path="/ale/profile/edit"
                     element={
                         <ProtectedRoute>
                             <ALEForwardingEditProfile />

@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
-import Layout from "../../layout/Layout.jsx";
+import Layout from "../layout/Layout.jsx";
 import { motion } from "framer-motion";
 import {
     FaRegCircleUser, FaBuilding, FaEnvelope, FaPhone,
     FaShieldHalved, FaIdBadge, FaMapLocationDot, FaPenToSquare
 } from "react-icons/fa6";
-import { getUserById } from "../../../services/userService.js";
+import { getUserById } from "../../services/userService.js";
 import {useNavigate} from "react-router-dom";
 
-export function ForwardingProfile() {
+export function ALEForwardingProfile() {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();

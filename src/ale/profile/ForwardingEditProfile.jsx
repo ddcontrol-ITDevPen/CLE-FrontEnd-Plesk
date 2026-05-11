@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import Layout from "../../layout/Layout.jsx";
+import Layout from "../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaUser, FaLock, FaBuilding, FaFloppyDisk, FaArrowLeft } from "react-icons/fa6";
-import { getUserById, updateUser } from "../../../services/userService.js";
+import { getUserById, updateUser } from "../../services/userService.js";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 
-export function ForwardingEditProfile() {
+export function ALEForwardingEditProfile() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("general");
     const [loading, setLoading] = useState(true);
@@ -124,7 +124,7 @@ export function ForwardingEditProfile() {
                 newPassword: "",
                 confirmPassword: ""
             }));
-            setTimeout(() => navigate("/forwarding/profile"), 1500);
+            setTimeout(() => navigate("/ale/profile"), 1500);
         } catch (error) {
             toast.error(error.response?.data?.message || "Update failed");
         } finally {
