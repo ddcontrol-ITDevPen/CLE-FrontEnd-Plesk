@@ -132,10 +132,23 @@ export function ForwardingEditProfile() {
         }
     };
 
+    const getUserRole = () => {
+        const role = localStorage.getItem("role");
+        const roles = {
+            Forwarding: "forwarder",
+            Haulier: "haulier",
+            Depot: "depot",
+            Port: "port",
+            Consignee: "consignee",
+            "Shipping Agent": "shippingAgent",
+        };
+        return roles[role] || "";
+    };
+    
     if (loading) return <div className="p-20 text-center font-bold text-system-color">Loading Editor...</div>;
 
     return (
-        <Layout role="forwarder">
+        <Layout role={getUserRole}>
             <Toaster richColors position="top-right"/>
             <div className="max-w-4xl mx-auto">
                 <div className="flex items-center gap-4 mb-8">

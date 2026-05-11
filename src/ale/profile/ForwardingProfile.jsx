@@ -37,10 +37,22 @@ export function ALEForwardingProfile() {
         fetchUser();
     }, []);
 
+    const getUserRole = () => {
+        const role = localStorage.getItem("role");
+        const roles = {
+            Forwarding: "forwarder",
+            Haulier: "haulier",
+            Terminal: "terminal",
+            AKPS: "akps",
+            Custom: "custom"
+        };
+        return roles[role] || "";
+    };
+    
     if (loading) return <div className="p-20 text-center font-bold">Loading Profile...</div>;
 
     return (
-        <Layout role="forwarder">
+        <Layout role={getUserRole}>
             <div className="max-w-5xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
