@@ -20,8 +20,9 @@ export default function CustomsNavBar({ role = "customs" }) {
     };
 
     const menuItems = [
-        { icon: LucideHome, label: "Dashboard", path: "/customs/dashboard" },
-        { icon: LucideFile, label: "View Document", path: "/forwarding/rot/document/view" },
+        { icon: LucideHome, label: "Dashboard", path: "/ale/customs/dashboard" },
+
+        { icon: LucideFile, label: "Booking List", path: "/customs/bookinglist" },
     ];
 
     return (

@@ -19,9 +19,9 @@ export default function AKPSNavBar({ role = "akps" }) {
     };
 
     const menuItems = [
-        { icon: LucideHome, label: "Dashboard", path: "/akps/dashboard" },
+        { icon: LucideHome, label: "Dashboard", path: "/ale/akps/dashboard" },
        
-        { icon: LucideFile, label: "View Document", path: "/forwarding/rot/document/view" },
+        { icon: LucideFile, label: "Booking List", path: "/akps/bookinglist" },
     ];
 
     return (
