@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../../ale/layout/Layout.jsx";
-import { getContainerById } from "../../../services/containerService.js";
+import {getAleContainerById} from "../../../services/aleContainerService.js";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock } from "lucide-react";
 import ShipmentLog from "../../../ale/ALEComponents/ALEShipmentLog.jsx";
@@ -19,7 +19,7 @@ export function CustomsbookingDetails() {
     useEffect(() => {
         const fetchDetails = async () => {
             try {
-                const result = await getContainerById(id);
+                const result = await getAleContainerById(id);
                 console.log(result);
                 setData(result);
                 const forwardingId = result.booking?.forwardingId;

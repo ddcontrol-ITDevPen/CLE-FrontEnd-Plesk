@@ -6,7 +6,12 @@ import {
     FileText, AlertCircle, CheckCircle2, LucideX, Check, Clock, ClipboardCheck, XCircle
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import {getContainers, deleteContainer, updateContainer, getContainerById} from "../../../services/alecontainerService.js";
+import {
+    getAleContainers,
+    deleteAleContainer,
+    updateAleContainer,
+    getAleContainerById
+} from "../../../services/aleContainerService.js";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from 'xlsx';
 
@@ -97,7 +102,7 @@ export function AkpsbookingList() {
     const fetchData = async () => {
         try {
             setIsLoading(true);
-            const data = await getContainers();
+            const data = await getAleContainers();
 
             // Terminal usually sees ALL or filtered by location later
             setContainers(data || []);
@@ -146,7 +151,7 @@ export function AkpsbookingList() {
         const toastId = toast.loading(`Updating status to ${statusModal.nextStatus}...`);
         try {
             // 1. Get the current full container data
-            const currentContainer = await getContainerById(statusModal.id);
+            const currentContainer = await getAleContainerById(statusModal.id);
             const now = new Date().toISOString();
 
             // 2. Build the payload. 
@@ -176,7 +181,7 @@ export function AkpsbookingList() {
 
             console.log("Submitting Payload:", payload);
 
-            await updateContainer(statusModal.id, payload);
+            await updateAleContainer(statusModal.id, payload);
 
             toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
             setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
