@@ -3,7 +3,7 @@ import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search, Calendar, FileDown, Eye, Edit, Trash2,
-    FileText, AlertCircle, CheckCircle2
+    FileText, AlertCircle, CheckCircle2, PencilRuler
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import {getAleContainers, deleteAleContainer, updateAleContainer, getAleContainerById} from "../../../services/aleContainerService.js";
@@ -15,13 +15,19 @@ import StatusInfographic from "../../ROTComponents/ROTStatistics.jsx";
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
     "Enroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
+    "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
+    "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    "Approved-AKPS": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    "Approved-Custom": { bg: "bg-delivered-rfc",   text: "text-emerald-900",   border: "border-teal-200" },
+    "Approved-Complete": { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Accepted":   { bg: "bg-accepted",  text: "text-green",  border: "border-green-200" },
     "Gated-In":   { bg: "bg-gate-in-out",   text: "text-blue-900",   border: "border-indigo-200" },
     "Gated-Out":  { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
-    "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
-    "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
+    // "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    // "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
-    "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" }
+    "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
 
 export function ALEROTHistory ()  {
@@ -57,8 +63,11 @@ export function ALEROTHistory ()  {
             "PickUpAcceptedTime": cont.acceptedTime ? new Date(cont.acceptedTime).toLocaleString() : "N/A",
             "PickUpGated In": cont.gatedInTime  ? new Date(cont.gatedInTime).toLocaleString() : "N/A",
             "PickUpGated Out": cont.gatedOutTime  ? new Date(cont.gatedOutTime).toLocaleString() : "N/A",
-            "PickUpDeliveredTime": cont.deliveredTime ? new Date(cont.deliveredTime).toLocaleString() : "N/A",
-            "PickUpRFCTime": cont.rfcTime ? new Date(cont.rfcTime).toLocaleString() : "N/A",
+            "ApprovedAKPSTime": cont.approvedAKPSTime ? new Date(cont.approvedAKPSTime).toLocaleString() : "N/A",
+            "ApprovedCustomTime": cont.approvedCustomTime ? new Date(cont.approvedCustomTime).toLocaleString() : "N/A",
+            "ApprovedByBothTime": cont.approvedBothTime ? new Date(cont.approvedBothTime).toLocaleString() : "N/A",
+            // "PickUpDeliveredTime": cont.deliveredTime ? new Date(cont.deliveredTime).toLocaleString() : "N/A",
+            // "PickUpRFCTime": cont.rfcTime ? new Date(cont.rfcTime).toLocaleString() : "N/A",
             "RejectedTime": cont.rejectedTime ? new Date(cont.rejectedTime).toLocaleString() : "N/A",
             "DeletedTime": cont.deletedTime ? new Date(cont.deletedTime).toLocaleString() : "N/A",
             "DropOffAssignedTime": cont.rtAssignedTime ? new Date(cont.rtAssignedTime).toLocaleString() : "N/A",
@@ -66,27 +75,27 @@ export function ALEROTHistory ()  {
             "DropOffAcceptedTime": cont.rtAcceptedTime ? new Date(cont.rtAcceptedTime).toLocaleString() : "N/A",
             "DropOffGated In": cont.rtGatedInTime ? new Date(cont.rtGatedInTime).toLocaleString() :"N/A",
             "DropOffGated Out": cont.rtGatedOutTime ? new Date(cont.rtGatedOutTime).toLocaleString() : "N/A",
-            "DropOffDeliveredTime": cont.rtDeliveredTime ? new Date(cont.rtDeliveredTime).toLocaleString() : "N/A",
-            "DropOffRFCTime": cont.rtRFCTime ? new Date(cont.rtRFCTime).toLocaleString() : "N/A",
+            // "DropOffDeliveredTime": cont.rtDeliveredTime ? new Date(cont.rtDeliveredTime).toLocaleString() : "N/A",
+            // "DropOffRFCTime": cont.rtRFCTime ? new Date(cont.rtRFCTime).toLocaleString() : "N/A",
             "ROT Number": cont.rotNumber,
-            "BL/Booking Number": cont.booking?.blOrBookingNumber || "N/A",
-            "House BL Number": cont.booking?.houseBLNumber || "N/A",
-            "Movement Type": cont.booking?.movementType || "N/A",
-            "Trip Type": cont.booking?.tripType || "N/A",
+            "AWB Number": cont.aleBooking?.awbNumber || "N/A",
+            "House AWB Number": cont.aleBooking?.houseAWBNumber || "N/A",
+            "Movement Type": cont.aleBooking?.movementType || "N/A",
+            "Trip Type": cont.aleBooking?.tripType || "N/A",
             "Haulier": cont.haulierName || "Unassigned",
-            "Shipping Line": cont.booking?.shippingAgentName || "N/A",
-            "Forwarding": cont.booking?.forwardingName || "N/A",
+            "Airline": cont.aleBooking?.airlineName || "N/A",
+            "Forwarding": cont.aleBooking?.forwardingName || "N/A",
             "ROT Date": cont?.rotDate || "N/A",
-            "Vessel Name": cont.booking?.vesselName || "N/A",
+            "Vessel Name": cont.aleBooking?.vesselName || "N/A",
             "From Location": getLocationName(cont, 'from'),
             "To Location": getLocationName(cont, 'to'),
             "Consignee Address": cont.toAddress && cont.toAddress.length > 0
                 ? cont.toAddress.map(a => a.address).join(", ")
                 : "N/A",
-            "Custom Form No": cont.booking?.customFormNo || "N/A",
-            "Custom Receipt No": cont.booking?.customReceiptNo || "N/A",
-            "DIC Number": cont.booking?.dicNumber || "N/A",
-            "ZB Number": cont.booking?.zbNumber || "N/A",
+            "Custom Form No": cont.aleBooking?.customFormNo || "N/A",
+            "Custom Receipt No": cont.aleBooking?.customReceiptNo || "N/A",
+            "DIC Number": cont.aleBooking?.dicNumber || "N/A",
+            "ZB Number": cont.aleBooking?.zbNumber || "N/A",
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -105,7 +114,7 @@ export function ALEROTHistory ()  {
             const forwardingId = user.companyCode;
             const data = await getAleContainers();
             const filteredData = await data
-                .filter(c => c.booking.forwardingId === forwardingId)
+                .filter(c => c.aleBooking.forwardingId === forwardingId)
                 .sort((a, b) => {
                     const dateA = new Date(getStatusTimestamp(a) || 0);
                     const dateB = new Date(getStatusTimestamp(b) || 0);
@@ -138,6 +147,9 @@ export function ALEROTHistory ()  {
         if (container.status === "RFC") return container.rfcTime;
         if (container.status === "Rejected") return container.rejectedTime;
         if (container.status === "Deleted") return container.deletedTime;
+        if (container.status === "Approved-AKPS") return container.approvedAKPSTime;
+        if (container.status === "Approved-Custom") return container.approvedCustomTime;
+        if (container.status === "Approved-Complete") return container.approvedBothTime;
         return null;
     };
     
@@ -146,13 +158,13 @@ export function ALEROTHistory ()  {
             const matchesSearch =
                 cont.containerNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.rotNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                cont.booking.blOrBookingNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                cont.booking.haulierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                cont.booking.movementType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                cont.aleBooking.awbNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                cont.aleBooking.houseAWBNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                cont.haulierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                cont.aleBooking.movementType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.consigneeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                cont.portName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                cont.depotName?.toLowerCase().includes(searchTerm.toLowerCase());
-
+                cont.terminalName?.toLowerCase().includes(searchTerm.toLowerCase()) 
+            
             let isExpiredGateOut = false;
             if (cont.status === "Gate-Out" && cont.gatedOutTime) {
                 const gatedOutDate = new Date(cont.gatedOutTime);
@@ -221,32 +233,32 @@ export function ALEROTHistory ()  {
     }, [containers, searchTerm, filterStatus, startDate, endDate, sortConfig]);
 
     const getLocationName = (cont, type) => {
-        const { movementType, tripType } = cont.booking || {};
+        const { movementType, tripType } = cont.aleBooking || {};
 
         if (type === 'from') {
             if (tripType) {
-                if (movementType === "Import" && tripType === "Pick-up") return cont.portName || "Port";
-                if (tripType === "Drop-off") return cont.consignee.companyName || "Consignee";
-                if (movementType === "Export" && tripType === "Pick-up") return cont.depotName || "Depot";
-                if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
-                if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                // if (movementType === "Import" && tripType === "Pick-up") return cont.portName || "Port";
+                // if (tripType === "Drop-off") return cont.consignee.companyName || "Consignee";
+                // if (movementType === "Export" && tripType === "Pick-up") return cont.terminalName || "Terminal";
+                // if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.terminalName || "Terminal";
             } else {
-                if (movementType === "Import") return cont.depotName || "Depot";
-                if (movementType === "Export") return cont.portName || "Port";
+                if (movementType === "Import") return cont.terminalName || "Terminal";
+                if (movementType === "Export") return cont.consigneeName || "Consignee";
             }
-            return cont.booking?.fromName || "N/A";
+            return cont.aleBooking?.fromName || "N/A";
         } else {
             if (tripType) {
-                if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
-                if (tripType === "Pick-up") return cont.consignee.companyName || "Consignee";
-                if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
-                if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
-                if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                // if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
+                // if (tripType === "Pick-up") return cont.consignee.companyName || "Consignee";
+                // if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
+                // if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
             } else {
-                if (movementType === "Import") return cont.portName || "Port";
-                if (movementType === "Export") return cont.depotName || "Depot";
+                if (movementType === "Import") return cont.consigneeName || "Consignee";
+                if (movementType === "Export") return cont.terminalName || "Terminal";
             }
-            return cont.toName || "N/A";
+            return cont?.toName || "N/A";
         }
     };
     
@@ -371,33 +383,33 @@ export function ALEROTHistory ()  {
                         <tr>
                             <th className="p-4 border-b w-10 text-center">No.</th>
                             <th className="p-4 border-b w-32">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('blOrBookingNumber')}>
-                                BL/Booking Number
-                                {sortConfig.key === 'blOrBookingNumber' && (
-                                    <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                )}
-                            </div>
+                                <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.awbNumber')}>
+                                    AWB Number
+                                    {sortConfig.key === 'aleBooking.awbNumber' && (
+                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                    )}
+                                </div>
                             </th>
                             <th className="p-4 border-b w-32">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('containerNumber')}>
-                                    Container Number
-                                    {sortConfig.key === 'containerNumber' && (
+                                <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.houseAWBNumber')}>
+                                    House AWB Number
+                                    {sortConfig.key === 'aleBooking.houseAWBNumber' && (
                                         <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                                     )}
                                 </div>
                             </th>
                             <th className="p-4 border-b w-36">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('booking.movementType')}>
+                                <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.movementType')}>
                                     Movement Type
-                                    {sortConfig.key === 'booking.movementType' && (
+                                    {sortConfig.key === 'aleBooking.movementType' && (
                                         <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                                     )}
                                 </div>
                             </th>
                             <th className="p-4 border-b">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('booking.haulier')}>
-                                    Haulier
-                                    {sortConfig.key === 'booking.haulier' && (
+                                <div className="flex items-center gap-1" onClick={() => handleSort('haulierId')}>
+                                    Transporter
+                                    {sortConfig.key === 'haulierId' && (
                                         <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                                     )}
                                 </div>
@@ -427,9 +439,9 @@ export function ALEROTHistory ()  {
                                 </div>
                             </th>
                             <th className="p-4 border-b">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('booking.from')}>
+                                <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.from')}>
                                     From
-                                    {sortConfig.key === 'booking.from' && (
+                                    {sortConfig.key === 'aleBooking.from' && (
                                         <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                                     )}
                                 </div>
@@ -461,17 +473,16 @@ export function ALEROTHistory ()  {
                             return (
                                 <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
                                     <td className="p-4">{index + 1}</td>
-                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight">{cont.booking.blOrBookingNumber}</td>
-                                    <td className="p-4">{cont.containerNumber}</td>
-                                    <td className="p-4">{cont.booking?.tripType ? `${cont.booking?.movementType} - ${cont.booking?.tripType}` : cont.booking?.movementType}</td>
+                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}>{cont.aleBooking.awbNumber}</td>
+                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}s>{cont.aleBooking.houseAWBNumber}</td>
+                                    <td className="p-4">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
                                     <td className="p-4 whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>
                                     <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
                                     <td className="p-4 text-center">
                                         {/* Status Badge using Theme Colors */}
-                                        <span
-                                            className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase tracking-wider whitespace-nowrap ${theme.bg} ${theme.text}`}>
-                                                {cont.status}
-                                            </span>
+                                        <span className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase tracking-wider whitespace-nowrap ${theme.bg} ${theme.text}`}>
+                                            {cont.status}
+                                        </span>
                                     </td>
                                     <td className="p-4 text-[12px] whitespace-normal break-words leading-tight text-gray-600">
                                         {getStatusTimestamp(cont) ? new Date(getStatusTimestamp(cont)).toLocaleString() : "-"}
@@ -483,14 +494,20 @@ export function ALEROTHistory ()  {
                                         <div className="flex items-center justify-center gap-3">
                                             <Eye size={18}
                                                  className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}/>
-                                            <Edit size={18}
-                                                  className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/ale/forwarding/rot/edit/form1/${cont.containerId}`)}/>
+                                            {cont.status === "Assigned" &&   
+                                                <Edit size={18}
+                                                      className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/ale/forwarding/rot/edit/form1/${cont.containerId}`)}/>
+                                            }
+                                            {cont.status !== "Assigned" &&
+                                                <PencilRuler size={18}
+                                                      className="text-green-600 cursor-pointer hover:text-green-800" onClick/>
+                                            }
                                             {cont.status !== "Deleted" &&
-                                            <Trash2
-                                                size={18}
-                                                className="text-red-500 cursor-pointer hover:text-red-700"
-                                                onClick={() => setDeleteModal({isOpen: true, id: cont.containerId, remarks: ""})}
-                                            />
+                                                <Trash2
+                                                    size={18}
+                                                    className="text-red-500 cursor-pointer hover:text-red-700"
+                                                    onClick={() => setDeleteModal({isOpen: true, id: cont.containerId, remarks: ""})}
+                                                />
                                             }
                                             <FileText 
                                                 size={18} 
