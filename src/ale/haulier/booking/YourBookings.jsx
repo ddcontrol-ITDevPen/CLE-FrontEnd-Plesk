@@ -15,13 +15,19 @@ import StatusInfographic from "../../ROTComponents/ROTStatistics.jsx";
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
     "Enroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
+    // "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
+    // "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    // "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    "Approved-AKPS": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    "Approved-Custom": { bg: "bg-delivered-rfc",   text: "text-emerald-900",   border: "border-teal-200" },
+    "Approved-Complete": { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Accepted":   { bg: "bg-accepted",  text: "text-green",  border: "border-green-200" },
     "Gated-In":   { bg: "bg-gate-in-out",   text: "text-blue-900",   border: "border-indigo-200" },
     "Gated-Out":  { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
-    "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
-    "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
+    // "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    // "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
-    "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" }
+    //"Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
 
 export function ALEYourBookings ()  {
@@ -46,11 +52,11 @@ export function ALEYourBookings ()  {
 
         const exportData = filteredContainers.map(cont => ({
             "Container ID": cont.containerId,
-            "Container Number": cont.containerNumber,
             "Container Type": cont.containerType,
             "Container Size": cont.containerSize,
+            "Package Quantity": cont.packageQuantity || "N/A",
             "VGM": cont.vgm || "N/A",
-            "TrailerType": cont.trailerType || "N/A",
+            "Volumetric Weight": cont.volumeMetricWeight || "N/A",
             "Status": cont.status,
             "PickUpAssignedTime": cont.assignedTime ? new Date(cont.assignedTime).toLocaleString() : "N/A",
             "PickUpEnrouteTime": cont.enrouteTime ? new Date(cont.enrouteTime).toLocaleString() : "N/A",
@@ -247,32 +253,40 @@ export function ALEYourBookings ()  {
     }, [containers, searchTerm, filterStatus, startDate, endDate, sortConfig]);
 
     const getLocationName = (cont, type) => {
-        const { movementType, tripType } = cont.booking || {};
+        const { movementType, tripType } = cont.aleBooking || {};
 
         if (type === 'from') {
             if (tripType) {
-                if (movementType === "Import" && tripType === "Pick-up") return cont.portName || "Port";
-                if (tripType === "Drop-off") return cont.consignee.companyName || "Consignee";
-                if (movementType === "Export" && tripType === "Pick-up") return cont.depotName || "Depot";
-                if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
-                if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                // if (movementType === "Import" && tripType === "Pick-up") return cont.portName || "Port";
+                // if (tripType === "Drop-off") return cont.consignee.companyName || "Consignee";
+                // if (movementType === "Export" && tripType === "Pick-up") return cont.terminalName || "Terminal";
+                // if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.terminalName || "Terminal";
             } else {
-                if (movementType === "Import") return cont.depotName || "Depot";
-                if (movementType === "Export") return cont.portName || "Port";
+                if (movementType === "Import") return cont.terminalName || "Terminal";
+                if (movementType === "Export") {
+                    return cont.consigneeId === null
+                        ? cont.externalConsigneeName
+                        : cont.consigneeName;
+                }
             }
-            return cont.booking?.fromName || "N/A";
+            return cont.aleBooking?.fromName || "N/A";
         } else {
             if (tripType) {
-                if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
-                if (tripType === "Pick-up") return cont.consignee.companyName || "Consignee";
-                if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
-                if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
-                if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                // if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
+                // if (tripType === "Pick-up") return cont.consignee.companyName || "Consignee";
+                // if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
+                // if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
             } else {
-                if (movementType === "Import") return cont.portName || "Port";
-                if (movementType === "Export") return cont.depotName || "Depot";
+                if (movementType === "Import") {
+                    return cont.consigneeId === null
+                        ? cont.externalConsigneeName
+                        : cont.consigneeName;
+                }
+                if (movementType === "Export") return cont.terminalName || "Terminal";
             }
-            return cont.toName || "N/A";
+            return cont?.toName || "N/A";
         }
     };
 

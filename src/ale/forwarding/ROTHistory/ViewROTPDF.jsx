@@ -21,9 +21,10 @@ export function ALEViewROTPDF() {
             try {
                 const result = await getAleContainerById(id);
                 setData(result);
-                if (result.booking?.billingParty) {
+                if (result.aleBooking?.billingParty) {
                     try {
-                        const company = await getCompanyById(result.booking.billingParty);
+                        const company = await getCompanyById(result.aleBooking.billingParty);
+                        console.log(company);
                         setBillingPartyName(company?.companyName || "N/A");
                     } catch {
                         setBillingPartyName("N/A");
@@ -31,7 +32,6 @@ export function ALEViewROTPDF() {
                 }
                 console.log(result);
                 const companyData = await getCompanyById(result.haulierId);
-                console.log(companyData);
                 setCompany(companyData);
             } catch (err) {
                 console.error("Failed to fetch PDF data", err);
@@ -62,39 +62,47 @@ export function ALEViewROTPDF() {
     };
 
     const getLocationName = (cont, type) => {
-        const { movementType, tripType } = cont.booking || {};
+        const { movementType, tripType } = cont.aleBooking || {};
 
         if (type === 'from') {
             if (tripType) {
-                if (movementType === "Import" && tripType === "Pick-up") return cont.portName || "Port";
-                if (tripType === "Drop-off") return cont.consignee.companyName || "Consignee";
-                if (movementType === "Export" && tripType === "Pick-up") return cont.depotName || "Depot";
-                if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
-                if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                // if (movementType === "Import" && tripType === "Pick-up") return cont.portName || "Port";
+                // if (tripType === "Drop-off") return cont.consignee.companyName || "Consignee";
+                // if (movementType === "Export" && tripType === "Pick-up") return cont.terminalName || "Terminal";
+                // if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.terminalName || "Terminal";
             } else {
-                if (movementType === "Import") return cont.depotName || "Depot";
-                if (movementType === "Export") return cont.portName || "Port";
+                if (movementType === "Import") return cont.terminalName || "Terminal";
+                if (movementType === "Export") {
+                    return cont.consigneeId === null
+                        ? cont.externalConsigneeName
+                        : cont.consigneeName;
+                }
             }
-            return cont.booking?.fromName || "N/A";
+            return cont.aleBooking?.fromName || "N/A";
         } else {
             if (tripType) {
-                if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
-                if (tripType === "Pick-up") return cont.consignee.companyName || "Consignee";
-                if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
-                if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
-                if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                // if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
+                // if (tripType === "Pick-up") return cont.consignee.companyName || "Consignee";
+                // if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
+                // if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
             } else {
-                if (movementType === "Import") return cont.portName || "Port";
-                if (movementType === "Export") return cont.depotName || "Depot";
+                if (movementType === "Import") {
+                    return cont.consigneeId === null
+                        ? cont.externalConsigneeName
+                        : cont.consigneeName;
+                }
+                if (movementType === "Export") return cont.terminalName || "Terminal";
             }
-            return cont.toName || "N/A";
+            return cont?.toName || "N/A";
         }
     };
     
     if (loading) return <div className="p-20 text-center">Generating PDF View...</div>;
     if (!data) return <div className="p-20 text-center text-red-500">Record not found.</div>;
 
-    const booking = data.booking || {};
+    const aleBooking = data.aleBooking || {};
 
     return (
         <Layout role="forwarder">
@@ -135,20 +143,21 @@ export function ALEViewROTPDF() {
                     <div className="text-center py-1 font-bold text-[-16px] tracking-widest mb-4"
                          style={{display: 'flex', justifyContent: 'space-between', textAlign: 'center', paddingTop: '4px', paddingBottom: '4px', paddingLeft: '25px', paddingRight: '25px', fontWeight: 'bold', fontSize: '16px', letterSpacing: '0.1em', marginBottom: '16px', backgroundColor: '#0054dc', color: '#ffffff',}}>
                         <p>e-ROT</p>
-                        <p>{booking.rotNumber}</p>
+                        <p>{aleBooking.rotNumber}</p>
                     </div>
 
                     {/* Section: General Details */}
                     <PDFSectionHeader title="General Details" />
                     <div className="grid grid-cols-2 gap-x-4 mb-6" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: '16px', marginBottom: '24px' }}>
-                        <PDFRow label="Movement Type" value={booking.movementType} />
-                        <PDFRow label="Type of Trip" value={booking.tripType} />
-                        <PDFRow label="BL/Booking Number" value={booking.blOrBookingNumber} />
-                        <PDFRow label="SCN" value={booking.scn} />
-                        <PDFRow label="POD/POL" value={booking.portLocation} />
-                        <PDFRow label="ETA" value={booking.eta?.split('T')[0]} />
-                        <PDFRow label="Seal No." value={booking.sealNumber} />
-                        <PDFRow label="Forwarder Remarks" value={booking.forwarderRemarks} />
+                        <PDFRow label="Movement Type" value={aleBooking.movementType} />
+                        <PDFRow label="Type of Trip" value={aleBooking.tripType} />
+                        <PDFRow label="AWB No." value={aleBooking.awbNumber} />
+                        <PDFRow label="House AWB No." value={aleBooking.houseAWBNumber} />
+                        <PDFRow label="Flight No." value={aleBooking.flightNumber} />
+                        <PDFRow label="Terminal" value={aleBooking.terminalLocation} />
+                        <PDFRow label="ETA" value={aleBooking.eta?.split('T')[0]} />
+                        <PDFRow label="Seal No." value={aleBooking.sealNumber} />
+                        <PDFRow label="Forwarder Remarks" value={aleBooking?.forwarderRemarks} />
                     </div>
 
                     {/* Section: Shipping Details */}
@@ -156,24 +165,23 @@ export function ALEViewROTPDF() {
                     <div className="grid grid-cols-2 gap-x-4 mb-6" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: '16px', marginBottom: '24px' }}>
                         <PDFRow label="Pickup From" value={getLocationName(data, "from")} />
                         <PDFRow label="Send To" value={getLocationName(data, "to")} />
-                        <PDFRow label="Forwarding Agent" value={booking.forwardingName} />
-                        <PDFRow label="Haulier" value={data.haulierName} />
-                        <PDFRow label="Shipping Agent" value={booking.shippingAgentName} />
+                        <PDFRow label="Forwarding Agent" value={aleBooking.forwardingName} />
+                        <PDFRow label="Trucker/Transporter" value={data.haulierName} />
+                        <PDFRow label="Airline" value={aleBooking.airlineName} />
                         <PDFRow label="Billing Party" value={billingPartyName} />
                     </div>
 
                     {/* Section: Container Details */}
                     <PDFSectionHeader title="Container Details" />
                     <div className="grid grid-cols-2 gap-x-4 mb-6" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: '16px', marginBottom: '24px' }}>
-                        <PDFRow label="Container No." value={data.containerNumber} />
+                        <PDFRow label="Package Quantity." value={data.packageQuantity} />
                         <PDFRow label="Size" value={data.containerSize} />
                         <PDFRow label="Type" value={data.containerType} />
                         <PDFRow label="VGM" value={data.vgm} />
-                        <PDFRow label="Trailer Type" value={data.trailerType} />
-                        <PDFRow label="Depot" value={data.depotName} />
-                        <PDFRow label="Consignee" value={data.consigneeName} />
-                        <PDFRow label="Port" value={data.portName} />
-                        <PDFRow label="To Address" value={data.toAddress?.[0]?.address} isFullWidth={true} />
+                        <PDFRow label="Volumetric Weight" value={data.volumeMetricWeight} />
+                        <PDFRow label="Consignee" value={data.consigneeName !== null ? data.consigneeName : data.externalConsigneeName} />
+                        <PDFRow label="Terminal" value={data.terminalName} />
+                        <PDFRow label="To Address" value={data.toAddress?.[0]?.address !== null ? data.toAddress?.[0]?.address : data.externalConsigneeAddress} isFullWidth={true} />
                         <PDFRow label="ROT Date" value={data.rotDate?.split('T')[0]} />
                     </div>
                 </div>

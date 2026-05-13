@@ -13,20 +13,19 @@ export function ALEEditROTForm() {
     const navigate = useNavigate();
     const { id } = useParams();
     const [isLoading, setIsLoading] = useState(true);
-    const [ports, setPorts] = useState([]);
+    const [terminals, setTerminals] = useState([]);
     const [hauliers, setHauliers] = useState([]);
-    const [shippingAgents, setShippingAgents] = useState([]);
+    const [airlines, setShippingAgents] = useState([]);
     const [billingParties, setBillingParties] = useState([]);
-    const [depots, setDepots] = useState([]);
     const [consignees, setConsignees] = useState([]);
 
     const [formData, setFormData] = useState({
         movementType: "",
         rotNumber: "",
-        bookingNumber: "",
-        houseBLNumber: "",
+        awbNumber: "",
+        houseAWBNumber: "",
         scn: "",
-        portLocation: "",
+        terminalLocation: "",
         eta: "",
         sealNo: "",
         forwardingRemarks: "",
@@ -34,7 +33,7 @@ export function ALEEditROTForm() {
         customReceiptNo: "",
         dicNumber: "",
         zbNumber: "",
-        shippingAgent: "",
+        airline: "",
         billingParty: "",
         containerQuantity: 1,
         containerType: "",
@@ -44,8 +43,8 @@ export function ALEEditROTForm() {
         rotDate: "",
         haulier: "",
         consignee: "",
-        depot: "",
-        depotChoice: "Single",
+        // depot: "",
+        // depotChoice: "Single",
         haulierChoice: "Single",
         forwardingId: ""
     });
@@ -61,12 +60,10 @@ export function ALEEditROTForm() {
                 const userCompanyCode = user.companyCode;
 
                 if (Array.isArray(companies)) {
-                    setPorts(companies.filter(c => c.role === "Port").map(c => ({companyName: c.companyName, companyCode: c.companyCode})));
+                    setTerminals(companies.filter(c => c.role === "Terminal").map(c => ({companyName: c.companyName, companyCode: c.companyCode})));
                     setHauliers(companies.filter(h => h.role === "Haulier").map(h => ({companyName: h.companyName, companyCode: h.companyCode})));
                     setShippingAgents(companies.filter(h => h.role === "Shipping Line").map(h => ({companyName: h.companyName, companyCode: h.companyCode})));
                     setConsignees(companies.filter(h => h.role === "Consignee").map(h => ({companyName: h.companyName, companyCode: h.companyCode})));
-                    setDepots(companies.filter(h => h.role === "Depot").map(h => ({companyName: h.companyName, companyCode: h.companyCode})));
-
                     const billing = [{ companyName: localStorage.getItem("companyName"), companyCode: userCompanyCode },
                         ...companies.filter(c => c.role === "Consignee").map(c => ({companyName: c.companyName, companyCode: c.companyCode}))];
                     setBillingParties(billing);
@@ -79,10 +76,10 @@ export function ALEEditROTForm() {
                     setFormData({
                         movementType: b.movementType || "Import",
                         rotNumber: b.rotNumber || "",
-                        bookingNumber: b.blOrBookingNumber || "",
-                        houseBLNumber: b.houseBLNumber || "",
+                        awbNumber: b.awbNumber || "",
+                        houseAWBNumber: b.houseAWBNumber || "",
                         scn: b.scn || "",
-                        portLocation: b.portLocation || "",
+                        terminalLocation: b.terminalLocation || "",
                         eta: b.eta ? b.eta.split('T')[0] : "",
                         sealNo: b.sealNumber || "",
                         forwardingRemarks: b.forwardingRemarks || "",
@@ -90,7 +87,7 @@ export function ALEEditROTForm() {
                         customReceiptNo: b.customReceiptNo || "",
                         dicNumber: b.dicNumber || "",
                         zbNumber: b.zbNumber || "",
-                        shippingAgent: b.shippingAgentId || "",
+                        airline: b.airlineId || "",
                         billingParty: b.billingParty || "",
                         containerQuantity: b.containerQuantity || 1,
                         containerType: container.containerType || "",
@@ -100,8 +97,8 @@ export function ALEEditROTForm() {
                         rotDate: container.rotDate ? container.rotDate.split('T')[0] : "",
                         haulier: container.haulierId || "",
                         consignee: container.consigneeId || "",
-                        depot: container.depotId || "",
-                        depotChoice: b.depotChoice || "Single",
+                        // depot: container.depotId || "",
+                        // depotChoice: b.depotChoice || "Single",
                         haulierChoice: b.haulierChoice || "Single",
                         forwardingId: userCompanyCode
                     });
@@ -120,7 +117,6 @@ export function ALEEditROTForm() {
         setFormData(prev => {
             const newData = { ...prev, [name]: value };
             if (name === "haulierChoice" && value === "Multiple") newData.haulier = "";
-            if (name === "depotChoice" && value === "Multiple") newData.depot = "";
             return newData;
         });
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
@@ -130,7 +126,7 @@ export function ALEEditROTForm() {
         e.preventDefault();
         const newErrors = {};
 
-        if (!formData.bookingNumber) newErrors.bookingNumber = "Required!";
+        if (!formData.awbNumber) newErrors.awbNumber = "Required!";
         if (!formData.scn) newErrors.scn = "Required!";
         if (!formData.haulier && formData.haulierChoice === "Single") newErrors.haulier = "Required!";
 
@@ -142,9 +138,9 @@ export function ALEEditROTForm() {
         try {
             const payload = {
                 ...formData,
-                ShippingAgentId: formData.shippingAgent,
+                AirlineId: formData.airline,
                 rotNumber: formData.rotNumber,
-                blOrBookingNumber: formData.bookingNumber,
+                blOrBookingNumber: formData.awbNumber,
             };
 
             localStorage.setItem("updatedROT", JSON.stringify(payload));
@@ -194,11 +190,11 @@ export function ALEEditROTForm() {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <InputField label={formData.movementType === "Import" ? "BL No." : "Booking No."} name="bookingNumber" value={formData.bookingNumber} readOnly />
-                                    <InputField label="House BL No." name="houseBLNumber" value={formData.houseBLNumber} onChange={handleChange} error={errors.houseBLNumber} required/>
+                                    <InputField label="AWB No." name="awbNumber" value={formData.awbNumber} readOnly />
+                                    <InputField label="House AWB No." name="houseAWBNumber" value={formData.houseAWBNumber} onChange={handleChange} error={errors.houseAWBNumber} required/>
                                     <InputField label="SCN" name="scn" value={formData.scn} onChange={handleChange} error={errors.scn} required />
-                                    <SelectField label={formData.movementType === "Import" ? "POD" : "POL"} name="portLocation" value={formData.portLocation} onChange={handleChange} error={errors.portLocation} options={ports.map(p => ({label: p.companyName, value: p.companyCode}))} />
-                                    <SelectField label="Shipping Agent" name="shippingAgent" value={formData.shippingAgent} onChange={handleChange} options={shippingAgents.map(s => ({label: s.companyName, value: s.companyCode}))} />
+                                    <SelectField label="Terminal" name="terminalLocation" value={formData.terminalLocation} onChange={handleChange} error={errors.terminalLocation} options={terminals.map(p => ({label: p.companyName, value: p.companyCode}))} />
+                                    <SelectField label="Airline" name="airline" value={formData.airline} onChange={handleChange} options={airlines.map(s => ({label: s.companyName, value: s.companyCode}))} />
                                     <SelectField label="Billing Party" name="billingParty" value={formData.billingParty} onChange={handleChange} options={billingParties.map(b => ({label: b.companyName, value: b.companyCode}))} />
                                 </div>
 
@@ -217,18 +213,18 @@ export function ALEEditROTForm() {
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col gap-2 p-4 bg-blue-50/30 rounded-xl border border-blue-100">
-                                        <label className="text-sm font-semibold text-gray-800">Assigned Depot</label>
-                                        <div className="flex-1">
-                                            <SelectField
-                                                label=""
-                                                name="depot"
-                                                value={formData.depot}
-                                                onChange={handleChange}
-                                                options={depots.map(d => ({label: d.companyName, value: d.companyCode}))}
-                                            />
-                                        </div>
-                                    </div>
+                                    {/*<div className="flex flex-col gap-2 p-4 bg-blue-50/30 rounded-xl border border-blue-100">*/}
+                                    {/*    <label className="text-sm font-semibold text-gray-800">Assigned Depot</label>*/}
+                                    {/*    <div className="flex-1">*/}
+                                    {/*        <SelectField*/}
+                                    {/*            label=""*/}
+                                    {/*            name="depot"*/}
+                                    {/*            value={formData.depot}*/}
+                                    {/*            onChange={handleChange}*/}
+                                    {/*            options={depots.map(d => ({label: d.companyName, value: d.companyCode}))}*/}
+                                    {/*        />*/}
+                                    {/*    </div>*/}
+                                    {/*</div>*/}
                                     <SelectField label="Consignee/Shipper" name="consignee" options={consignees.map(t => ({label: t.companyName, value: t.companyCode}))} value={formData.consignee} onChange={handleChange} />
                                     <InputField label="Forwarding Remarks" name="forwardingRemarks" value={formData.forwardingRemarks} onChange={handleChange} />
                                 </div>

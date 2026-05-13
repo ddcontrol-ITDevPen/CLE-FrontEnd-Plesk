@@ -16,10 +16,8 @@ export function ALEAddROTForm2() {
     const [prevData, setPrevData] = useState({});
     const [consignees, setConsignees] = useState([]);
     const [isConsigneesLoading, setIsConsigneesLoading] = useState(false);
-    const [depots, setDepots] = useState([]);
-    const [isDepots, setIsDepotsLoading] = useState(false);
-    const [ports, setPorts] = useState([]);
-    const [isPorts, setIsPortsLoading] = useState(false);
+    const [terminals, setTerminals] = useState([]);
+    const [isTerminals, setIsTerminalsLoading] = useState(false);
     const [hauliers, setHauliers] = useState([]);
     const [allCompanies, setAllCompanies] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,7 +29,7 @@ export function ALEAddROTForm2() {
         vgm: "",
         trailerType: "",
         consignee: "",
-        depot: "",
+        terminal: "",
         rotDate: "",
         addresses: [""]
     });
@@ -50,10 +48,10 @@ export function ALEAddROTForm2() {
         setPrevData(savedData);
         const initializeData = async () => {
             const qty = parseInt(savedData.containerQuantity) || 1;
-            const initialPort = savedData.portLocation || "";
+            const initialTerminal = savedData.terminalLocation || "";
 
             const initialHaulier = savedData.haulierChoice === "Single" ? savedData.haulier : "";
-            const initialDepot = savedData.depotChoice === "Single" ? savedData.depot : "";
+            //const initialTerminal = savedData.terminalChoice === "Single" ? savedData.terminal : "";
 
             const initialContainerData = {
                 containerNo: "",
@@ -62,8 +60,7 @@ export function ALEAddROTForm2() {
                 vgm: savedData.vgm || "",
                 trailerType: savedData.trailerType || "",
                 consignee: savedData.consignee || "",
-                depot: initialDepot,
-                port: initialPort,
+                terminal: initialTerminal,
                 haulier: initialHaulier,
                 rotDate: savedData.rotDate || "",
                 addresses: [""]
@@ -80,22 +77,20 @@ export function ALEAddROTForm2() {
 
         const fetchData = async () => {
             setIsConsigneesLoading(true);
-            setIsDepotsLoading(true);
-            setIsPortsLoading(true);
+            setIsTerminalsLoading(true);
             try {
                 const data = await getCompanies();
                 if (Array.isArray(data)) {
                     setAllCompanies(data);
                     const consignee = data.filter(h => h.role === "Consignee").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
-                    const depot = data.filter(h => h.role === "Depot").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
-                    const port = data.filter(h => h.role === "Port").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
+                    const terminal = data.filter(h => h.role === "Terminal").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
                     const haulier = data.filter(h => h.role === "Haulier").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
                     const savedData = JSON.parse(localStorage.getItem("pendingROT") || "{}");
                     const mType = savedData.movementType;
 
                     setConsignees(consignee);
-                    setDepots(depot);
-                    setPorts(port);
+                    setTerminals(terminal);
+                    setTerminals(terminal);
                     setHauliers(haulier);
 
                     setContainers(prevContainers => prevContainers.map(cont => {
@@ -109,17 +104,17 @@ export function ALEAddROTForm2() {
             } catch (error) {
                 console.error("Failed to load information:", error);
                 setConsignees([]);
-                setDepots([]);
+                setTerminals([]);
                 setHauliers([]);
             } finally {
                 setIsConsigneesLoading(false);
-                setIsDepotsLoading(false);
+                setIsTerminalsLoading(false);
             }
         };
         initializeData();
     }, []);
 
-    // const isDepotRequired = (prevData.tripType !== "Pick-up" && prevData.movementType === "Import") ||
+    // const isTerminalRequired = (prevData.tripType !== "Pick-up" && prevData.movementType === "Import") ||
     //     (prevData.movementType === "Export" && prevData.tripType !== "Drop-off");
 
     const addContainer = () => {
@@ -190,8 +185,8 @@ export function ALEAddROTForm2() {
             if (!container.consignee) {
                 newErrors[`${index}-consignee`] = "Consignee name is required";
             }
-            if (!container.depot) {
-                newErrors[`${index}-depot`] = "Depot name is required";
+            if (!container.terminal) {
+                newErrors[`${index}-terminal`] = "Terminal name is required";
             }
             if (!container.haulier) {
                 newErrors[`${index}-haulier`] = "Haulier name is required";
@@ -214,20 +209,20 @@ export function ALEAddROTForm2() {
             const formattedEta = prevData.eta ? new Date(prevData.eta).toISOString().split('T')[0] : null;
             const bookingPayload = {
                 rotNumber: prevData.rotNumber,
-                blOrBookingNumber: prevData.bookingNumber,
-                houseBLNumber: prevData.houseBLNumber, 
+                awbNumber: prevData.awbNumber,
+                houseAWBNumber: prevData.houseAWBNumber, 
                 movementType: prevData.movementType,
                 tripType: prevData.tripType,
                 scn: prevData.scn,
                 vesselName: prevData.vesselName,
-                portLocation: prevData.portLocation,
+                terminalLocation: prevData.terminalLocation,
                 eta: prevData.eta,
                 commodity: prevData.commodity,
                 specialHandling: prevData.specialHandling,
                 sealNumber: prevData.sealNo,
                 forwardingRemarks: prevData.forwardingRemarks,
                 forwardingId: companyCode,
-                shippingAgentId: prevData.shippingAgent,
+                airlineId: prevData.airline,
                 billingParty: prevData.billingParty,
                 customFormNo: prevData.customFormNo || "",
                 customReceiptNo: prevData.customReceiptNo || "",
@@ -250,7 +245,7 @@ export function ALEAddROTForm2() {
             for (const [key, file] of Object.entries(documents)) {
                 if (file) {
                     const docFormData = new FormData();
-                    docFormData.append("DocumentType", key);
+                    docFormData.append("DocumentType", docTypes[key]);
                     docFormData.append("ROTNumber", prevData.rotNumber);
                     docFormData.append("FileName", file.name);
                     docFormData.append("File", file);
@@ -267,8 +262,7 @@ export function ALEAddROTForm2() {
                     VGM: cont.vgm === "" ? null : cont.vgm,
                     TrailerType: cont.trailerType || null,
                     ConsigneeId: cont.consignee,
-                    DepotId: cont.depot || null,
-                    PortId: cont.port || null,
+                    TerminalId: cont.terminal || null,
                     HaulierId: cont.haulier || null,
                     ROTDate: formattedRotDate,
                     Status: "Assigned",
@@ -361,8 +355,8 @@ export function ALEAddROTForm2() {
                                     error={errors[`${cIdx}-haulier`]}
                                 />
                                 
-                                <SelectField label="Depot" name="depot" value={container.depot} onChange={(e) => handleInputChange(cIdx, "depot", e.target.value)} options={depots.map(d => ({label: d.companyName, value: d.companyCode}))} error={errors[`${cIdx}-depot`]} required />
-                                <InputField label="Port" required value={allCompanies.find(c => c.companyCode === container.port)?.companyName || container.port || ""} onChange={(e) => handleInputChange(cIdx, "port", e.target.value)} readOnly/>
+                                {/*<SelectField label="Terminal" name="terminal" value={container.terminal} onChange={(e) => handleInputChange(cIdx, "terminal", e.target.value)} options={terminals.map(d => ({label: d.companyName, value: d.companyCode}))} error={errors[`${cIdx}-terminal`]} required />*/}
+                                <InputField label="Terminal" required value={allCompanies.find(c => c.companyCode === container.terminal)?.companyName || container.terminal || ""} onChange={(e) => handleInputChange(cIdx, "terminal", e.target.value)} readOnly/>
                                 <InputField label="ROT Date" name="rotDate" type="date" value={container.rotDate} onChange={(e) => handleInputChange(cIdx, "rotDate", e.target.value)} error={errors[`${cIdx}-rotDate`]} required placeholder="(DD/MM/YYYY)" min={yesterday} max="2099-12-31" />
                             </div>
 
@@ -500,4 +494,3 @@ const FileUpload = ({ label, onChange, fileName, onRemove }) => (
         </div>
     </div>
 );
-

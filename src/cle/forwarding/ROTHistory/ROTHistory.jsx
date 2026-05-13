@@ -461,7 +461,7 @@ export function ROTHistory ()  {
                             return (
                                 <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
                                     <td className="p-4">{index + 1}</td>
-                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight">{cont.booking.blOrBookingNumber}</td>
+                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer" onClick={() => navigate(`/forwarding/rot/view/${cont.containerId}`)}>{cont.booking.blOrBookingNumber}</td>
                                     <td className="p-4">{cont.containerNumber}</td>
                                     <td className="p-4">{cont.booking?.tripType ? `${cont.booking?.movementType} - ${cont.booking?.tripType}` : cont.booking?.movementType}</td>
                                     <td className="p-4 whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>

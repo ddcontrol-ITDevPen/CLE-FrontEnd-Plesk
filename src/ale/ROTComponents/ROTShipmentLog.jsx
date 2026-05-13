@@ -31,6 +31,15 @@ const ShipmentLog = (data) => {
         {label: "Gated Out", time: data.gatedOutTime},
         {label: "Gated In", time: data.gatedInTime},
         {label: "Accepted", time: data.acceptedTime},
+        {label: "Rejected-Both", time: data.rejectedBothTime},
+        {label: "Rejected-AKPS", time: data.rejectedAKPSTime},
+        {label: "Rejected-Custom", time: data.rejectedCustomTime},
+        {label: "Approved-Complete", time: data.approvedBothTime},
+        {label: "Approved-AKPS", time: data.approvedAKPSTime},
+        {label: "Approved-Custom", time: data.approvedCustomTime},
+        // {label: "Examine-Both", time: data.examineBothTime},
+        // {label: "Examine-AKPS", time: data.examineAKPSTime},
+        // {label: "Examine-Custom", time: data.examineCustomTime},
         {label: "Enroute", time: data.enrouteTime},
         {label: "Assigned", time: data.assignedTime},
     ].filter(t => t.time);
@@ -82,7 +91,7 @@ const ShipmentLog = (data) => {
                                     {log.updatedBy || "System User"}
                                 </p>
                                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                                    Modified: <span className="font-medium text-slate-600">{log.updateAction || "Record updated"}</span>
+                                    Modified: <span className="font-medium text-slate-600">{log.action || "Record updated"}</span>
                                 </p>
                                 <div className="mt-2 flex items-center gap-3">
                                     <span className="text-[11px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full border border-slate-200">

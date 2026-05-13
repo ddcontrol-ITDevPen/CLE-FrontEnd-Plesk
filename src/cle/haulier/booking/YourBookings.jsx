@@ -479,7 +479,7 @@ export function YourBookings ()  {
                                     return (
                                         <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
                                             <td className="p-4">{index + 1}</td>
-                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight">{cont.booking.blOrBookingNumber}</td>
+                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer" onClick={() => navigate(`/haulier/booking/view/${cont.containerId}`)}>{cont.booking.blOrBookingNumber}</td>
                                             <td className="p-4">{cont.containerNumber}</td>
                                             <td className="p-4">{cont.booking?.tripType ? `${cont.booking?.movementType} - ${cont.booking?.tripType}` : cont.booking?.movementType}</td>
                                             <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
@@ -581,7 +581,7 @@ export function YourBookings ()  {
                             </p>
 
                             <div className="text-left mb-6">
-                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Reason for RejectionF *</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Reason for Rejection *</label>
                                 <textarea
                                     className="w-full mt-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm min-h-[100px]"
                                     placeholder="e.g., Incorrect Booking Number provided by client..."

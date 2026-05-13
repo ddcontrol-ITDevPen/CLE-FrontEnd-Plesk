@@ -17,7 +17,6 @@ export function ALEEditROTForm2() {
     const [allCompanies, setAllCompanies] = useState([]);
     const [consignees, setConsignees] = useState([]);
     const [hauliers, setHauliers] = useState([]);
-    const [depots, setDepots] = useState([]);
 
     const [containerData, setContainerData] = useState({
         containerNo: "",
@@ -27,8 +26,7 @@ export function ALEEditROTForm2() {
         trailerType: "",
         consignee: "",
         haulier: "",
-        depot: "",
-        port: "",
+        terminal: "",
         rotDate: "",
         addresses: [""],
         status: "",
@@ -65,7 +63,6 @@ export function ALEEditROTForm2() {
                     setAllCompanies(companies);
                     setConsignees(companies.filter(c => c.role === "Consignee").map(c => ({ label: c.companyName, value: c.companyCode })));
                     setHauliers(companies.filter(c => c.role === "Haulier").map(c => ({ label: c.companyName, value: c.companyCode })));
-                    setDepots(companies.filter(c => c.role === "Depot").map(c => ({ label: c.companyName, value: c.companyCode })));
                 }
 
                 const container = await getAleContainerById(id);
@@ -80,8 +77,7 @@ export function ALEEditROTForm2() {
                         trailerType: localEdits?.trailerType || container.trailerType || "",
                         consignee: localEdits?.consignee || container.consigneeId || "",
                         haulier: localEdits?.haulier || container.haulierId || "",
-                        depot: localEdits?.depot || container.depotId || "",
-                        port: localEdits?.port || container.portId || "",
+                        terminal: localEdits?.terminal || container.terminalId || "",
                         rotDate: localEdits?.rotDate
                             ? localEdits.rotDate
                             : (container.rotDate ? container.rotDate.split('T')[0] : ""),
@@ -170,9 +166,8 @@ export function ALEEditROTForm2() {
                 VGM: containerData.vgm || null,
                 TrailerType: containerData.trailerType || null,
                 ConsigneeId: containerData.consignee,
-                DepotId: containerData.depot,
                 HaulierId: containerData.haulier,
-                PortId: containerData.port,
+                TerminalId: containerData.terminal,
                 ROTDate: containerData.rotDate,
                 ToAddress: containerData.addresses
                     .filter(addr => addr.trim() !== "")
@@ -198,11 +193,18 @@ export function ALEEditROTForm2() {
 
             await updateAleContainer(id, containerPayload);
 
+            const docTypes = {
+                rotForm: "ROT Form",
+                customForm: "Custom Form",
+                packingList: "Packing List",
+                otherDoc: "Other Document"
+            };
+            
             const updatedROT = JSON.parse(localStorage.getItem("updatedROT") || "{}");
             for (const [key, file] of Object.entries(documents)) {
                 if (file) {
                     const docForm = new FormData();
-                    docForm.append("DocumentType", key);
+                    docForm.append("DocumentType", docTypes[key]);
                     docForm.append("ROTNumber", updatedROT.rotNumber || "UNKNOWN");
                     docForm.append("FileName", file.name);
                     docForm.append("File", file);
@@ -229,7 +231,7 @@ export function ALEEditROTForm2() {
         <Layout role="forwarder">
             <Toaster position="top-right" richColors />
             <div className="max-w-6xl">
-                <h1 className="text-3xl font-bold text-text-heading mb-8 uppercase">Edit ROT - Forwarding</h1>
+                <h1 className="text-3xl font-bold text-text-heading mb-8 uppercase">Edit ROT - Step 2</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <h2 className="text-2xl font-bold">Container Information</h2>
@@ -248,9 +250,7 @@ export function ALEEditROTForm2() {
                             <SelectField label="Trailer Type" options={["Normal", "Tipper", "Air", "SL"]} value={containerData.trailerType} onChange={(e) => handleInputChange("trailerType", e.target.value)} />
                             <SelectField label="Consignee/Shipper" required options={consignees} value={containerData.consignee} onChange={(e) => handleInputChange("consignee", e.target.value)} error={errors.consignee} />
                             <SelectField label="Haulier" required options={hauliers} value={containerData.haulier} onChange={(e) => handleInputChange("haulier", e.target.value)} />
-                            <SelectField label="Depot" required options={depots} value={containerData.depot} onChange={(e) => handleInputChange("depot", e.target.value)} />
-
-                            <InputField label="Port" value={allCompanies.find(c => c.companyCode === containerData.port)?.companyName || containerData.port} readOnly />
+                            <InputField label="Terminal" value={allCompanies.find(c => c.companyCode === containerData.terminal)?.companyName || containerData.terminal} readOnly />
                             <InputField label="ROT Date" required type="date" value={containerData.rotDate} onChange={(e) => handleInputChange("rotDate", e.target.value)} min="01/01/2025" error={errors.rotDate} />
                         </div>
 
