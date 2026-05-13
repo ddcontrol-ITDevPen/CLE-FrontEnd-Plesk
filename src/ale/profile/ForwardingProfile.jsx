@@ -17,6 +17,7 @@ export function ALEForwardingProfile() {
     useEffect(() => {
         const fetchUser = async () => {
             const userId = localStorage.getItem("userId");
+            console.log(userId);
             try {
                 const data = await getUserById(userId);
                 setUserData(data);
@@ -28,6 +29,8 @@ export function ALEForwardingProfile() {
                         setUpdatedByUser(updatedUser);
                     }
                 }
+                console.log("role:");
+                console.log("role:", getUserRole);
             } catch (error) {
                 console.error("Error fetching profile", error);
             } finally {
@@ -43,8 +46,8 @@ export function ALEForwardingProfile() {
             Forwarding: "forwarder",
             Haulier: "haulier",
             Terminal: "terminal",
-            AKPS: "akps",
-            Custom: "custom"
+            Akps: "akps",
+            Customs: "customs"
         };
         return roles[role] || "";
     };
@@ -75,7 +78,7 @@ export function ALEForwardingProfile() {
                             </div>
                         </div>
                         <button className="md:ml-auto flex items-center gap-2 bg-white text-system-color px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-gray-100 transition-all active:scale-95"
-                        onClick={() => navigate("/forwarding/profile/edit")}>
+                        onClick={() => navigate("/ale/profile/edit")}>
                             <FaPenToSquare /> Edit Profile
                         </button>
                     </div>
