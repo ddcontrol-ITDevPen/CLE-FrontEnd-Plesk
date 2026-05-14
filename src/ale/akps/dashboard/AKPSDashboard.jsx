@@ -9,7 +9,8 @@ import {
     Clock,
     History,
     ArrowUpRight,
-    UserCircle
+    UserCircle,
+    List
 } from "lucide-react";
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
@@ -125,35 +126,35 @@ export function AKPSDashboard() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-800">Welcome back, {userName}!</h1>
-                        <p className="text-gray-500 text-sm">Here is what's happening with your shipments today.</p>
+                        <p className="text-gray-500 text-sm">Here is what's happening with your bookings today.</p>
                     </div>
                 </div>
 
                 {/* Stat Cards - Bright Left Border Style */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <StatCard
-                        title="Total ROT"
+                        title="Enroute"
                         value={containers.length}
                         icon={LayoutDashboard}
                         colorClass="bg-orange-600"
                         borderClass="border-orange-600"
                     />
                     <StatCard
-                        title="Pending"
+                        title="Approved-AKPS"
                         value={containers.filter(c => c.status === "Assigned").length}
                         icon={Clock}
                         colorClass="bg-amber-500"
                         borderClass="border-amber-500"
                     />
                     <StatCard
-                        title="Enroute"
+                        title="Approved-Complete"
                         value={containers.filter(c => c.status === "Enroute").length}
                         icon={Truck}
                         colorClass="bg-indigo-500"
                         borderClass="border-indigo-500"
                     />
                     <StatCard
-                        title="Completed"
+                        title="Gated-Out"
                         value={containers.filter(c => c.status === "Completed").length}
                         icon={ClipboardCheck}
                         colorClass="bg-emerald-500"
@@ -173,7 +174,7 @@ export function AKPSDashboard() {
                                 onClick={() => navigate("/akps/bookinglist")}
                                 className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02]"
                             >
-                                <PlusCircle size={22} />
+                                <List size={22} />
                                 Booking List
                             </button>
                         </div>

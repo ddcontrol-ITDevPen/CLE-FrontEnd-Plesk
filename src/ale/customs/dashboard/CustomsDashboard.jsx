@@ -9,7 +9,8 @@ import {
     Clock,
     History,
     ArrowUpRight,
-    UserCircle
+    UserCircle,
+    List
 } from "lucide-react";
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
@@ -173,7 +174,7 @@ export function CustomsDashboard() {
                                 onClick={() => navigate("/customs/bookinglist")}
                                 className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02]"
                             >
-                                <PlusCircle size={22} />
+                                <List size={22} />
                                 Booking List
                             </button>
                         </div>
