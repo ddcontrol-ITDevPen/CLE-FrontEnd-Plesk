@@ -189,15 +189,27 @@ export function CustomsbookingAction() {
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = `${user.fullName} - ${user.companyName}`;
 
+            // 2. Determine the actual next status based on your business logic
+            let finalStatus = statusModal.nextStatus;
+
+            if (statusModal.nextStatus === "Approved-Custom") {
+                // Check if AKPS has already approved this container
+                // Note: Adjust the property name if it's 'approvedAKPSTime' or similar in your DB
+                if (currentContainer.approvedBothTime || currentContainer.approvedAkpsTime) {
+                    finalStatus = "Approved-Complete";
+                }
+            }
+            
             const payload = {
                 ...currentContainer,
                 // Map addresses to prevent circular reference errors
 
                 
-                status: statusModal.nextStatus,
+                status: finalStatus,
                 // Update the specific timestamps
                 ApprovedCustomTime: statusModal.nextStatus === "Approved-Custom" ? now : currentContainer.approvedCustomTime,
-                ApprovedBothTime: statusModal.nextStatus === "Approved-AKPS" ? now : currentContainer.approvedBothTime,
+                // If it becomes Approved-Complete, we ensure the custom time is set
+                ApprovedBothTime: finalStatus === "Approved-Complete" ? currentContainer.approvedBothTime : currentContainer.approvedBothTime,
                 RejectedCustomTime: statusModal.nextStatus === "Rejected-Custom" ? now : currentContainer.rejectedCustomTime,
                 CustomRejectReason: statusModal.nextStatus === "Rejected-Custom"
                     ? statusModal.remarks
