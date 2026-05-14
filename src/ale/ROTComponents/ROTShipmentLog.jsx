@@ -28,8 +28,8 @@ const ShipmentLog = (data) => {
         {label: "Deleted", time: data.deletedTime},
         {label: "RFC", time: data.rfcTime},
         {label: "Delivered", time: data.deliveredTime},
-        {label: "Gated Out", time: data.gatedOutTime},
-        {label: "Gated In", time: data.gatedInTime},
+        {label: "Gate-Out", time: data.gatedOutTime},
+        {label: "Gate-In", time: data.gatedInTime},
         {label: "Accepted", time: data.acceptedTime},
         {label: "Rejected-Both", time: data.rejectedBothTime},
         {label: "Rejected-AKPS", time: data.rejectedAKPSTime},
@@ -57,9 +57,9 @@ const ShipmentLog = (data) => {
             return { icon: <Truck size={16} />, color: "bg-enroute", text: "text-enroute" };
         if (lowerLabel.includes("accepted"))
             return { icon: <Check size={16} />, color: "bg-accepted", text: "text-enroute" };
-        if (lowerLabel.includes("gate in"))
+        if (lowerLabel.includes("gate-in"))
             return { icon: <LogIn size={16} />, color: "bg-gate-in-out", text: "gate-in-out" };
-        if (lowerLabel.includes("gate out"))
+        if (lowerLabel.includes("gate-out"))
             return { icon: <LogOut size={16} />, color: "bg-gate-in-out", text: "gate-in-out" };
         if (lowerLabel.includes("delivered"))
             return { icon: <CheckCircle2 size={16} />, color: "bg-delivered-rfc", text: "text-delivered-rfc" };

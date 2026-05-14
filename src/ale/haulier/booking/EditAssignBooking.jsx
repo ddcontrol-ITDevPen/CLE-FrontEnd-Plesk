@@ -9,7 +9,7 @@ import {
     Clock,
     Hash,
     Save,
-    ArrowLeft
+    ArrowLeft, TicketCheck
 } from "lucide-react";
 import { getAleContainerById, updateAleContainer } from "../../../services/aleContainerService.js";
 import { toast, Toaster } from "sonner";
@@ -41,16 +41,17 @@ export function ALEEditAssignBooking() {
 
     const [formData, setFormData] = useState({
         id: "",
-        blNumber: "",
-        houseBLNumber: "",
-        containerNumber: "",
+        awbNumber: "",
+        houseAWBNumber: "",
         driverId: "",
         pmId: "",
         trailerId: "",
         timeSlotId: "",
         containerId: id,
         rotNumber: "",
-        haulierId: ""
+        haulierId: localStorage.getItem("companyCode") || "",
+        passNumber: "",
+        consigneeTimeSlot: "",
     });
 
     const [errors, setErrors] = useState({});
@@ -93,16 +94,17 @@ export function ALEEditAssignBooking() {
 
                     setFormData({
                         id: assignedHaulierData.id,
-                        blNumber: containerData.booking?.blOrBookingNumber || "",
-                        houseBLNumber: containerData.booking?.houseBLNumber || "",
-                        containerNumber: containerData.containerNumber || "",
+                        awbNumber: containerData.aleBooking?.awbNumber || "",
+                        houseAWBNumber: containerData.aleBooking?.houseAWBNumber || "",
                         rotNumber: containerData.rotNumber || "",
                         driverId: assignedHaulierData.driverId,
                         pmId: assignedHaulierData.pmId,
                         trailerId: assignedHaulierData.trailerId,
                         timeSlotId: assignedHaulierData.timeSlotId,
                         containerId: id,
-                        haulierId: haulierId
+                        haulierId: haulierId,
+                        passNumber: assignedHaulierData.passNumber,
+                        consigneeTimeSlot: assignedHaulierData.consigneeTimeSlot,
                     });
                 }
             } catch (error) {
@@ -136,21 +138,38 @@ export function ALEEditAssignBooking() {
         if (!formData.pmId) newErrors.pmId = "Prime Mover is required";
         if (!formData.trailerId) newErrors.trailerId = "Trailer selection is required";
         if (!formData.timeSlotId) newErrors.timeSlotId = "Time Slot is required";
+        if (!formData.passNumber) newErrors.passNumber = "Pass Number is required";
+        if (!formData.consigneeTimeSlot) newErrors.consigneeTimeSlot = "Consignee Time Slot is required";
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             return;
         }
+        const user = await getUserById(localStorage.getItem("userId"));
 
         try {
-            await updateAleAssignedHaulier(formData.id, formData);
+            const assignmentPayload = {
+                id: formData.id,
+                containerId: parseInt(id),
+                rotNumber: container.rotNumber,
+                haulierId: user.companyCode,
+                driverId: formData.driverId,
+                pmId: formData.pmId,
+                trailerId: formData.trailerId,
+                timeSlotId: formData.timeSlotId,
+                passNumber: formData.passNumber,
+                consigneeTimeSlot: formData.consigneeTimeSlot.length === 5
+                    ? `${formData.consigneeTimeSlot}:00`
+                    : formData.consigneeTimeSlot
+            };
+            await updateAleAssignedHaulier(assignmentPayload);
             if (formData.timeSlotId !== assignedHaulier.timeSlotId) {
                 // Revert OLD slot (+1)
                 const oldSlot = await getAleTimeSlotById(assignedHaulier.timeSlotId);
-                await updateAleTimeSlot(oldSlot.id, { ...oldSlot, totalSlot: oldSlot.totalSlot + 1 });
+                await updateAleTimeSlot(oldSlot.id, { ...oldSlot, pickUpTotalSlot: oldSlot.pickUpTotalSlot + 1 });
                 // Deduct NEW slot (-1)
                 const newSlot = await getAleTimeSlotById(formData.timeSlotId);
-                await updateAleTimeSlot(newSlot.id, { ...newSlot, totalSlot: newSlot.totalSlot - 1 });
+                await updateAleTimeSlot(newSlot.id, { ...newSlot, pickUpTotalSlot: newSlot.pickUpTotalSlot - 1 });
             }
             toast.success("Assignment updated successfully!");
             setTimeout(() => navigate("/ale/haulier/booking/accepted"), 1500);
@@ -178,9 +197,9 @@ export function ALEEditAssignBooking() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <InputField label="BL Number" value={formData.blNumber} readOnly />
-                        <InputField label="House BL Number" value={formData.houseBLNumber} readOnly />
-                        <InputField label="Container Number" value={formData.containerNumber} readOnly />
+                        <InputField label="ROT Number" value={formData.rotNumber} readOnly />
+                        <InputField label="AWB Number" value={formData.awbNumber} readOnly />
+                        <InputField label="House AWB Number" value={formData.houseAWBNumber} readOnly />
                     </div>
 
                     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
@@ -194,7 +213,7 @@ export function ALEEditAssignBooking() {
 
                         <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                             <SelectField label="Driver Name" name="driverId" icon={<User size={18}/>} value={formData.driverId} onChange={handleChange} error={errors.driverId} required options={drivers.map(d => ({ label: d.name, value: d.id }))} />
-                            <SelectField label="PM No. (Prime Mover)" name="pmId" icon={<Hash size={18}/>} value={formData.pmId} onChange={handleChange} error={errors.pmId} required options={primeMovers.map(p => ({ label: p.plateNumber, value: p.id }))} />
+                            <SelectField label="Trucker/PM No. (Prime Mover)" name="pmId" icon={<Hash size={18}/>} value={formData.pmId} onChange={handleChange} error={errors.pmId} required options={primeMovers.map(p => ({ label: p.plateNumber, value: p.id }))} />
                             <SelectField label="Booking Date" name="bookingDate" icon={<Clock size={18}/>} value={selectedDate} onChange={handleDateChange} required options={availableDates.map(d => ({ label: d, value: d }))} />
                             <SelectField
                                 label="Time Slot"
@@ -211,6 +230,28 @@ export function ALEEditAssignBooking() {
                                 }))}
                             />
                             <SelectField label="Trailer No." name="trailerId" icon={<LucideTruck size={18}/>} value={formData.trailerId} onChange={handleChange} error={errors.trailerId} required options={trailers.map(t => ({ label: `${t.plateNumber} - ${t.type}`, value: t.id }))} />
+                            <InputField
+                                label="Pass No."
+                                name="passNumber"
+                                icon={<TicketCheck size={18}/>}
+                                value={formData.passNumber}
+                                onChange={handleChange}
+                                error={errors.passNumber}
+                                readOnly={false}
+                                required
+                            />
+
+                            <InputField
+                                label="Consignee Time Slot."
+                                name="consigneeTimeSlot"
+                                type="time"
+                                icon={<Clock size={18}/>}
+                                value={formData.consigneeTimeSlot}
+                                onChange={handleChange}
+                                error={errors.consigneeTimeSlot}
+                                readOnly={false}
+                                required
+                            />
                         </div>
                     </div>
 
@@ -226,23 +267,63 @@ export function ALEEditAssignBooking() {
 }
 
 // Reusable components (Same as your AssignBooking file)
-const InputField = ({ label, value, readOnly }) => (
+const InputField = ({ icon, label, name, value, onChange, error, required, readOnly, type }) => (
     <div className="flex flex-col gap-1">
-        <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">{label}</label>
-        <input type="text" value={value} readOnly={readOnly} className="p-3 rounded-xl border border-gray-200 bg-gray-100/50 text-gray-600 font-bold outline-none" />
+        <label className="text-sm font-bold text-gray-700 tracking-wider flex items-center gap-2"> {icon} {label} {required && !readOnly && <span className="text-red-500">*</span>}</label>
+        <input
+            type={type !== null ? type : "text"}
+            name={name}
+            value={value}
+            onChange={onChange}
+            readOnly={readOnly}
+            className={`p-3 rounded-xl border border-gray-200 ${readOnly ? "bg-gray-100/50" : "bg-gray-50/50" } bg-gray-100/50 outline-none  ${error ? 'border-red-500' : 'border-gray-100 hover:border-indigo-300'}`}
+        />
+        <AnimatePresence>
+            {error && (
+                <motion.span initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-red-500 font-bold mt-1 ml-2">
+                    {error}
+                </motion.span>
+            )}
+        </AnimatePresence>
     </div>
 );
 
-const SelectField = ({ label, name, value, onChange, error, required, options, icon }) => (
+const SelectField = ({ label, name, value, onChange, error, required, options = [], icon, disabled }) => (
     <div className="flex flex-col gap-1">
-        <label className="text-sm font-bold text-gray-700 flex items-center gap-2">{icon} {label} {required && <span className="text-red-500">*</span>}</label>
+        <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+            {icon} {label} {required && <span className="text-red-500">*</span>}
+        </label>
         <div className="relative group">
-            <select name={name} value={value} onChange={onChange} className={`p-4 pr-10 w-full rounded-2xl border bg-gray-50/50 shadow-sm outline-none appearance-none transition-all ${error ? 'border-red-500' : 'border-gray-100 hover:border-amber-300'}`}>
-                <option value="">Select {label}...</option>
-                {options.map((opt, index) => <option key={index} value={opt.value}>{opt.label}</option>)}
+            <select
+                name={name}
+                value={value}
+                onChange={onChange}
+                disabled={disabled}
+                className={`p-4 pr-10 w-full rounded-2xl border bg-gray-50/50 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none appearance-none transition-all ${error ? 'border-red-500' : 'border-gray-100 hover:border-indigo-300'}`}
+            >
+                {disabled ? (
+                    <option value={value}>{options[0]?.label || "N/A"}</option>
+                ) : (
+                    <>
+                        <option value="">Select {label}...</option>
+                        {options.map((opt, index) => (
+                            <option key={index} value={opt.value}>{opt.label}</option>
+                        ))}
+                    </>
+                )}
             </select>
-            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400"><CircleChevronDown size={20} /></div>
+            {!disabled && (
+                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
+                    <CircleChevronDown size={20} />
+                </div>
+            )}
         </div>
-        <AnimatePresence>{error && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-red-500 font-bold mt-1 ml-2">{error}</motion.span>}</AnimatePresence>
+        <AnimatePresence>
+            {error && (
+                <motion.span initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-red-500 font-bold mt-1 ml-2">
+                    {error}
+                </motion.span>
+            )}
+        </AnimatePresence>
     </div>
 );

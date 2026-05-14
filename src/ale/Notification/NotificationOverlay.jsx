@@ -2,15 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { X, Check, Bell, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getUnreadNotifications, markNotificationAsRead } from '../../services/notificationService.js';
+import {getUserById} from "../../services/userService.js";
 
 export const NotificationOverlay = () => {
     const [notifications, setNotifications] = useState([]);
+    const [companyCode, setCompanyCode] = useState(null);
     const userId = localStorage.getItem("userId");
 
+    useEffect(() => {
+        const fetchUserCompany = async () => {
+            if (!userId) return;
+            try {
+                const userData = await getUserById(userId);
+                setCompanyCode(userData.companyCode);
+            } catch (error) {
+                console.error("Failed to fetch user company info", error);
+            }
+        };
+        fetchUserCompany();
+    }, [userId]);
+
     const fetchNotifications = async () => {
-        if (!userId) return;
+        if (!companyCode) return;
         try {
-            const data = await getUnreadNotifications(userId);
+            const data = await getUnreadNotifications(companyCode);
             setNotifications(data);
         } catch (error) {
             console.error("Failed to fetch notifications", error);
@@ -27,10 +42,11 @@ export const NotificationOverlay = () => {
     };
 
     useEffect(() => {
+        if (!companyCode) return;
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 20000);
         return () => clearInterval(interval);
-    }, [userId]);
+    }, [companyCode]);
 
     if (notifications.length === 0) return null;
 

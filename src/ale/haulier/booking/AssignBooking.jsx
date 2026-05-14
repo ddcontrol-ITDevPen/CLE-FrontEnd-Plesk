@@ -352,7 +352,7 @@ export function ALEAssignBooking() {
                             />
 
                             <SelectField
-                                label="PM No. (Prime Mover)"
+                                label="Trucker/PM No. (Prime Mover)"
                                 name="pmId"
                                 icon={<Hash size={18}/>}
                                 value={formData.pmId}
@@ -444,7 +444,7 @@ export function ALEAssignBooking() {
 // Reusable UI Components based on your Design System
 const InputField = ({ icon, label, name, value, onChange, error, required, readOnly, type }) => (
     <div className="flex flex-col gap-1">
-        <label className="text-xs font-bold text-gray-400 tracking-wider flex items-center gap-2"> {icon} {label} {required && !readOnly && <span className="text-red-500">*</span>}</label>
+        <label className="text-sm font-bold text-gray-700 tracking-wider flex items-center gap-2"> {icon} {label} {required && !readOnly && <span className="text-red-500">*</span>}</label>
         <input
             type={type !== null ? type : "text"}
             name={name}
