@@ -67,6 +67,7 @@ import {AkpsbookingAction} from "../ale/akps/booking/AkpsbookingAction.jsx";
 import {CustomsbookingList} from "../ale/customs/booking/CustomsbookingList.jsx";
 import {CustomsbookingDetails} from "../ale/customs/booking/CustomsbookingDetails.jsx";
 import {CustomsbookingAction} from "../ale/customs/booking/CustomsbookingAction.jsx";
+import {TerminalList} from "../ale/terminal/TerminalList.jsx"
 
 export default function AppRouter() {
     return (
@@ -544,7 +545,6 @@ export default function AppRouter() {
                         </ProtectedRoute>
                     }
                 />
-                
                 <Route
                     path="/ale/terminal/dashboard"
                     element={
@@ -609,6 +609,15 @@ export default function AppRouter() {
                         </ProtectedRoute>
                     }
                 />
+                <Route
+                    path="/ale/terminal/terminalList"
+                    element={
+                        <ProtectedRoute>
+                            <TerminalList />
+                        </ProtectedRoute>
+                    }
+                />
+              
                 {/* Fallback */}
                 <Route path="*" element={<LoginPage />} />
             </Routes>

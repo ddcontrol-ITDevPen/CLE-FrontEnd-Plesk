@@ -19,8 +19,8 @@ export default function TerminalNavBar({ role = "terminal" }) {
     };
 
     const menuItems = [
-        { icon: LucideHome, label: "Dashboard", path: "/terminal/dashboard" },
-        { icon: LucideFile, label: "View Document", path: "/forwarding/rot/document/view" },
+        { icon: LucideHome, label: "Dashboard", path: "/ale/terminal/dashboard" },
+        { icon: LucideFile, label: "Booking List", path: "/ale/terminal/terminalList" }
     ];
 
     return (

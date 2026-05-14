@@ -14,15 +14,21 @@ import {
 } from "../../../services/aleContainerService.js";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from 'xlsx';
+import {getUserById} from "../../../services/userService.js";
 
 const STATUS_CONFIG = {
+    "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
     "Enroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
-    "Approved-Custom": { bg: "bg-accepted",text: "text-emerald-900",border: "border-teal-200" },
-    "Approved-Akps": { bg: "bg-accepted",text: "text-emerald-900",border: "border-teal-200" },
-    "Approved-Complete": { bg: "bg-accepted",text: "text-emerald-900",border: "border-teal-200" },
-    "Rejected-Custom":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
-    "Rejected-Akps":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
+    "Approved-AKPS": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    "Approved-Custom": { bg: "bg-delivered-rfc",   text: "text-emerald-900",   border: "border-teal-200" },
+    "Approved-Complete": { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
+    "Accepted":   { bg: "bg-accepted",  text: "text-green",  border: "border-green-200" },
+    "Gated-In":   { bg: "bg-gate-in-out",   text: "text-blue-900",   border: "border-indigo-200" },
+    "Gated-Out":  { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
+    // "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    // "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
+    "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
 
 export function AkpsbookingList() {
@@ -70,7 +76,7 @@ export function AkpsbookingList() {
             "DropOffDeliveredTime": cont.rtDeliveredTime ? new Date(cont.rtDeliveredTime).toLocaleString() : "N/A",
             "DropOffRFCTime": cont.rtRFCTime ? new Date(cont.rtRFCTime).toLocaleString() : "N/A",
             "ROT Number": cont.rotNumber,
-            "BL/Booking Number": cont.booking?.blOrBookingNumber || "N/A",
+            "BL/Booking Number": cont.booking?.awbNumber || "N/A",
             "House BL Number": cont.booking?.houseBLNumber || "N/A",
             "Movement Type": cont.booking?.movementType || "N/A",
             "Trip Type": cont.booking?.tripType || "N/A",
@@ -104,9 +110,10 @@ export function AkpsbookingList() {
             setIsLoading(true);
             const data = await getAleContainers();
 
-            // Terminal usually sees ALL or filtered by location later
+            
             setContainers(data || []);
         } catch (error) {
+            console.error("Failed to fetch terminal data:", error); // Logs the actual error object
             toast.error("Failed to fetch terminal data");
         } finally {
             setIsLoading(false);
@@ -130,6 +137,13 @@ export function AkpsbookingList() {
         if (container.status === "RFC") return container.rtRFCTime || container.rfcTime;
         if (container.status === "Rejected") return container.rejectedTime;
         if (container.status === "Deleted") return container.deletedTime;
+        if (container.status === "Approved-Custom") return container.approvedCustomTime;
+        if (container.status === "Approved-AKPS") return container.akpsAcceptedTime;
+        if (container.status === "Approved-Complete") return container.approvedBothTime;
+        if (container.status === "Rejected-Both") return container.rejectedBothTime;
+        if (container.status === "Rejected-Custom") return container.rejectedCustomTime;
+        if (container.status === "Rejected-AKPS") return container.akpsRejectedTime;
+       
         return null;
     };
 
@@ -137,22 +151,32 @@ export function AkpsbookingList() {
         if (!status) return "bg-gray-50 text-gray-400 border-gray-100"; // Empty state
 
         switch (status.trim().toLowerCase()) {
-            case 'approved':
+            case 'Approved':
                 return "bg-emerald-100 text-emerald-700 border-emerald-200";
-            case 'rejected':
+            case 'Rejected':
                 return "bg-red-100 text-red-700 border-red-200";
+            case 'Examine':
+                return "bg-blue-100 text-blue-700 border-blue-200";
             default:
                 return "bg-blue-50 text-blue-600 border-blue-100"; // Default blue
         }
     };
+    const FORM_TYPE_COLORS = {
+        "K1": "text-blue-600 bg-blue-50 border-blue-100",
+        "K2": "text-orange-600 bg-orange-50 border-orange-100",
+        "K8": "text-green-600 bg-green-50 border-green-100",
+        // Default fallback if type doesn't match
+        "default": "text-gray-500 bg-gray-50"
+    };
 
-    // AkpsbookingList.jsx
     const handleStatusUpdate = async () => {
         const toastId = toast.loading(`Updating status to ${statusModal.nextStatus}...`);
         try {
             // 1. Get the current full container data
             const currentContainer = await getAleContainerById(statusModal.id);
             const now = new Date().toISOString();
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = `${user.fullName} - ${user.companyName}`;
 
             // 2. Build the payload. 
             // IMPORTANT: Use the exact property names the backend expects (casing matters)
@@ -162,16 +186,14 @@ export function AkpsbookingList() {
                 // Explicitly set the status
                 status: statusModal.nextStatus,
 
-                // Rejection Logic for AKPS
-                ...(statusModal.nextStatus === "Rejected-Akps" && {
-                    akpsStatus: "Rejected",
-                    akpsRejectReason: statusModal.remarks,
-                    akpsRejectedTime: now
-                }),
+                RejectedAKPSTime: statusModal.nextStatus === "Rejected-AKPS" ? now : currentContainer.rejectedAKPSTime,
+                RejectedBothTime : statusModal.nextStatus === "Rejected-AKPS" ? now : currentContainer.rejectedBothTime,
+                AKPSRejectReason: statusModal.nextStatus === "Rejected-AKPS"
+                    ? statusModal.remarks
+                    : currentContainer.akpsRejectReason,
+                UpdatedBy: updatedBy,
 
-                // CRITICAL: Ensure Required IDs are definitely present and not null
-                haulierId: currentContainer.haulierId,
-                consigneeId: currentContainer.consigneeId,
+
 
                 // Fix addresses: Convert complex objects to simple objects for the DTO
                 toAddress: currentContainer.toAddress?.map(addr => ({
@@ -197,9 +219,9 @@ export function AkpsbookingList() {
                 const matchesSearch =
                     cont.containerNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     cont.rotNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    cont.booking.blOrBookingNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    cont.booking.haulierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    cont.booking.movementType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    cont.aleBooking?.awbNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    cont.aleBooking?.haulierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    cont.aleBooking?.movementType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     cont.consigneeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     cont.portName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     cont.depotName?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -283,7 +305,7 @@ export function AkpsbookingList() {
         [containers, searchTerm, filterStatus, startDate, endDate, sortConfig]);
 
     const getLocationName = (cont, type) => {
-        const { movementType, tripType } = cont.booking || {};
+        const { movementType, tripType } = cont.aleBooking || {};
 
         if (type === 'from') {
             if (tripType) {
@@ -296,7 +318,7 @@ export function AkpsbookingList() {
                 if (movementType === "Import") return cont.depotName || "Depot";
                 if (movementType === "Export") return cont.portName || "Port";
             }
-            return cont.booking?.fromName || "N/A";
+            return cont.aleBooking?.fromName || "N/A";
         } else {
             if (tripType) {
                 if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
@@ -406,81 +428,47 @@ export function AkpsbookingList() {
                         <thead className="bg-[#E3DEEB] text-gray-800 font-bold text-sm">
                         <tr>
                             <th className="p-4 border-b w-10 text-center">No.</th>
-                            <th className="p-4 border-b w-32">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('blOrBookingNumber')}>
-                                    BL/Booking Number
-                                    {sortConfig.key === 'blOrBookingNumber' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
+                            <th className="p-4 border-b">
+                                <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('booking.customFormNo')}>
+                                    Custom Form No.
+                                    {sortConfig.key === 'booking.customFormNo' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
                                 </div>
                             </th>
-                            <th className="p-4 border-b w-36">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('booking.movementType')}>
-                                    Movement Type
-                                    {sortConfig.key === 'booking.movementType' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
+                            <th className="p-4 border-b">
+                                <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('booking.awbNumber')}>
+                                    AWB / House No.
+                                    {sortConfig.key === 'booking.awbNumber' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
                                 </div>
                             </th>
-                            <th className="p-4 border-b w-32">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('HaulierName')}>
-                                    Haulier Name
-                                    {sortConfig.key === 'HaulierName' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
+                            <th className="p-4 border-b">
+                                <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('booking.movementType')}>
+                                    Movement
+                                    {sortConfig.key === 'booking.movementType' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
                                 </div>
                             </th>
-
-                            <th className="p-4 border-b w-32">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('containerNumber')}>
-                                    Container Number
-                                    {sortConfig.key === 'containerNumber' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
+                            <th className="p-4 border-b">
+                                <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('haulierName')}>
+                                    Transporter
+                                    {sortConfig.key === 'haulierName' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
                                 </div>
                             </th>
-
-                            <th className="p-4 border-b w-24">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('rotDate')}>
-                                    ROT Date
-                                    {sortConfig.key === 'rotDate' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
+                            <th className="p-4 border-b">
+                                <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('containerNumber')}>
+                                    Prime Mover No.
+                                    {sortConfig.key === 'containerNumber' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
                                 </div>
                             </th>
-                            <th className="p-4 border-b w-36">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('timeStamp')}>
-                                    Timestamp
-                                    {sortConfig.key === 'timeStamp' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
+                            <th className="p-4 border-b">
+                                <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('timeStamp')}>
+                                    Date Time
+                                    {sortConfig.key === 'timeStamp' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
                                 </div>
                             </th>
-                            <th className="p-4 border-b w-30 text-center">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('status')}>
-                                    Status
-                                    {sortConfig.key === 'status' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b w-30 text-center">
-                                <div className="flex items-center justify-center gap-1" onClick={() => handleSort('customStatus')}>
-                                    Custom Status
-                                    {sortConfig.key === 'customStatus' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b w-30 text-center">
-                                <div className="flex items-center justify-center gap-1" onClick={() => handleSort('akpsStatus')}>
-                                    AKPS Status
-                                    {sortConfig.key === 'akpsStatus' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b w-28 text-center">Actions</th>
+                            <th className="p-4 border-b text-center">Status</th>
+                            <th className="p-4 border-b text-center">Customs</th>
+                            <th className="p-4 border-b text-center">AKPS</th>
+                            <th className="p-4 border-b text-center">MAHSB</th>
+                            <th className="p-4 border-b text-center">Actions</th>
                         </tr>
                         </thead>
                         <tbody className="text-[13px] xl:text-sm">
@@ -495,18 +483,52 @@ export function AkpsbookingList() {
                             </tr>
                         ) : filteredContainers.length > 0 ? (
                                 filteredContainers.map((cont, index) => {
+                                    console.log("Row Data (cont):", cont);
                                     const theme = STATUS_CONFIG[cont.status] || {bg: "bg-gray-100", text: "text-gray-700"};
+                                    const displayTime = cont.approvedAKPSTime || cont.rejectedAKPSTime || getStatusTimestamp(cont);
+
                                     return (
                                         <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
                                             <td className="p-4">{index + 1}</td>
-                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight">{cont.booking.blOrBookingNumber}</td>
-                                            <td className="p-4">{cont.booking?.movementType}</td>
-                                            <td className="p-4">{cont.containerNumber}</td>
-                                            <td className="p-4">{cont.haulierName}</td>
-                                            <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
-                                            <td className="p-4 text-[12px] whitespace-normal break-words leading-tight text-gray-600">
-                                                {getStatusTimestamp(cont) ? new Date(getStatusTimestamp(cont)).toLocaleString() : "-"}
+                                            <td className="p-4">
+                                                {(() => {
+                                                    const type = cont.aleBooking?.customFormType;
+                                                    // Pick the color class based on the type, or use default
+                                                    const colorClass = FORM_TYPE_COLORS[type] || FORM_TYPE_COLORS.default;
+
+                                                    return (
+                                                        <div className={`flex flex-col p-2 rounded-lg border ${colorClass}`}>
+                <span className="font-bold underline">
+                    {cont.aleBooking?.customFormNo || "N/A"}
+                </span>
+                                                            <span className="text-xs font-black uppercase tracking-tighter">
+                    {type || "No Type"}
+                </span>
+                                                        </div>
+                                                    );
+                                                })()}
                                             </td>
+                                            {/* AWB / House Number */}
+                                            <td className="p-4">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">{cont.aleBooking?.awbNumber || "N/A"}</span>
+                                                    <span className="text-xs text-gray-500">{cont.aleBooking?.houseAWBNumber}</span>
+                                                </div>
+                                            </td>
+
+                                            <td className="p-4 text-xs font-bold text-gray-600">{cont.aleBooking?.movementType}</td>
+
+                                            <td className="p-4 text-gray-600">{cont.haulierName}</td>
+                                            <td className="p-4 text-gray-600">{cont.aleBooking?.customReceiptNo}</td>
+
+
+                                            <td className="p-4 text-[12px] text-gray-500">
+                                                {displayTime ? new Date(displayTime).toLocaleString('en-GB', {
+                                                    dateStyle: 'short',
+                                                    timeStyle: 'short'
+                                                }) : "-"}
+                                            </td>
+
                                             <td className="p-4 text-center">
                                                 {/* Status Badge using Theme Colors */}
                                                 <span
@@ -514,18 +536,51 @@ export function AkpsbookingList() {
                                                 {cont.status}
                                             </span>
                                             </td>
-                                            {/* Custom Status Column */}
+                                            {/* Customs Status Column */}
                                             <td className="p-4 text-center">
-    <span className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider border ${getSecondaryStatusStyle(cont.customStatus)}`}>
-        {cont.customStatus || "-"}
-    </span>
+                                                <div className="flex justify-center">
+                                                    {(() => {
+                                                        if (cont.approvedCustomTime) {
+                                                            return <Check className="text-emerald-500" size={20} strokeWidth={3} />;
+                                                        }
+                                                        if (cont.rejectedCustomTime) {
+                                                            return <LucideX className="text-red-500" size={20} strokeWidth={3} />;
+                                                        }
+                                                        return <span className="text-gray-300">-</span>;
+                                                    })()}
+                                                </div>
                                             </td>
 
                                             {/* AKPS Status Column */}
                                             <td className="p-4 text-center">
-    <span className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider border ${getSecondaryStatusStyle(cont.akpsStatus)}`}>
-        {cont.akpsStatus || "-"}
-    </span>
+                                                <div className="flex justify-center">
+                                                    {(() => {
+                                                        if (cont.approvedAKPSTime) {
+                                                            return <Check className="text-emerald-500" size={20} strokeWidth={3} />;
+                                                        }
+                                                        if (cont.rejectedAKPSTime) {
+                                                            return <LucideX className="text-red-500" size={20} strokeWidth={3} />;
+                                                        }
+                                                        return <span className="text-gray-300">-</span>;
+                                                    })()}
+                                                </div>
+                                            </td>
+
+                                            {/* MAHSB Status Column */}
+                                            <td className="p-4 text-center">
+                                                <div className="flex justify-center">
+                                                    {(() => {
+                                                        // Logic based on GatedIn/Out Timestamps
+                                                        if (cont.gatedInTime) {
+                                                            return <Check className="text-emerald-500" size={20} strokeWidth={3} />;
+                                                        }
+                                                        if (cont.gatedOutTime) {
+                                                            // Returns an X cross in red as requested
+                                                            return <LucideX className="text-red-500" size={20} strokeWidth={3} />;
+                                                        }
+                                                        return <span className="text-gray-300">-</span>;
+                                                    })()}
+                                                </div>
                                             </td>
                                             <td className="p-4">
                                                 {/* Horizontal Action Icons */}
@@ -533,15 +588,24 @@ export function AkpsbookingList() {
                                                     {/* 1. Show Approve/Reject buttons ONLY IF Custom is Approved and AKPS is still pending (null or empty) */}
                                                     {(cont.status === "Enroute" || cont.status === "Approved-Custom") && !cont.akpsStatus && (
                                                         <>
-                                                            <button onClick={() => navigate(`/ale/akps/booking/bookingaction/${cont.containerId}`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Enroute">
+                                                            <button onClick={() => navigate(`/ale/akps/booking/bookingaction/${cont.containerId}`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Reject  ">
                                                                 <Check size={18} />
                                                             </button>
-                                                            <button onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Rejected" })} className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors" title="Reject">
+                                                            <button
+                                                                onClick={() => setStatusModal({
+                                                                    isOpen: true,
+                                                                    id: cont.containerId,
+                                                                    nextStatus: "Rejected-AKPS",
+                                                                    remarks: ""
+                                                                })}
+                                                                className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+                                                                title="Reject"
+                                                            >
                                                                 <LucideX size={18} />
                                                             </button>                                                        </>
                                                     )}
                                                     <Eye size={18}
-                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/akps/booking/bookingdetails/${cont.containerId}`)}/>
+                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/customs/booking/bookingdetails/${cont.containerId}`)}/>
 
 
                                                 </div>
@@ -596,33 +660,40 @@ export function AkpsbookingList() {
                         >
                             <div className="mb-6 flex justify-center">
                                 <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                                    statusModal.nextStatus === "Enroute" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                                    statusModal.nextStatus === "Approved-AKPS" ? "bg-green-100 text-green-600" :
+                                        statusModal.nextStatus === "Examine-AKPS" ? "bg-blue-100 text-blue-600" :
+                                            "bg-red-100 text-red-600"
                                 }`}>
-                                    {statusModal.nextStatus === "Enroute" ? <CheckCircle2 size={40} /> : <AlertCircle size={40} />}
+                                    {statusModal.nextStatus === "Approved-AKPS" ? <CheckCircle2 size={40} /> :
+                                        statusModal.nextStatus === "Examine-AKPS" ? <Eye size={40} /> :
+                                            <AlertCircle size={40} />}
                                 </div>
                             </div>
 
                             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                                {statusModal.nextStatus === "Enroute" ? "Accept Job?" : "Reject Job?"}
+                                {statusModal.nextStatus === "Approved-AKPS" ? "Approve Job?" :
+                                    statusModal.nextStatus === "Examine-AKPS" ? "Examine Job?" :
+                                        "Confirm Rejection?"}
                             </h2>
-                            <p className="text-gray-500 text-center mb-6">
-                                {statusModal.nextStatus.includes("Rejected")
+
+                            <p className="text-gray-500 mb-6">
+                                {statusModal.nextStatus === "Rejected-AKPS"
                                     ? "Please provide a reason for rejecting this booking."
-                                    : statusModal.nextStatus === "Enroute"
-                                        ? "Confirming this will set the container status to Enroute."
-                                        : "Are you sure you want to approve this booking?"}
+                                    : "Are you sure you want to proceed with this action?"}
                             </p>
-                            {/* ✅ ADDED: Rejection Reason Field */}
-                            {statusModal.nextStatus.includes("Rejected") && (
-                                <div className="mb-6">
-                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">
-                                        Rejection Reason
+
+                            {/* REJECTION INPUT FIELD */}
+                            {statusModal.nextStatus === "Rejected-AKPS" && (
+                                <div className="mb-6 text-left">
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                                        AKPS Reject Reason
                                     </label>
                                     <textarea
-                                        className="w-full p-4 border-2 border-gray-100 rounded-2xl focus:border-red-500 outline-none resize-none h-28 text-sm transition-all"
-                                        placeholder="e.g., Incomplete documentation, incorrect container number..."
+                                        autoFocus
                                         value={statusModal.remarks}
                                         onChange={(e) => setStatusModal({ ...statusModal, remarks: e.target.value })}
+                                        placeholder="Type reason here..."
+                                        className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-red-500 focus:ring-0 transition-all h-28 resize-none text-sm"
                                     />
                                 </div>
                             )}
@@ -636,12 +707,12 @@ export function AkpsbookingList() {
                                 </button>
                                 <button
                                     onClick={handleStatusUpdate}
-                                    // ✅ Add the "?" before .includes to prevent the crash
-                                    disabled={statusModal.nextStatus?.includes("Rejected") && !statusModal.remarks?.trim()}
+                                    // Disable confirm if rejecting but no reason is provided
+                                    disabled={statusModal.nextStatus === "Rejected-AKPS" && !statusModal.remarks?.trim()}
                                     className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
-                                        statusModal.nextStatus?.includes("Rejected")
-                                            ? "bg-red-500 hover:bg-red-600 disabled:bg-gray-300"
-                                            : "bg-green-600 hover:bg-green-700"
+                                        statusModal.nextStatus === "Approved-AKPS" ? "bg-green-600 hover:bg-green-700" :
+                                            statusModal.nextStatus === "Examine-AKPS" ? "bg-blue-600 hover:bg-blue-700" :
+                                                "bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:shadow-none"
                                     }`}
                                 >
                                     Confirm
