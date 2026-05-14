@@ -47,32 +47,40 @@ export function ALEViewBookings() {
     }, [id]);
 
     const getLocationName = (cont, type) => {
-        const { movementType, tripType } = cont.booking || {};
+        const { movementType, tripType } = cont.aleBooking || {};
 
         if (type === 'from') {
             if (tripType) {
-                if (movementType === "Import" && tripType === "Pick-up") return cont.portName || "Port";
-                if (tripType === "Drop-off") return cont.consignee.companyName || "Consignee";
-                if (movementType === "Export" && tripType === "Pick-up") return cont.depotName || "Depot";
-                if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
-                if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                // if (movementType === "Import" && tripType === "Pick-up") return cont.portName || "Port";
+                // if (tripType === "Drop-off") return cont.consignee.companyName || "Consignee";
+                // if (movementType === "Export" && tripType === "Pick-up") return cont.terminalName || "Terminal";
+                // if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.terminalName || "Terminal";
             } else {
-                if (movementType === "Import") return cont.depotName || "Depot";
-                if (movementType === "Export") return cont.portName || "Port";
+                if (movementType === "Import") return cont.terminalName || "Terminal";
+                if (movementType === "Export") {
+                    return cont.consigneeId === null
+                        ? cont.externalConsigneeName
+                        : cont.consigneeName;
+                }
             }
-            return cont.booking?.fromName || "N/A";
+            return cont.aleBooking?.fromName || "N/A";
         } else {
             if (tripType) {
-                if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
-                if (tripType === "Pick-up") return cont.consignee.companyName || "Consignee";
-                if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
-                if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
-                if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                // if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
+                // if (tripType === "Pick-up") return cont.consignee.companyName || "Consignee";
+                // if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
+                // if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
             } else {
-                if (movementType === "Import") return cont.portName || "Port";
-                if (movementType === "Export") return cont.depotName || "Depot";
+                if (movementType === "Import") {
+                    return cont.consigneeId === null
+                        ? cont.externalConsigneeName
+                        : cont.consigneeName;
+                }
+                if (movementType === "Export") return cont.terminalName || "Terminal";
             }
-            return cont.toName || "N/A";
+            return cont?.toName || "N/A";
         }
     };
 

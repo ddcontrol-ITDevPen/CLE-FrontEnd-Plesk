@@ -3,7 +3,7 @@ import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search, Calendar, FileDown, Eye, Edit, Trash2,
-    FileText, AlertCircle, CheckCircle2, PencilRuler
+    FileText, AlertCircle, CheckCircle2, PencilRuler, CircleX, LucideShieldUser
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import {getAleContainers, deleteAleContainer, updateAleContainer, getAleContainerById} from "../../../services/aleContainerService.js";
@@ -15,9 +15,9 @@ import StatusInfographic from "../../ROTComponents/ROTStatistics.jsx";
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
     "Enroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
-    "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
-    "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
-    "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    // "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
+    // "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    // "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
     "Approved-AKPS": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
     "Approved-Custom": { bg: "bg-delivered-rfc",   text: "text-emerald-900",   border: "border-teal-200" },
     "Approved-Complete": { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
@@ -27,19 +27,23 @@ const STATUS_CONFIG = {
     // "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
     // "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
-    "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
+    //"Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
 
 export function ALEROTHistory ()  {
     const [containers, setContainers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
-    const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null, remarks: "" });
+    const [rejectModal, setRejectModal] = useState({ isOpen: false, id: null, remarks: "" });
+    const [editModal, setEditModal] = useState({ isOpen: false, id: null, remarks: "", newDate: "", showDateField: false });
+    const [readjustmentModal, setReadjustmentModal] = useState({ isOpen: false, id: null, remarks: "", newDate: "", icNumber: "", isSecureEdit: false, showDateField: false});
     const [filterStatus, setFilterStatus] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const navigate = useNavigate();
+    const [error, setError] = useState(null);
+    
     useEffect(() => {
         fetchData();
     }, []);
@@ -52,11 +56,11 @@ export function ALEROTHistory ()  {
 
         const exportData = filteredContainers.map(cont => ({
             "Container ID": cont.containerId,
-            "Container Number": cont.containerNumber,
             "Container Type": cont.containerType,
             "Container Size": cont.containerSize,
+            "Package Quantity": cont.packageQuantity || "N/A",
             "VGM": cont.vgm || "N/A",
-            "TrailerType": cont.trailerType || "N/A",
+            "Volumetric Weight": cont.volumeMetricWeight || "N/A",
             "Status": cont.status,
             "PickUpAssignedTime": cont.assignedTime ? new Date(cont.assignedTime).toLocaleString() : "N/A",
             "PickUpEnrouteTime": cont.enrouteTime ? new Date(cont.enrouteTime).toLocaleString() : "N/A",
@@ -69,7 +73,7 @@ export function ALEROTHistory ()  {
             // "PickUpDeliveredTime": cont.deliveredTime ? new Date(cont.deliveredTime).toLocaleString() : "N/A",
             // "PickUpRFCTime": cont.rfcTime ? new Date(cont.rfcTime).toLocaleString() : "N/A",
             "RejectedTime": cont.rejectedTime ? new Date(cont.rejectedTime).toLocaleString() : "N/A",
-            "DeletedTime": cont.deletedTime ? new Date(cont.deletedTime).toLocaleString() : "N/A",
+            //"DeletedTime": cont.deletedTime ? new Date(cont.deletedTime).toLocaleString() : "N/A",
             "DropOffAssignedTime": cont.rtAssignedTime ? new Date(cont.rtAssignedTime).toLocaleString() : "N/A",
             "DropOffEnrouteTime": cont.rtEnrouteTime ? new Date(cont.rtEnrouteTime).toLocaleString() : "N/A",
             "DropOffAcceptedTime": cont.rtAcceptedTime ? new Date(cont.rtAcceptedTime).toLocaleString() : "N/A",
@@ -182,7 +186,7 @@ export function ALEROTHistory ()  {
             
             let matchesStatus = false;
                 if(filterStatus === "All")
-                    matchesStatus = cont.status !== "Deleted" && !isExpiredGateOut;
+                    matchesStatus = cont.status !== "Rejected" && !isExpiredGateOut;
                 else
                     matchesStatus = cont.status === filterStatus;
             const rotDate = cont.rotDate;
@@ -244,7 +248,11 @@ export function ALEROTHistory ()  {
                 // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.terminalName || "Terminal";
             } else {
                 if (movementType === "Import") return cont.terminalName || "Terminal";
-                if (movementType === "Export") return cont.consigneeName || "Consignee";
+                if (movementType === "Export") {
+                    return cont.consigneeId === null
+                        ? cont.externalConsigneeName
+                        : cont.consigneeName;
+                }
             }
             return cont.aleBooking?.fromName || "N/A";
         } else {
@@ -255,32 +263,73 @@ export function ALEROTHistory ()  {
                 // if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
                 // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
             } else {
-                if (movementType === "Import") return cont.consigneeName || "Consignee";
+                if (movementType === "Import") {
+                    return cont.consigneeId === null
+                        ? cont.externalConsigneeName
+                        : cont.consigneeName;
+                }
                 if (movementType === "Export") return cont.terminalName || "Terminal";
             }
             return cont?.toName || "N/A";
         }
     };
     
-    const handleDelete = async () => {
-        const toastId = toast.loading("Deleting record...");
+    const handleReject = async () => {
+        if (!rejectModal.remarks || rejectModal.remarks.trim() === "") {
+            setError(true);
+            return;
+        }
+        const toastId = toast.loading("Cancelling...");
         try {
-            const currentContainer = await getAleContainerById(deleteModal.id);
+            const currentContainer = await getAleContainerById(rejectModal.id);
             console.log(currentContainer);
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName
             const payload = {
                 ...currentContainer,
                 toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
-                status: "Deleted",
-                deletedTime: new Date().toISOString(),
-                deletedRemarks: deleteModal.remarks, 
-                UpdatedBy: updatedBy,
+                status: "Rejected",
+                rejectedTime: new Date().toISOString(),
+                rejectedRemarks: rejectModal.remarks, 
+                updatedBy: updatedBy,
             };
-            await updateAleContainer(deleteModal.id, payload);
-            toast.success("Record deleted successfully", { id: toastId });
-            setDeleteModal({ isOpen: false, id: null, remarks: "" });
+            await updateAleContainer(rejectModal.id, payload);
+            toast.success("Record rejected successfully", { id: toastId });
+            setRejectModal({ isOpen: false, id: null, remarks: "" });
             fetchData();
+            setError(false);
+        } catch (error) {
+            const serverMessage = error.response?.data?.message || error.response?.data || "Unknown Error";
+            console.log("Deleted Error: ", serverMessage);
+            toast.error("Deletion failed. Please try again.", { id: toastId });
+        }
+    };
+
+    const handleEdit = async () => {
+        if (!editModal.remarks || editModal.remarks.trim() === "") {
+            setError(true);
+            return;
+        }
+        const toastId = toast.loading("Updating...");
+        try {
+            const currentContainer = await getAleContainerById(editModal.id);
+            console.log(currentContainer);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = user.fullName + " - " + editModal?.icNumber || user.companyName;
+            const payload = {
+                ...currentContainer,
+                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
+                status: currentContainer.status === "Assigned" ? "Assigned" : currentContainer.status,
+                assignedTime: new Date().toISOString(),
+                editRemarks: editModal.remarks,
+                rotDate: editModal.newDate,
+                updatedBy: updatedBy,
+            };
+            await updateAleContainer(editModal.id, payload);
+            toast.success("Record updated successfully", { id: toastId });
+            setEditModal({ isOpen: false, id: null, remarks: "", icNumber: "", newDate: "", showDateField: false, isSecureEdit: false });
+            fetchData();
+            setError(false);
         } catch (error) {
             const serverMessage = error.response?.data?.message || error.response?.data || "Unknown Error";
             console.log("Deleted Error: ", serverMessage);
@@ -496,22 +545,25 @@ export function ALEROTHistory ()  {
                                                  className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}/>
                                             {cont.status === "Assigned" &&   
                                                 <Edit size={18}
-                                                      className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/ale/forwarding/rot/edit/form1/${cont.containerId}`)}/>
+                                                      className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => setEditModal({isOpen: true, id: cont.containerId, remarks: "", newDate: cont.rotDate, isSecureEdit: false, showDateField: false})}/>
                                             }
-                                            {cont.status !== "Assigned" &&
+                                            {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) && (
                                                 <PencilRuler size={18}
-                                                      className="text-green-600 cursor-pointer hover:text-green-800" onClick/>
-                                            }
-                                            {cont.status !== "Deleted" &&
-                                                <Trash2
-                                                    size={18}
-                                                    className="text-red-500 cursor-pointer hover:text-red-700"
-                                                    onClick={() => setDeleteModal({isOpen: true, id: cont.containerId, remarks: ""})}
-                                                />
-                                            }
+                                                      className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => setEditModal({isOpen: true, id: cont.containerId, remarks: "", newDate: cont.rotDate, isSecureEdit: true, showDateField: false})}/>
+                                            )}
+                                            {/*{cont.status !== "Deleted" &&*/}
+                                            {/*    <Trash2*/}
+                                            {/*        size={18}*/}
+                                            {/*        className="text-red-500 cursor-pointer hover:text-red-700"*/}
+                                            {/*        onClick={() => setDeleteModal({isOpen: true, id: cont.containerId, remarks: ""})}*/}
+                                            {/*    />*/}
+                                            {/*}*/}
+                                            {["Assigned", "Enroute"].includes(cont.status) && (
+                                                <CircleX size={18} className="text-red-500 cursor-pointer hover:text-red-700" onClick={() => setRejectModal({isOpen: true, id: cont.containerId, remarks: ""})}/>
+                                            )}
                                             <FileText 
                                                 size={18} 
-                                                className="text-blue-600-600 cursor-pointer hover:text-blue-800"
+                                                className="text-blue-600 cursor-pointer hover:text-blue-800"
                                                 onClick={() => navigate(`/ale/rot/view/pdf/${cont.containerId}`)}/>
                                         </div>
                                     </td>
@@ -555,47 +607,210 @@ export function ALEROTHistory ()  {
                 </div>
             </div>
 
-            {/* Deletion Confirmation Modal */}
+            {/* Edit Modal */}
             <AnimatePresence>
-                {deleteModal.isOpen && (
+                {editModal.isOpen && (
                     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center relative"
+                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl"
                         >
                             <div className="mb-6 flex justify-center">
-                                <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
-                                    <AlertCircle size={40} />
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${editModal.isSecureEdit ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
+                                    {editModal.isSecureEdit ? <LucideShieldUser size={32} /> : <PencilRuler size={32} />}
                                 </div>
                             </div>
 
-                            <h2 className="text-2xl font-bold text-system-color mb-4">Deletion Confirmation</h2>
-                            <p className="text-gray-700 mb-8 leading-relaxed">
-                                Are you sure you want to delete this record? We recommend only deleting if the BL or Booking Number is incorrect.
-                            </p>
-
-                            <div className="text-left mb-6">
-                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Reason for Deletion *</label>
-                                <textarea
-                                    className="w-full mt-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm min-h-[100px]"
-                                    placeholder="e.g., Incorrect Booking Number provided by client..."
-                                    value={deleteModal.remarks}
-                                    onChange={(e) => setDeleteModal({ ...deleteModal, remarks: e.target.value })}
-                                />
+                            <div className="text-center mb-6">
+                                <h2 className="text-2xl font-bold text-gray-800">
+                                    {editModal.isSecureEdit ? "Secure ROT Update" : "Update ROT Record"}
+                                </h2>
+                                <p className="text-gray-500 text-sm">
+                                    {editModal.isSecureEdit ? "Identity verification required for enroute records." : "Please provide a reason before modifying the date."}
+                                </p>
                             </div>
 
-                            <div className="flex gap-4">
+                            <div className="space-y-4">
+                                {/* User Name */}
+                                {editModal.isSecureEdit && (
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500 uppercase ml-1">User Name</label>
+                                        <input
+                                            type="text"
+                                            readOnly
+                                            className="w-full mt-1 p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-400 font-medium cursor-not-allowed"
+                                            value={localStorage.getItem("userName") || "Active User"}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* IC Number */}
+                                {editModal.isSecureEdit && (
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500 uppercase ml-1">IC / Passport Number *</label>
+                                        <input
+                                            type="text"
+                                            className={`w-full mt-1 p-3 border rounded-xl outline-none text-sm ${
+                                                error === "ic" ? "border-red-500" : "border-gray-200"
+                                            }`}
+                                            placeholder="Enter IC for security audit"
+                                            value={editModal.icNumber || ""}
+                                            onChange={(e) => {
+                                                setError("");
+                                                setEditModal({ ...editModal, icNumber: e.target.value });
+                                            }}
+                                        />
+                                        {error === "ic" && <p className="text-red-500 text-xs mt-1 ml-1">IC Number is required</p>}
+                                    </div>
+                                )}
+
+                                {/* Edit Reason (Remarks) */}
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Edit Reason *</label>
+                                    <div className="flex gap-2 mt-1">
+                                        <input
+                                            type="text"
+                                            className={`flex-1 p-3 border rounded-xl outline-none text-sm ${
+                                                error === "remarks" ? "border-red-500" : "border-gray-200"
+                                            }`}
+                                            placeholder="e.g., Typo in original entry"
+                                            value={editModal.remarks}
+                                            onChange={(e) => {
+                                                setError("");
+                                                setEditModal({ ...editModal, remarks: e.target.value });
+                                            }}
+                                        />
+                                        {!editModal.showDateField && (
+                                            <button
+                                                onClick={() => {
+                                                    // Validation logic for Step 1
+                                                    if (editModal.isSecureEdit && !editModal.icNumber?.trim()) {
+                                                        setError("ic");
+                                                        return;
+                                                    }
+                                                    if (!editModal.remarks.trim()) {
+                                                        setError("remarks");
+                                                        return;
+                                                    }
+                                                    setError("");
+                                                    setEditModal({ ...editModal, showDateField: true });
+                                                }}
+                                                className="px-4 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700"
+                                            >
+                                                Next
+                                            </button>
+                                        )}
+                                    </div>
+                                    {error === "remarks" && !editModal.showDateField && (
+                                        <p className="text-red-500 text-xs mt-1 ml-1">Reason is required</p>
+                                    )}
+                                </div>
+
+                                {editModal.showDateField && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                    >
+                                        <label className="text-xs font-bold text-gray-500 uppercase ml-1">New ROT Date</label>
+                                        <input
+                                            type="date"
+                                            className="w-full mt-1 p-3 border border-gray-200 rounded-xl outline-none text-sm focus:ring-2 focus:ring-blue-500"
+                                            value={editModal.newDate}
+                                            onChange={(e) => setEditModal({ ...editModal, newDate: e.target.value })}
+                                        />
+                                    </motion.div>
+                                )}
+                            </div>
+
+                            <div className="flex gap-4 mt-8">
                                 <button
-                                    onClick={() => setDeleteModal({ isOpen: false, id: null })}
+                                    onClick={() => {
+                                        setEditModal({ isOpen: false, id: null, remarks: "", newDate: "", showDateField: false });
+                                        setError("");
+                                    }}
                                     className="flex-1 py-3 border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={handleDelete}
-                                    className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold shadow-lg hover:bg-system-color-dark transition-all"
+                                    onClick={handleEdit}
+                                    disabled={!editModal.showDateField}
+                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
+                                        editModal.showDateField ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-300 cursor-not-allowed"
+                                    }`}
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            
+            {/* Deletion Confirmation Modal */}
+            <AnimatePresence>
+                {rejectModal.isOpen && (
+                    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center"
+                        >
+                            <div className="mb-6 flex justify-center">
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                                    rejectModal.nextStatus === "Enroute" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                                }`}>
+                                    {rejectModal.nextStatus === "Enroute" ? <CheckCircle2 size={40} /> : <AlertCircle size={40} />}
+                                </div>
+                            </div>
+
+                            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                                Cancel Shipment
+                            </h2>
+                            <p className="text-gray-600 mb-8">
+                                {rejectModal.nextStatus === "Enroute"
+                                    ? "Confirming this will set the container status to Enroute."
+                                    : "Are you sure you want to cancel this shipment or booking?"}
+                            </p>
+
+                            <div className="text-left mb-6">
+                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Reason for Rejection *</label>
+                                <textarea
+                                    className={`w-full mt-1 p-3 border rounded-xl outline-none transition-all text-sm min-h-[100px] ${
+                                        error ? "border-red-500 ring-1 ring-red-500" : "border-gray-200 focus:ring-2 focus:ring-red-500"
+                                    }`}
+                                    placeholder="e.g., Incorrect Booking Number provided by client..."
+                                    value={rejectModal.remarks}
+                                    onChange={(e) => {
+                                        setError(false);
+                                        setRejectModal({ ...rejectModal, remarks: e.target.value });
+                                    }}
+                                />
+                                {error && (
+                                    <p className="text-red-500 text-xs mt-1 ml-1 font-medium">
+                                        Please provide a reason before confirming.
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => {
+                                        setError(false);
+                                        setRejectModal({ isOpen: false, id: null, remarks: "" });
+                                    }}
+                                    className="flex-1 py-3 border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleReject}
+                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
+                                        rejectModal.nextStatus === "Enroute" ? "bg-green-600 hover:bg-green-700" : "bg-red-500 hover:bg-red-600"
+                                    }`}
                                 >
                                     Confirm
                                 </button>

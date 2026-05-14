@@ -9,11 +9,17 @@ import {getUserById} from "../../../services/userService.js";
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
     "Enroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
+    // "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
+    // "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    // "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    "Approved-AKPS": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    "Approved-Custom": { bg: "bg-delivered-rfc",   text: "text-emerald-900",   border: "border-teal-200" },
+    "Approved-Complete": { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Accepted":   { bg: "bg-accepted",  text: "text-green",  border: "border-green-200" },
     "Gated-In":   { bg: "bg-gate-in-out",   text: "text-blue-900",   border: "border-indigo-200" },
     "Gated-Out":  { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
-    "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
-    "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
+    // "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    // "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
     "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
     "RTAssigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
@@ -21,8 +27,8 @@ const STATUS_CONFIG = {
     "RTAccepted":   { bg: "bg-accepted",  text: "text-green",  border: "border-green-200" },
     "RTGated-In":   { bg: "bg-gate-in-out",   text: "text-blue-900",   border: "border-indigo-200" },
     "RTGated-Out":  { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
-    "RTDelivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
-    "RTRFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
+    // "RTDelivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    // "RTRFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
 };
 
 export function ALETrackROT () {
@@ -43,16 +49,15 @@ export function ALETrackROT () {
             const companyCode = user.companyCode;
             const allContainers = await getAleContainers();
             const containers = allContainers.filter(container => {
-                const isForwarder = container.booking?.forwardingId === companyCode;
+                const isForwarder = container.aleBooking?.forwardingId === companyCode;
                 const isHaulier = container.haulierId === companyCode;
                 return isForwarder || isHaulier;
             });
 
             const filtered = containers.filter(cont =>
-                cont.booking?.blOrBookingNumber?.toLowerCase() === searchQuery.toLowerCase() ||
-                cont.booking?.houseBLNumber?.toLowerCase() === searchQuery.toLowerCase() ||
+                cont.aleBooking?.awbNumber?.toLowerCase() === searchQuery.toLowerCase() ||
+                cont.aleBooking?.houseAWBNumber?.toLowerCase() === searchQuery.toLowerCase() ||
                 cont.rotNumber?.toLowerCase() === searchQuery.toLowerCase() ||
-                cont.containerNumber?.toLowerCase() === searchQuery.toLowerCase() ||
                 cont.containerId?.toString() === searchQuery
             );
 
@@ -90,7 +95,7 @@ export function ALETrackROT () {
                         </div>
                         <div className="text-center space-y-2">
                             <h2 className="text-xl font-bold text-gray-800">Container Logistics Ecosystem Track & Trace</h2>
-                            <p className="text-sm text-gray-500">Enter your Booking No., BL No., or Container No. to track your shipment</p>
+                            <p className="text-sm text-gray-500">Enter your AWB No., House AWB No., or ROT No. to track your shipment</p>
                         </div>
                         <form onSubmit={handleSearch} className="flex w-full max-w-2xl gap-2">
                             <input
@@ -131,13 +136,12 @@ export function ALETrackROT () {
                                     {item.status}
                                 </span>
                                     </div>
-                                    <h3 className="font-bold text-lg text-gray-800 mb-1">{item.containerNumber || "No Container No."}</h3>
-                                    <p className="text-sm text-gray-500 mb-4">Booking: {item.blOrBookingNumber}</p>
+                                    <h3 className="text-sm text-gray-500 mb-4">AWB Number: {item.aleBooking?.awbNumber}</h3>
 
                                     <div className="space-y-2 border-t pt-4">
                                         <div className="flex items-center gap-2 text-sm text-gray-600">
                                             <MapPin size={14} className="text-gray-400" />
-                                            <span className="truncate">Consignee: {item.consigneeName || "N/A"}</span>
+                                            <span className="truncate">Consignee: {item.consigneeName ? item.consigneeName : item.externalConsigneeName || "N/A"}</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-sm text-gray-600">
                                             <Calendar size={14} className="text-gray-400" />
@@ -167,12 +171,12 @@ export function ALETrackROT () {
                                 <h3 className="font-bold text-gray-800 mb-4 border-b pb-2">Shipment Details</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                     <div>
-                                        <p className="text-xs text-gray-400 uppercase font-bold">Booking No</p>
-                                        <p className="font-semibold">{selectedShipment.booking.blOrBookingNumber}</p>
+                                        <p className="text-xs text-gray-400 uppercase font-bold">AWB No.</p>
+                                        <p className="font-semibold">{selectedShipment.aleBooking?.awbNumber}</p>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-gray-400 uppercase font-bold">Container No</p>
-                                        <p className="font-semibold">{selectedShipment.containerNumber}</p>
+                                        <p className="text-xs text-gray-400 uppercase font-bold">Flight No.</p>
+                                        <p className="font-semibold">{selectedShipment.aleBooking?.flightNumber}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs text-gray-400 uppercase font-bold">Size/Type</p>
