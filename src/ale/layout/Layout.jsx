@@ -11,6 +11,7 @@ import HaulierNavBar from "../navbar/HaulierNavBar.jsx";
 import TerminalNavBar from "../navBar/TerminalNavBar.jsx";
 import CustomsNavBar from "../navBar/CustomsNavBar.jsx";
 import AKPSNavBar from "../navBar/AKPSNavBar.jsx";
+import {NotificationOverlay} from "../Notification/NotificationOverlay.jsx";
 
 export default function Layout({ children, role }) {
 
@@ -141,6 +142,7 @@ export default function Layout({ children, role }) {
 
                 {/* Page Content */}
                 <main className="flex-1 p-8 border-none overflow-y-auto overflow-x-hidden">
+                    {role === "haulier" && <NotificationOverlay />}
                     {children}
                 </main>
             </div>

@@ -9,7 +9,7 @@ import {
     Clock,
     Hash,
     Save,
-    ArrowLeft
+    ArrowLeft, LucideShieldUser, TicketCheck
 } from "lucide-react";
 import {getAleContainerById, updateAleContainer} from "../../../services/aleContainerService.js";
 import { toast, Toaster } from "sonner";
@@ -19,6 +19,7 @@ import { getTrailers } from "../../../services/trailerService.js";
 import {getAleTimeSlots, updateAleTimeSlot} from "../../../services/aleTimeSlotService.js";
 import { registerAleAssignedHaulier } from "../../../services/aleAssignedHaulierService.js";
 import {getUserById} from "../../../services/userService.js";
+import {getCompanyById} from "../../../services/companyService.js";
 
 export function ALEAssignBooking() {
     const { id } = useParams(); 
@@ -32,18 +33,18 @@ export function ALEAssignBooking() {
     const [selectedDate, setSelectedDate] = useState("");
     const [filteredSlots, setFilteredSlots] = useState([]);
     const [container, setContainer] = useState(null);
+    const [billingParty, setBillingParty] = useState(null);
 
     const [formData, setFormData] = useState({
-        blNumber: "",        
-        houseBLNumber: "",   
-        containerNumber: "", 
         driverId: "",      
         pmId: "",        
         trailerId: "",   
         timeSlotId: "",        
         containerId: id,     
         rotNumber: "",       
-        haulierId: localStorage.getItem("companyCode") || "" 
+        haulierId: localStorage.getItem("companyCode") || "",
+        passNumber: "",
+        consigneeTimeSlot: "",
     });
 
     const [errors, setErrors] = useState({});
@@ -52,24 +53,52 @@ export function ALEAssignBooking() {
         const fetchInitialData = async () => {
             try {
                 setIsLoading(true);
-                const container = await getAleContainerById(id);
-                setContainer(container);
+                const containerData = await getAleContainerById(id);
+                setContainer(containerData);
+                const bp = await getCompanyById(containerData.aleBooking?.billingParty);
+                setBillingParty(bp.companyName);
+                setFormData(prev => ({
+                    ...prev,
+                    movementType: containerData.aleBooking?.movementType || "Import",
+                    rotNumber: containerData.rotNumber || "",
+                    awbNumber: containerData.aleBooking?.awbNumber || "",
+                    houseAWBNumber: containerData.aleBooking?.houseAWBNumber || "",
+                    flightNumber: containerData.aleBooking?.flightNumber || "",
+                    terminalLocation: containerData.terminalId || "",
+                    eta: containerData.aleBooking?.eta || "",
+                    sealNo: containerData.aleBooking?.sealNo || "",
+                    forwardingRemarks: containerData.aleBooking?.forwardingRemarks || "",
+                    customFormType: containerData.aleBooking?.customFormType || "",
+                    customFormNo: containerData.aleBooking?.customFormNo || "",
+                    customReceiptNo: containerData.aleBooking?.customReceiptNo || "",
+                    dicNumber: containerData.aleBooking?.dicNumber || "",
+                    zbNumber: containerData.aleBooking?.zbNumber || "",
+                    forwarding: containerData.aleBooking?.forwarding || localStorage.getItem("companyName") || "",
+                    airline: containerData.aleBooking?.airline || "",
+                    billingParty: containerData.aleBooking?.billingParty || "",
+                    truckQuantity: containerData.aleBooking?.truckQuantity || 1,
+                    packageQuantity: containerData.packageQuantity || 1,
+                    containerType: containerData.containerType || "",
+                    containerSize: containerData.containerSize || "",
+                    vgm: containerData.vgm || "",
+                    volumeMetricWeight: containerData.volumeMetricWeight || "",
+                    rotDate: containerData.rotDate || "",
+                    haulier: containerData.haulier || "",
+                    consignee: containerData.consignee || "",
+                    haulierChoice: containerData.haulierChoice || "Single",
+                    externalConsigneeName: containerData.externalConsigneeName || "",
+                    externalConsigneeAddress: containerData.externalConsigneeAddress || "",
+                    externalConsigneeContact: containerData.externalConsigneeContact || "",
+                    containerId: id,
+                }));
+
                 const [driverData, pmData, trailerData, slotData] = await Promise.all([
                     getDrivers(),
                     getPrimeMovers(),
                     getTrailers(),
                     getAleTimeSlots()
                 ]);
-
-                setFormData(prev => ({
-                    ...prev,
-                    blNumber: container.booking?.blOrBookingNumber || "",
-                    houseBLNumber: container.booking?.houseBLNumber || "",
-                    containerNumber: container.containerNumber || "",
-                    rotNumber: container.rotNumber || "",
-                    containerId: id
-                }));
-
+                
                 const user = await getUserById(localStorage.getItem("userId"));
                 const haulierId = user.companyCode
                 setDrivers(driverData.filter(x => x.haulierId === haulierId) || []);
@@ -111,6 +140,8 @@ export function ALEAssignBooking() {
         if (!formData.pmId) newErrors.pmId = "Prime Mover is required";
         if (!formData.trailerId) newErrors.trailerId = "Trailer selection is required";
         if (!formData.timeSlotId) newErrors.timeSlotId = "Time Slot is required";
+        if (!formData.passNumber) newErrors.passNumber = "Pass Number is required";
+        if (!formData.consigneeTimeSlot) newErrors.consigneeTimeSlot = "Consignee Time Slot is required";
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -120,8 +151,20 @@ export function ALEAssignBooking() {
         try {
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName;
-            const updatedData = {...formData, haulierId: user.companyCode};
-            await registerAleAssignedHaulier(updatedData);
+            const assignmentPayload = {
+                containerId: parseInt(id),                      
+                rotNumber: container.rotNumber,
+                haulierId: user.companyCode,
+                driverId: formData.driverId,
+                pmId: formData.pmId,
+                trailerId: formData.trailerId,
+                timeSlotId: formData.timeSlotId,
+                passNumber: formData.passNumber,
+                consigneeTimeSlot: formData.consigneeTimeSlot.length === 5
+                    ? `${formData.consigneeTimeSlot}:00`
+                    : formData.consigneeTimeSlot
+            };
+            await registerAleAssignedHaulier(assignmentPayload);
             const updatedContainerData = {...container, containerId: id, status: "Enroute", enrouteTime: new Date().toISOString(), UpdatedBy: updatedBy}
             await updateAleContainer(id, updatedContainerData);
             const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
@@ -130,13 +173,13 @@ export function ALEAssignBooking() {
                     id: selectedSlot.id,
                     date: selectedSlot.date,
                     time: selectedSlot.time,
-                    totalSlot: selectedSlot.totalSlot - 1,
-                    depotId: selectedSlot.depotId,
+                    pickUpTotalSlot: selectedSlot.pickUpTotalSlot - 1,
+                    terminalId: selectedSlot.terminalId,
                 };
                 await updateAleTimeSlot(formData.timeSlotId, updatedSlotData)
             }
             toast.success("Haulier assigned successfully!");
-            setTimeout(() => navigate("/ale/haulier/booking/accepted"), 1500);
+            setTimeout(() => navigate("/ale/haulier/booking"), 1500);
         } catch (error) {
             toast.error("Failed to save assignment");
             console.error(error);
@@ -164,14 +207,127 @@ export function ALEAssignBooking() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Section 1: Read-Only Container Info */}
-                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <InputField label="BL Number" value={formData.blNumber} readOnly />
-                        <InputField label="House BL Number" value={formData.houseBLNumber} readOnly />
-                        <InputField label="Container Number" value={formData.containerNumber} readOnly />
+                    {/* --- SECTION 1: BOOKING INFORMATION --- */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 flex items-center gap-4 border-b border-blue-100">
+                            <div className="bg-system-color p-2 rounded-lg text-white">
+                                <CircleChevronDown size={24} className="rotate-180" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-800">Booking Information</h2>
+                                <p className="text-sm text-system-color/70">Primary shipment and party details</p>
+                            </div>
+                        </div>
+
+                        <div className="p-8 space-y-8">
+                            {/* Movement Type Radio Row */}
+                            <div className="flex items-center gap-12 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                <span className="text-sm font-semibold text-gray-700">Movement Type <span className="text-red-500">*</span></span>
+                                <div className="flex gap-6">
+                                    {['Import', 'Export'].map((type) => (
+                                        <label key={type} className="flex items-center gap-2 cursor-pointer group">
+                                            <input
+                                                type="radio"
+                                                name="movementType"
+                                                checked={formData.movementType === type}
+                                                value={type}
+                                                className="w-4 h-4 accent-blue-600"
+                                                disabled={true}
+                                            />
+                                            <span className={`text-sm ${formData.movementType === type ? 'font-bold text-system-color' : 'text-gray-500'}`}>{type}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <InputField label="AWB No." name="awbNumber" value={formData.awbNumber} readOnly={true}/>
+                                <InputField label="House AWB No." name="houseAWBNumber" value={formData.houseAWBNumber} readOnly={true}/>
+                                <InputField label="Flight No." name="flightNumber" value={formData.flightNumber} readOnly={true}/>
+                                <SelectField label="Terminal" name="terminalLocation" value={formData.terminalLocation} disabled={true} options={[{label: container?.terminal?.companyName || "N/A", value: formData.terminalLocation}]} />
+                                <SelectField label="Airline" name="airline" value={formData.airline} disabled={true} options={[{ label: container?.aleBooking?.airline?.companyName || "N/A", value: formData.airline }]} />
+                                <SelectField label="Billing Party" name="billingParty" value={formData.billingParty} disabled={true} options={[{ label: billingParty || "N/A", value: billingParty }]} />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Haulier Choice */}
+                                <div className="flex flex-col gap-2 p-4 bg-blue-50/30 rounded-xl border border-blue-100">
+                                    <label className="text-sm font-semibold text-gray-800">Trucker Assignment <span className="text-red-500">*</span></label>
+                                    <div className="flex items-center gap-4 h-12">
+                                        <label className="flex items-center gap-2 min-w-[120px] cursor-pointer">
+                                            <input type="checkbox" checked={formData.haulierChoice === "Multiple"} onChange={(e) => handleChange({ target: { name: 'haulierChoice', value: e.target.checked ? "Multiple" : "Single" }})} className="w-4 h-4 rounded text-system-color" disabled={true}/>
+                                            <span className="text-xs font-medium text-gray-600 italic">Multiple</span>
+                                        </label>
+                                        {formData.haulierChoice === "Single" && (
+                                            <div className="flex-1 -mt-5">
+                                                <SelectField label="" name="haulier" value={formData.haulier} options={[{ label: container?.haulier?.companyName || "N/A", value: formData.haulier }]} disabled={true} />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <SelectField label="Consignee/Shipper" name="consignee" value={formData.consignee} options={[{ label: container?.consignee?.companyName || "N/A", value: formData.consignee }]} disabled={true}/>
+                                {formData.consignee === "Other" && (
+                                    <>
+                                        <InputField label="Consignee/Shipper Name" name="externalConsigneeName" value={formData.externalConsigneeName} readOnly={true} />
+                                        <InputField label="Consignee/Shipper Address" name="externalConsigneeAddress" value={formData.externalConsigneeAddress} readOnly={true} />
+                                        <InputField label="Consignee/Shipper Contact Information" name="externalConsigneeContact" value={formData.externalConsigneeContact} readOnly={true} />
+                                    </>
+                                )}
+                                <InputField label="Forwarding Remarks" name="forwardingRemarks" value={formData.forwardingRemarks} readOnly={true} />
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Section 2: Assignment Form */}
+                    {/* --- SECTION 2: TRUCK DETAILS --- */}
+                    <div className="bg-white rounded-2xl shadow-sm border mt-5 border-gray-100 overflow-hidden">
+                        <div className="bg-gradient-to-r from-gray-100 to-slate-200 p-6 flex items-center gap-4 border-b border-gray-200">
+                            <div className="bg-gray-700 p-2 rounded-lg text-white">
+                                <LucideTruck size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-800">Truck Details</h2>
+                                <p className="text-sm text-gray-500">Specifications and quantities</p>
+                            </div>
+                        </div>
+                        <div className="p-8">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                <InputField label="Truck Quantity" name="truckQuantity" value={formData.truckQuantity} readOnly={true} />
+                                <InputField label="Package Quantity" name="packageQuantity" value={formData.packageQuantity} readOnly={true} />
+                                <SelectField label="Type" name="containerType" options={["GP", "RF", "HC"]} value={formData.containerType} options={[{ label: container?.containerType || "N/A", value: formData.containerType }]} disabled={true} />
+                                <SelectField label="Size" name="containerSize" options={["20", "40", "45"]} value={formData.containerSize} options={[{ label: container?.containerSize || "N/A", value: formData.containerSize }]} disabled={true} />
+                                <InputField label="ROT Date" name="rotDate" type="date" value={formData.rotDate} readOnly={true} />
+                                <InputField label="VGM" subLabel="Optional" name="vgm" value={formData.vgm} readOnly={true} />
+                                {/*<SelectField label="Trailer" name="trailerType" options={["Normal", "Tipper", "Air", "SL"]} value={formData.trailerType} onChange={handleChange} />*/}
+                                <InputField label="Volumetric Weight" subLabel="Optional" name="volumeMetricWeight" value={formData.volumeMetricWeight} readOnly={true} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* --- SECTION 3: CUSTOMS & TRACKING --- */}
+                    <div className="bg-white rounded-2xl shadow-sm border mt-5 border-gray-100 overflow-hidden">
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 flex items-center gap-4 border-b border-purple-100">
+                            <div className="bg-purple-600 p-2 rounded-lg text-white">
+                                <LucideShieldUser size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-800">Customs & Tracking</h2>
+                                <p className="text-sm text-purple-600/70">Regulatory and reference numbers</p>
+                            </div>
+                        </div>
+                        <div className="p-8 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <InputField label="ETA" name="eta" type="date" value={formData.eta} readOnly={true} />
+                                <SelectField label="Custom Form Type" name="customFormType" options={["K1", "K2", "K8"]} value={formData.customFormType} options={[{ label: container?.aleBooking?.customFormType || "N/A", value: formData.customFormType }]} disabled={true} />
+                                <InputField label="Custom Form No." name="customFormNo" value={formData.customFormNo} readOnly={true} />
+                                <InputField label="Custom Receipt No." name="customReceiptNo" value={formData.customReceiptNo} readOnly={true} />
+                                <InputField label="DIC No." name="dicNumber" value={formData.dicNumber}readOnly={true} />
+                                <InputField label="FCZ No." name="zbNumber" value={formData.zbNumber} readOnly={true} />
+                                <InputField label="Seal No." name="sealNo" value={formData.sealNo} readOnly={true} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Section 4: Assignment Form */}
                     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 text-white flex items-center gap-4">
                             <div className="bg-white/20 p-2 rounded-lg">
@@ -226,9 +382,9 @@ export function ALEAssignBooking() {
                                 required
                                 disabled={!selectedDate}
                                 options={filteredSlots
-                                    .filter(s => s.totalSlot > 0)
+                                    .filter(s => s.pickUpTotalSlot > 0)
                                     .map(s => ({
-                                    label: `${s.time} (${s.totalSlot} left)`,
+                                    label: `${s.time} (${s.pickUpTotalSlot} left)`,
                                     value: s.id
                                 }))}
                             />
@@ -242,6 +398,29 @@ export function ALEAssignBooking() {
                                 error={errors.trailerId}
                                 required
                                 options={trailers.map(t => ({ label: `${t.plateNumber} - ${t.type}`, value: t.id }))}
+                            />
+                            
+                            <InputField
+                                label="Pass No."
+                                name="passNumber"
+                                icon={<TicketCheck size={18}/>}
+                                value={formData.passNumber}
+                                onChange={handleChange}
+                                error={errors.passNumber}
+                                readOnly={false}
+                                required
+                            />
+
+                            <InputField
+                                label="Consignee Time Slot."
+                                name="consigneeTimeSlot"
+                                type="time"
+                                icon={<Clock size={18}/>}
+                                value={formData.consigneeTimeSlot}
+                                onChange={handleChange}
+                                error={errors.consigneeTimeSlot}
+                                readOnly={false}
+                                required
                             />
                         </div>
                     </div>
@@ -263,19 +442,28 @@ export function ALEAssignBooking() {
 }
 
 // Reusable UI Components based on your Design System
-const InputField = ({ label, value, readOnly }) => (
+const InputField = ({ icon, label, name, value, onChange, error, required, readOnly, type }) => (
     <div className="flex flex-col gap-1">
-        <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">{label}</label>
+        <label className="text-xs font-bold text-gray-400 tracking-wider flex items-center gap-2"> {icon} {label} {required && !readOnly && <span className="text-red-500">*</span>}</label>
         <input
-            type="text"
+            type={type !== null ? type : "text"}
+            name={name}
             value={value}
+            onChange={onChange}
             readOnly={readOnly}
-            className="p-3 rounded-xl border border-gray-200 bg-gray-100/50 text-gray-600 font-bold outline-none"
+            className={`p-3 rounded-xl border border-gray-200 ${readOnly ? "bg-gray-100/50" : "bg-gray-50/50" } bg-gray-100/50 outline-none  ${error ? 'border-red-500' : 'border-gray-100 hover:border-indigo-300'}`}
         />
+        <AnimatePresence>
+            {error && (
+                <motion.span initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-red-500 font-bold mt-1 ml-2">
+                    {error}
+                </motion.span>
+            )}
+        </AnimatePresence>
     </div>
 );
 
-const SelectField = ({ label, name, value, onChange, error, required, options, icon }) => (
+const SelectField = ({ label, name, value, onChange, error, required, options = [], icon, disabled }) => (
     <div className="flex flex-col gap-1">
         <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
             {icon} {label} {required && <span className="text-red-500">*</span>}
@@ -285,16 +473,25 @@ const SelectField = ({ label, name, value, onChange, error, required, options, i
                 name={name}
                 value={value}
                 onChange={onChange}
+                disabled={disabled}
                 className={`p-4 pr-10 w-full rounded-2xl border bg-gray-50/50 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none appearance-none transition-all ${error ? 'border-red-500' : 'border-gray-100 hover:border-indigo-300'}`}
             >
-                <option value="">Select {label}...</option>
-                {options.map((opt, index) => (
-                    <option key={index} value={opt.value}>{opt.label}</option>
-                ))}
+                {disabled ? (
+                    <option value={value}>{options[0]?.label || "N/A"}</option>
+                ) : (
+                    <>
+                        <option value="">Select {label}...</option>
+                        {options.map((opt, index) => (
+                            <option key={index} value={opt.value}>{opt.label}</option>
+                        ))}
+                    </>
+                )}
             </select>
-            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
-                <CircleChevronDown size={20} />
-            </div>
+            {!disabled && (
+                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
+                    <CircleChevronDown size={20} />
+                </div>
+            )}
         </div>
         <AnimatePresence>
             {error && (

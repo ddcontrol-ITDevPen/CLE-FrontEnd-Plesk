@@ -11,6 +11,7 @@ import {getUserById} from "../../../services/userService.js";
 import * as XLSX from 'xlsx';
 import {useNavigate} from "react-router-dom";
 import StatusInfographic from "../../ROTComponents/ROTStatistics.jsx";
+import {getAssignedHaulierByContainerId} from "../../../services/assignedHaulier.js";
 
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
@@ -111,15 +112,30 @@ export function ALEYourBookings ()  {
             const haulierId = user.companyCode;
             console.log(haulierId);
             const data = await getAleContainers();
-            const filteredData = await data
-                .filter(c => c.haulierId === haulierId)
-                .sort((a, b) => {
-                    const dateA = new Date(getStatusTimestamp(a) || 0);
-                    const dateB = new Date(getStatusTimestamp(b) || 0);
-                    return dateB - dateA;
-                });
+            const haulierContainers = data.filter(c => c.haulierId === haulierId);
+
+            const enrichedData = await Promise.all(
+                haulierContainers.map(async (cont) => {
+                    try {
+                        const assignment = await getAssignedHaulierByContainerId(cont.containerId);
+                        return {
+                            ...cont,
+                            timeSlot: assignment?.timeSlot?.time || "N/A"
+                        };
+                    } catch (err) {
+                        console.error("No assignment found for", cont.containerId);
+                        return { ...cont, timeSlot: "N/A" };
+                    }
+                })
+            );
+
+            const sortedData = enrichedData.sort((a, b) => {
+                const dateA = new Date(getStatusTimestamp(a) || 0);
+                const dateB = new Date(getStatusTimestamp(b) || 0);
+                return dateB - dateA;
+            });
             console.log(data);
-            setContainers(filteredData);
+            setContainers(sortedData);
         } catch (error) {
             toast.error("Failed to fetch ROT history");
         } finally {
@@ -411,25 +427,25 @@ export function ALEYourBookings ()  {
                         <tr>
                             <th className="p-4 border-b w-10 text-center">No.</th>
                             <th className="p-4 border-b w-32">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('blOrBookingNumber')}>
-                                    BL/Booking Number
-                                    {sortConfig.key === 'blOrBookingNumber' && (
+                                <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.awbNumber')}>
+                                    Air WayBill Number
+                                    {sortConfig.key === 'aleBooking.awbNumber' && (
                                         <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                                     )}
                                 </div>
                             </th>
                             <th className="p-4 border-b w-32">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('containerNumber')}>
-                                    Container Number
-                                    {sortConfig.key === 'containerNumber' && (
+                                <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.houseAWBNumber')}>
+                                    House AWB Number
+                                    {sortConfig.key === 'aleBooking.houseAWBNumber' && (
                                         <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                                     )}
                                 </div>
                             </th>
                             <th className="p-4 border-b w-36">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('booking.movementType')}>
+                                <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.movementType')}>
                                     Movement Type
-                                    {sortConfig.key === 'booking.movementType' && (
+                                    {sortConfig.key === 'aleBooking.movementType' && (
                                         <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                                     )}
                                 </div>
@@ -493,10 +509,15 @@ export function ALEYourBookings ()  {
                                     return (
                                         <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
                                             <td className="p-4">{index + 1}</td>
-                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight">{cont.booking.blOrBookingNumber}</td>
-                                            <td className="p-4">{cont.containerNumber}</td>
-                                            <td className="p-4">{cont.booking?.tripType ? `${cont.booking?.movementType} - ${cont.booking?.tripType}` : cont.booking?.movementType}</td>
-                                            <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
+                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight">{cont?.aleBooking?.awbNumber}</td>
+                                            <td className="p-4">{cont?.aleBooking?.houseAWBNumber}</td>
+                                            <td className="p-4">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
+                                            <td className="p-4 whitespace-nowrap">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">{cont.rotDate}</span>
+                                                    <span className="text-[11px] text-blue-500 font-bold bg-blue-50 px-2 py-0.5 rounded mt-1 w-fit">{cont.timeSlot}</span>
+                                                </div>
+                                            </td>
                                             <td className="p-4 text-center">
                                                 {/* Status Badge using Theme Colors */}
                                                 <span
@@ -524,8 +545,10 @@ export function ALEYourBookings ()  {
                                                     )}
                                                     <Eye size={18}
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/haulier/booking/view/${cont.containerId}`)}/>
-                                                    <Edit size={18}
+                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) && (
+                                                        <Edit size={18}
                                                           className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/ale/haulier/booking/edit/form1/${cont.containerId}`)}/>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>

@@ -15,7 +15,6 @@ import {ForwardingProfile} from "../cle/profile/ForwardingProfile.jsx";
 import {ForwardingEditProfile} from "../cle/profile/ForwardingEditProfile.jsx";
 import {HaulierDashboard} from "../cle/haulier/dashboard/HaulierDashboard.jsx";
 import {YourBookings} from "../cle/haulier/booking/YourBookings.jsx";
-import {AcceptedBookings} from "../cle/haulier/booking/AcceptedBookings.jsx";
 import {ViewBookings} from "../cle/haulier/booking/ViewBookings.jsx";
 import {AssignBooking} from "../cle/haulier/booking/AssignBooking.jsx";
 import {HaulierManagement} from "../cle/haulier/management/HaulierManagement.jsx";
@@ -43,7 +42,6 @@ import {ALEForwardingProfile} from "../ale/profile/ForwardingProfile.jsx";
 import {ALEForwardingEditProfile} from "../ale/profile/ForwardingEditProfile.jsx";
 import {ALEHaulierDashboard} from "../ale/haulier/dashboard/HaulierDashboard.jsx";
 import {ALEYourBookings} from "../ale/haulier/booking/YourBookings.jsx";
-import {ALEAcceptedBookings} from "../ale/haulier/booking/AcceptedBookings.jsx";
 import {ALEViewBookings} from "../ale/haulier/booking/ViewBookings.jsx";
 import {ALEAssignBooking} from "../ale/haulier/booking/AssignBooking.jsx";
 import {ALEHaulierManagement} from "../ale/haulier/management/HaulierManagement.jsx";
@@ -210,14 +208,6 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <AssignBooking />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/haulier/booking/accepted"
-                    element={
-                        <ProtectedRoute>
-                            <AcceptedBookings />
                         </ProtectedRoute>
                     }
                 />
@@ -456,22 +446,14 @@ export default function AppRouter() {
                         </ProtectedRoute>
                     }
                 />
-                <Route
-                    path="/ale/haulier/booking/accepted"
-                    element={
-                        <ProtectedRoute>
-                            <ALEAcceptedBookings />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/ale/haulier/booking/accepted/edit/:id"
-                    element={
-                        <ProtectedRoute>
-                            <ALEEditAssignBooking />
-                        </ProtectedRoute>
-                    }
-                />
+                {/*<Route*/}
+                {/*    path="/ale/haulier/booking/accepted/edit/:id"*/}
+                {/*    element={*/}
+                {/*        <ProtectedRoute>*/}
+                {/*            <ALEEditAssignBooking />*/}
+                {/*        </ProtectedRoute>*/}
+                {/*    }*/}
+                {/*/>*/}
                 <Route
                     path="/ale/haulier/booking/view/eCSN/:id"
                     element={
@@ -484,7 +466,7 @@ export default function AppRouter() {
                     path="/ale/haulier/booking/edit/form1/:id"
                     element={
                         <ProtectedRoute>
-                            <ALEEditCreateBooking />
+                            <ALEEditAssignBooking />
                         </ProtectedRoute>
                     }
                 />

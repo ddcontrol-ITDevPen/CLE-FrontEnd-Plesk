@@ -23,7 +23,7 @@ export default function HaulierNavBar({ role = "haulier" }) {
         { icon: LucideClipboardClock, label: "Your ROTs", path: "/ale/haulier/booking" },
         { icon: LucideArchive, label: "Archived ROTs", path: "/" },
         { icon: LucideMapPinned, label: "Track & Trace", path: "/ale/rot/track" },
-        { icon: LucideBolt, label: "Haulier Management", path: "/ale/haulier/management/configure" },
+        { icon: LucideBolt, label: "Trucker Management", path: "/ale/haulier/management/configure" },
     ];
 
     return (

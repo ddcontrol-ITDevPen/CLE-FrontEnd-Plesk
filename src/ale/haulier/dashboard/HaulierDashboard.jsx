@@ -50,8 +50,8 @@ export function ALEHaulierDashboard() {
         let totalTurnAround = 0;
         let tatCount = 0;
         let activeCount = 0;
-        let inDepotCount = 0;
-        let completedTodayCount = 0;
+        let inTerminalCount = 0;
+        let acceptedCount = 0;
         let currentWeekTAT = [];
         let previousWeekTAT = [];
         const now = new Date();
@@ -63,11 +63,9 @@ export function ALEHaulierDashboard() {
             const status = c.status || "";
             const statusLower = status.toLowerCase();
 
-            if (["enroute", "gatedin", "gatedout"].includes(statusLower)) activeCount++;
-            if (statusLower === "gatedin") inDepotCount++;
-            if (status === "Completed" && c.deliveredTime) {
-                if (new Date(c.deliveredTime).toDateString() === today) completedTodayCount++;
-            }
+            if (["enroute", "accepted", "gated-in", "gated-out"].includes(statusLower)) activeCount++;
+            if (statusLower === "gated-in") inTerminalCount++;
+            if (status === "Accepted" && c.acceptedTime) acceptedCount++;
             if (c.turnAroundTime > 0) {
                 totalTurnAround += c.turnAroundTime;
                 tatCount++;
@@ -95,8 +93,8 @@ export function ALEHaulierDashboard() {
 
         const result = {
             totalActive: activeCount,
-            inDepot: inDepotCount,
-            completedToday: completedTodayCount,
+            inTerminal: inTerminalCount,
+            accepted: acceptedCount,
             avgTat: tatCount > 0 ? (totalTurnAround / tatCount).toFixed(1) : "0.0",
             efficiency: Math.abs(efficiencyGap).toFixed(1),
             isImproving: efficiencyGap >= 0,
@@ -174,10 +172,17 @@ export function ALEHaulierDashboard() {
                         subtext="Containers on road"
                     />
                     <StatCard
-                        title="Gate In"
-                        value={stats.inDepot}
-                        icon={LogIn}
+                        title="Accepted"
+                        value={stats.accepted}
+                        icon={CheckCircle}
                         color="bg-amber-500"
+                        subtext="Accepted by Terminal"
+                    />
+                    <StatCard
+                        title="Gated In"
+                        value={stats.inTerminal}
+                        icon={LogIn}
+                        color="bg-emerald-500"
                         subtext="Currently at Depot"
                     />
                     <StatCard
@@ -186,13 +191,6 @@ export function ALEHaulierDashboard() {
                         icon={Timer}
                         color="bg-purple-600"
                         subtext="Turn Around Time"
-                    />
-                    <StatCard
-                        title="Delivered"
-                        value={stats.completedToday}
-                        icon={CheckCircle}
-                        color="bg-emerald-500"
-                        subtext="Completed Today"
                     />
                 </div>
 
@@ -236,9 +234,9 @@ export function ALEHaulierDashboard() {
                                 <div key={i} className="bg-white/10 p-4 rounded-2xl border border-white/5 hover:bg-white/20 transition-all cursor-pointer">
                                     <div className="flex justify-between items-start mb-2">
                                         <span className="text-[10px] font-black uppercase bg-amber-500 text-black px-2 py-0.5 rounded">Urgent</span>
-                                        <span className="text-[10px] text-gray-400 font-bold">{c.containerNumber}</span>
+                                        <span className="text-[10px] text-gray-400 font-bold">{c.containerId}</span>
                                     </div>
-                                    <p className="text-sm font-bold truncate">{c.booking?.blOrBookingNumber}</p>
+                                    <p className="text-sm font-bold truncate">{c.aleBooking?.awbNumber}</p>
                                     <div className="flex items-center gap-2 mt-3 text-[11px] text-gray-300 font-medium">
                                         <Timer size={14} /> Delayed in Gate: {c.turnAroundTime} mins
                                     </div>

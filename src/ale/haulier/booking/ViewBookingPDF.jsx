@@ -112,7 +112,7 @@ export function ALEViewECsnPDF() {
     if (loading) return <div className="p-20 text-center">Generating PDF View...</div>;
     if (!data) return <div className="p-20 text-center text-red-500">Record not found.</div>;
 
-    const booking = data.booking || {};
+    const aleBooking = data.aleBooking || {};
 
     return (
         <Layout role="forwarder">
@@ -153,20 +153,21 @@ export function ALEViewECsnPDF() {
                     <div className="text-center py-1 font-bold text-[-16px] tracking-widest mb-4"
                          style={{display: 'flex', justifyContent: 'space-between', textAlign: 'center', paddingTop: '4px', paddingBottom: '4px', paddingLeft: '25px', paddingRight: '25px', fontWeight: 'bold', fontSize: '16px', letterSpacing: '0.1em', marginBottom: '16px', backgroundColor: '#0054dc', color: '#ffffff',}}>
                         <p>e-CSN</p>
-                        <p>{booking.rotNumber}</p>
+                        <p>{aleBooking.rotNumber}</p>
                     </div>
 
                     {/* Section: General Details */}
                     <PDFSectionHeader title="General Details" />
                     <div className="grid grid-cols-2 gap-x-4 mb-5" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: '16px', marginBottom: '20px' }}>
-                        <PDFRow label="Movement Type" value={booking.movementType} />
-                        <PDFRow label="Type of Trip" value={booking.tripType} />
-                        <PDFRow label="BL/Booking Number" value={booking.blOrBookingNumber} />
-                        <PDFRow label="SCN" value={booking.scn} />
-                        <PDFRow label="POD/POL" value={booking.portLocation} />
-                        <PDFRow label="ETA" value={booking.eta?.split('T')[0]} />
-                        <PDFRow label="Seal No." value={booking.sealNumber} />
-                        <PDFRow label="Forwarder Remarks" value={booking.forwarderRemarks} />
+                        <PDFRow label="Movement Type" value={aleBooking.movementType} />
+                        <PDFRow label="Type of Trip" value={aleBooking.tripType} />
+                        <PDFRow label="AWB No." value={aleBooking.awbNumber} />
+                        <PDFRow label="House AWB No." value={aleBooking.houseAWBNumber} />
+                        <PDFRow label="Flight No." value={aleBooking.flightNumber} />
+                        <PDFRow label="Terminal" value={aleBooking.terminalLocation} />
+                        <PDFRow label="ETA" value={aleBooking.eta?.split('T')[0]} />
+                        <PDFRow label="Seal No." value={aleBooking.sealNumber} />
+                        <PDFRow label="Forwarder Remarks" value={aleBooking?.forwarderRemarks} />
                     </div>
 
                     {/* Section: Shipping Details */}
@@ -174,48 +175,46 @@ export function ALEViewECsnPDF() {
                     <div className="grid grid-cols-2 gap-x-4 mb-5" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: '16px', marginBottom: '20px' }}>
                         <PDFRow label="Pickup From" value={getLocationName(data, "from")} />
                         <PDFRow label="Send To" value={getLocationName(data, "to")} />
-                        <PDFRow label="Forwarding Agent" value={booking.forwardingName} />
-                        <PDFRow label="Haulier" value={data.haulierName} />
-                        <PDFRow label="Shipping Agent" value={booking.shippingAgentName} />
+                        <PDFRow label="Forwarding Agent" value={aleBooking.forwardingName} />
+                        <PDFRow label="Trucker/Transporter" value={data.haulierName} />
+                        <PDFRow label="Airline" value={aleBooking.airlineName} />
                         <PDFRow label="Billing Party" value={billingPartyName} />
                     </div>
 
                     {/* Section: Container Details */}
                     <PDFSectionHeader title="Container Details" />
                     <div className="grid grid-cols-2 gap-x-4 mb-5" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: '16px', marginBottom: '20px' }}>
-                        <PDFRow label="Container No." value={data.containerNumber} />
+                        <PDFRow label="Package Quantity." value={data.packageQuantity} />
                         <PDFRow label="Size" value={data.containerSize} />
                         <PDFRow label="Type" value={data.containerType} />
                         <PDFRow label="VGM" value={data.vgm} />
-                        <PDFRow label="Trailer Type" value={data.trailerType} />
-                        <PDFRow label="Depot" value={data.depotName} />
-                        <PDFRow label="Consignee" value={data.consigneeName} />
-                        <PDFRow label="Port" value={data.portName} />
-                        <PDFRow label="To Address" value={data.toAddress?.[0]?.address} isFullWidth={true} />
+                        <PDFRow label="Volumetric Weight" value={data.volumeMetricWeight} />
+                        <PDFRow label="Consignee" value={data.consigneeName !== null ? data.consigneeName : data.externalConsigneeName} />
+                        <PDFRow label="Terminal" value={data.terminalName} />
+                        <PDFRow label="To Address" value={data.toAddress?.[0]?.address !== null ? data.toAddress?.[0]?.address : data.externalConsigneeAddress} isFullWidth={true} />
                         <PDFRow label="ROT Date" value={data.rotDate?.split('T')[0]} />
                     </div>
 
-                    {/* Section: Assigned Haulier Details */}
-                    <PDFSectionHeader title="Haulier Details" />
+                    {/* Section: Assigned Trucker Details */}
+                    <PDFSectionHeader title="Trucker Details" />
                     <div className="grid grid-cols-2 gap-x-4 mb-5" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: '16px', marginBottom: '20px' }}>
                         <PDFRow label="PM/Plate Number" value={assignedHaulier?.primeMover?.plateNumber} />
                         <PDFRow label="Trailer Number" value={`${assignedHaulier?.trailer?.plateNumber} - ${assignedHaulier?.trailer?.type}`} />
                         <PDFRow label="Driver" value={`${assignedHaulier?.driver?.name} (${assignedHaulier?.driver?.mobileNumber} / ${assignedHaulier?.driver?.emailAddress})`} />
                         <PDFRow label="Time Slot" value={`${assignedHaulier?.timeSlot?.date} @ ${assignedHaulier?.timeSlot?.time}`} />
                         <PDFRow label="BTM/BGK" value={`${assignedHaulier?.primeMover?.btm || 'N/A'} / ${assignedHaulier?.primeMover?.bgk || 'N/A'}`} />
-                        <PDFRow label="Haulier Remarks" value={booking.haulierRemarks} />
+                        <PDFRow label="Haulier Remarks" value={aleBooking.haulierRemarks} />
                     </div>
-
-
-                    {/* Section: Depot and Consignee Details */}
+                    
+                    {/* Section: Terminal and Consignee Details */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: '16px' }}>
                         <div>
-                            <PDFSectionHeader title="Depot Details" />
+                            <PDFSectionHeader title="Terminal Details" />
                             <div className="grid grid-cols-1 gap-x-4 mb-5" style={{ display: 'grid', columnGap: '16px', marginBottom: '20px' }}>
                                 <PDFRow label="Gate-In Time" value={data.gatedInTime ? new Date(data.gatedInTime).toLocaleString() : "N/A"} />
                                 <PDFRow label="Gate-Out Time" value={data.gatedOutTime ? new Date(data.gatedOutTime).toLocaleString() : "N/A"} />
                                 <PDFRow label="Turn Around Time (TAT)" value={data.turnAroundTime} />
-                                <PDFRow label="Depot Remarks" value={booking.depotRemarks} />
+                                <PDFRow label="Depot Remarks" value={aleBooking.terminalRemarks} />
                             </div>
                         </div>
                         <div>
@@ -223,8 +222,8 @@ export function ALEViewECsnPDF() {
                             <div className="grid grid-cols-1 gap-x-4 mb-5" style={{ display: 'grid', columnGap: '16px', marginBottom: '20px' }}>
                                 <PDFRow label="Acknowledge By" value={receivedByUser?.fullName} />
                                 <PDFRow label="Email Address" value={receivedByUser?.emailAddress} />
-                                <PDFRow label="Delivered" value={data.deliveredTime ? new Date(data.deliveredTime).toLocaleString() : "N/A"} />
-                                <PDFRow label="RFC" value={data.rfcTime ? new Date(data.rfcTime).toLocaleString() : "N/A"} />
+                                {/*<PDFRow label="Delivered" value={data.deliveredTime ? new Date(data.deliveredTime).toLocaleString() : "N/A"} />*/}
+                                {/*<PDFRow label="RFC" value={data.rfcTime ? new Date(data.rfcTime).toLocaleString() : "N/A"} />*/}
                             </div>
                         </div>
                     </div>
