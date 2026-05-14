@@ -193,7 +193,7 @@ export function AkpsbookingAction() {
             if (statusModal.nextStatus === "Approved-AKPS") {
                 // Check if AKPS has already approved this container
                 // Note: Adjust the property name if it's 'approvedAKPSTime' or similar in your DB
-                if (currentContainer.approvedBothTime || currentContainer.approvedCustomTime) {
+                if (currentContainer.approvedCustomTime) {
                     finalStatus = "Approved-Complete";
                 }
             }
@@ -204,10 +204,11 @@ export function AkpsbookingAction() {
 
 
                 status: finalStatus,
+
                 // Update the specific timestamps
-                ApprovedAKPSTime: statusModal.nextStatus === "Approved-AKPS" ? now : currentContainer.approvedCustomTime,
+                ApprovedAKPSTime: statusModal.nextStatus === "Approved-AKPS" ? now : currentContainer.approvedAKPSTime,
                 // If it becomes Approved-Complete, we ensure the custom time is set
-                ApprovedBothTime: finalStatus === "Approved-Complete" ? currentContainer.approvedBothTime : currentContainer.approvedBothTime,
+                ApprovedBothTime: finalStatus === "Approved-Complete" ? currentContainer.approvedBothTime : currentContainer.approvedAKPSTime,
                 RejectedAKPSTime: statusModal.nextStatus === "Rejected-AKPS" ? now : currentContainer.rejectedAKPSTime,
                 AKPSRejectReason: statusModal.nextStatus === "Rejected-AKPS"
                     ? statusModal.remarks
