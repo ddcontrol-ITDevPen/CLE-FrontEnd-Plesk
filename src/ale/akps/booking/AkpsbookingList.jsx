@@ -161,7 +161,7 @@ export function AkpsbookingList() {
         if (container.status === "Rejected") return container.rejectedTime;
         if (container.status === "Deleted") return container.deletedTime;
         if (container.status === "Approved-Custom") return container.approvedCustomTime;
-        if (container.status === "Approved-AKPS") return container.akpsAcceptedTime;
+        if (container.status === "Approved-AKPS") return container.approvedAKPSTime;
         if (container.status === "Approved-Complete") return container.approvedBothTime;
         if (container.status === "Rejected-Both") return container.rejectedBothTime;
         if (container.status === "Rejected-Custom") return container.rejectedCustomTime;
