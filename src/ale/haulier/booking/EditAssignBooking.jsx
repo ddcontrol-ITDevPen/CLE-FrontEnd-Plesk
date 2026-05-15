@@ -162,7 +162,7 @@ export function ALEEditAssignBooking() {
                     ? `${formData.consigneeTimeSlot}:00`
                     : formData.consigneeTimeSlot
             };
-            await updateAleAssignedHaulier(assignmentPayload);
+            await updateAleAssignedHaulier(formData.id, assignmentPayload);
             if (formData.timeSlotId !== assignedHaulier.timeSlotId) {
                 // Revert OLD slot (+1)
                 const oldSlot = await getAleTimeSlotById(assignedHaulier.timeSlotId);
@@ -172,7 +172,7 @@ export function ALEEditAssignBooking() {
                 await updateAleTimeSlot(newSlot.id, { ...newSlot, pickUpTotalSlot: newSlot.pickUpTotalSlot - 1 });
             }
             toast.success("Assignment updated successfully!");
-            setTimeout(() => navigate("/ale/haulier/booking/accepted"), 1500);
+            setTimeout(() => navigate("/ale/haulier/booking"), 1500);
         } catch (error) {
             toast.error("Failed to update assignment");
             console.error(error);
@@ -225,7 +225,7 @@ export function ALEEditAssignBooking() {
                                 required
                                 disabled={!selectedDate}
                                 options={filteredSlots.map(s => ({
-                                    label: `${s.time} ${s.id === assignedHaulier?.timeSlotId ? '(Current)' : `(${s.totalSlot} left)`}`,
+                                    label: `${s.time} ${s.id === assignedHaulier?.timeSlotId ? '(Current)' : `(${s.pickUpTotalSlot} left)`}`,
                                     value: s.id
                                 }))}
                             />
