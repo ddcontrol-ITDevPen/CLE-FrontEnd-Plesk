@@ -599,7 +599,7 @@ export function TerminalList ()  {
                                                             onClick={() => handleGatedIn(cont.containerId)}
                                                         />
                                                     }
-                                                    {cont.gatedInTime !== null  &&
+                                                    {cont.gatedInTime !== null && cont.gatedOutTime === null &&
                                                         <Clock size={18}
                                                                className="text-red-600 cursor-pointer hover:text-red-800"
                                                                onClick={() => handleGatedOut(cont.containerId)}
