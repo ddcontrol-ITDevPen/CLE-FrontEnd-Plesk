@@ -566,18 +566,18 @@ export function TerminalList ()  {
                                                 <div className="flex items-center justify-center gap-3">
                                                     <Eye size={18}
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}/>
-                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) && (
+                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) &&  cont.acceptedTime === null && (
                                                         <button
                                                             onClick={() => setStatusModal({
                                                                 isOpen: true,
                                                                 id: cont.containerId,
                                                                 nextStatus: "Accepted"
                                                             })}
-                                                            className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Reject / Examine ">
+                                                            className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Reject ">
                                                             <Check size={18} />
                                                         </button>
                                                     )}
-                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) && (
+                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) && (cont.rejectedTime === null && cont.acceptedTime === null) && (
                                                         <button
                                                             onClick={() => setStatusModal({
                                                                 isOpen: true,
