@@ -10,6 +10,7 @@ import api from "../../../services/api.js";
 import {toast} from "sonner";
 import {getUserById} from "../../../services/userService.js";
 import {getAleBookingDocumentByBookingNumber} from "../../../services/aleBookingDocumentService.js";
+import ROTShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
 
 export function CustomsbookingDetails() {
     const { id } = useParams();
@@ -367,7 +368,7 @@ export function CustomsbookingDetails() {
                     </div>
                 )}
                 {/* Log of Shipment (Timeline) */}
-                {ShipmentLog(data)}
+                {ROTShipmentLog(data)}
             </div>
         </Layout>
     );
