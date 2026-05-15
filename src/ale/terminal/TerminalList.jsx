@@ -592,14 +592,14 @@ export function TerminalList ()  {
                                                         </button>
                                                     )}
                                                    
-                                                    {cont.acceptedTime !== null && cont.approvedBothTime !== null &&
+                                                    {cont.acceptedTime !== null && cont.approvedBothTime !== null && cont.gatedInTime === null &&
                                                         <Clock
                                                             size={18}
                                                             className="text-green-600 cursor-pointer hover:text-green-800"
                                                             onClick={() => handleGatedIn(cont.containerId)}
                                                         />
                                                     }
-                                                    {cont.status === "Gate-In"  &&
+                                                    {cont.gatedInTime !== null  &&
                                                         <Clock size={18}
                                                                className="text-red-600 cursor-pointer hover:text-red-800"
                                                                onClick={() => handleGatedOut(cont.containerId)}
