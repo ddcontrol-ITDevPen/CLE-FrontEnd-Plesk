@@ -35,7 +35,7 @@ export function TerminalList ()  {
     const [filterStatus, setFilterStatus] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [sortConfig, setSortConfig] = useState({ key: 'booking.awbNumber', direction: 'desc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'timeStamp', direction: 'desc' });
     const [statusModal, setStatusModal] = useState({ isOpen: false, id: null, nextStatus: "", remarks: "" });
 
     const navigate = useNavigate();
@@ -592,7 +592,7 @@ export function TerminalList ()  {
                                                         </button>
                                                     )}
                                                    
-                                                    {cont.status === "Approved-Complete" || cont.status === "Accepted" &&
+                                                    {cont.status === "Approved-Complete" && cont.status === "Accepted" &&
                                                         <Clock
                                                             size={18}
                                                             className="text-green-600 cursor-pointer hover:text-green-800"
