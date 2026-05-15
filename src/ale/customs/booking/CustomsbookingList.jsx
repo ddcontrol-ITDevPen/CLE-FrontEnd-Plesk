@@ -616,24 +616,28 @@ export function CustomsbookingList() {
                                                 {/* Horizontal Action Icons */}
                                                 <div className="flex items-center justify-center gap-3">
                                                     {/* 1. Show Approve/Reject buttons ONLY IF Custom is Approved and AKPS is still pending (null or empty) */}
-                                                    {(cont.status === "Enroute" || cont.status === "Approved-AKPS") && !cont.akpsStatus && (
-                                                        <>
-                                                            <button onClick={() => navigate(`/ale/customs/booking/bookingaction/${cont.containerId}`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Reject / Examine ">
-                                                                <Check size={18} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => setStatusModal({
-                                                                    isOpen: true,
-                                                                    id: cont.containerId,
-                                                                    nextStatus: "Rejected-Custom",
-                                                                    remarks: ""
-                                                                })}
-                                                                className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
-                                                                title="Reject"
-                                                            >
-                                                                <LucideX size={18} />
-                                                            </button>                                                  </>
+                                                  
+                                                    {["Enroute", "Approved-AKPS", "Accepted"].includes(cont.status) && (
+                                                        <button onClick={() => navigate(`/ale/customs/booking/bookingaction/${cont.containerId}`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Reject / Examine ">
+                                                            <Check size={18} />
+                                                        </button>
+
                                                     )}
+                                                    {["Enroute", "Approved-AKPS", "Accepted"].includes(cont.status) && (
+                                                        <button
+                                                            onClick={() => setStatusModal({
+                                                                isOpen: true,
+                                                                id: cont.containerId,
+                                                                nextStatus: "Rejected-Custom",
+                                                                remarks: ""
+                                                            })}
+                                                            className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+                                                            title="Reject"
+                                                        >
+                                                            <LucideX size={18} />
+                                                        </button>
+                                                    )}
+
                                                     <Eye size={18}
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/customs/booking/bookingdetails/${cont.containerId}`)}/>
 
