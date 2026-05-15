@@ -154,6 +154,9 @@ export function ALEROTHistory ()  {
         if (container.status === "Approved-AKPS") return container.approvedAKPSTime;
         if (container.status === "Approved-Custom") return container.approvedCustomTime;
         if (container.status === "Approved-Complete") return container.approvedBothTime;
+        if (container.status === "Rejected-AKPS") return container.rejectedAKPSTime;
+        if (container.status === "Rejected-Custom") return container.rejectedCustomTime;
+        if (container.status === "Rejected-Both") return container.rejectedBothTime;
         return null;
     };
     
@@ -175,14 +178,15 @@ export function ALEROTHistory ()  {
                 console.log(gatedOutDate.toISOString());
                 const today = new Date();
                 const diffInTime = today.getTime() - gatedOutDate.getTime();
-                console.log(diffInTime);
                 const diffInDays = diffInTime / (1000 * 3600 * 24);
-                console.log(diffInDays);
 
-                if (diffInDays > 7) {
+                if (diffInDays > 1) {
                     isExpiredGateOut = true;
                 }
             }
+            
+            const latestTimestamp = getStatusTimestamp(cont.status);
+            
             
             let matchesStatus = false;
                 if(filterStatus === "All")
@@ -523,7 +527,7 @@ export function ALEROTHistory ()  {
                                 <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
                                     <td className="p-4">{index + 1}</td>
                                     <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}>{cont.aleBooking.awbNumber}</td>
-                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}s>{cont.aleBooking.houseAWBNumber}</td>
+                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}>{cont.aleBooking.houseAWBNumber}</td>
                                     <td className="p-4">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
                                     <td className="p-4 whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>
                                     <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
@@ -604,6 +608,33 @@ export function ALEROTHistory ()  {
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-6 px-2 pt-2">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-600"><Eye size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">View Details</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><Edit size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Edit ROT</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><PencilRuler size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Readjustment</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-red-50 rounded-md text-red-500"><CircleX size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Reject/Cancel</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-blue-50 rounded-md text-blue-600"><FileText size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">View PDF</span>
+                    </div>
                 </div>
             </div>
 

@@ -78,7 +78,7 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(to_bottom_right,rgba(35,0,230,0.65),rgba(225,224,254,1),rgba(238,220,154,0.65))] p-4 font-sans">
             <motion.div
                 layout
-                className={`flex w-full max-w-[950px] min-h-[600px] overflow-hidden bg-white shadow-cle rounded-xl transition-all duration-700 ${isSuccess ? 'flex-row-reverse' : 'flex-row'}`}
+                className={`flex w-5/6 min-h-[650px] overflow-hidden bg-white shadow-cle rounded-xl transition-all duration-700 ${isSuccess ? 'flex-row-reverse' : 'flex-row'}`}
             >
                 <motion.div
                     layout
@@ -283,11 +283,11 @@ const EntityCard = ({ logo, name, isSelected, onClick }) => (
     <button
         type="button"
         onClick={onClick}
-        className={`flex flex-col h-[60px] items-center justify-center rounded-xl border p-2 transition-all w-1/3 hover:scale-105
+        className={`flex flex-col h-[90px] items-center justify-center rounded-xl border p-2 transition-all w-1/3 hover:scale-105
             ${isSelected
             ? 'border-system-color ring-1 ring-bg-system-color shadow-lg'
             : 'border-gray-200 bg-white hover:border-system-color hover:shadow-md'}`}
     >
-        <img src={logo} alt={name} className="max-h-[45px] object-contain" />
+        <img src={logo} alt={name} className="max-h-[65px] object-contain" />
     </button>
 );

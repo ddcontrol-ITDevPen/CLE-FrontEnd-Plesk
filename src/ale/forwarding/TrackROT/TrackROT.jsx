@@ -100,7 +100,7 @@ export function ALETrackROT () {
                         <form onSubmit={handleSearch} className="flex w-full max-w-2xl gap-2">
                             <input
                                 type="text"
-                                placeholder="Booking No. / BL No. / Container No."
+                                placeholder="AWB No. / House AWB No. / ROT No. / Container Id"
                                 className="flex-1 p-4 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}

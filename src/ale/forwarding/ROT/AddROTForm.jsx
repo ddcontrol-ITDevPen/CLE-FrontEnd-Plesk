@@ -164,6 +164,13 @@ export function ALEAddROTForm() {
                 [type]: file
             }));
         }
+        if (errors[type]) {
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[type];
+                return newErrors;
+            });
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -220,6 +227,10 @@ export function ALEAddROTForm() {
             if (!formData.externalConsigneeAddress) newErrors.externalConsigneeAddress = "Consignee Address is required!";
             if (!formData.externalConsigneeContact) newErrors.externalConsigneeContact = "Consignee Contact Information is required!";
         }
+
+        if (!documents.doForm) newErrors.doForm = "DO Form is required!";
+        if (!documents.packingList) newErrors.packingList = "Packing List is required!";
+        if (!documents.customForm) newErrors.customForm = "Custom Form is required!";
 
         // const isBookingNumberDuplicate = bookings.some(
         //     (b) => b.blOrBookingNumber?.toLowerCase() === formData.awbNumber?.toLowerCase()
@@ -487,10 +498,10 @@ export function ALEAddROTForm() {
                             </div>
                             <div className="p-8 space-y-6">
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                    <FileUpload label="DO Form" fileName={documents.doForm?.name} onChange={(e) => handleFileChange(e, "doForm")} onRemove={() => setDocuments(prev => ({ ...prev, doForm: null }))} />
-                                    <FileUpload label="Custom Form" fileName={documents.customForm?.name} onChange={(e) => handleFileChange(e, "customForm")} onRemove={() => setDocuments(prev => ({ ...prev, customForm: null }))} />
-                                    <FileUpload label="Packing List/Invoice" fileName={documents.packingList?.name} onChange={(e) => handleFileChange(e, "packingList")} onRemove={() => setDocuments(prev => ({ ...prev, packingList: null }))} />
-                                    <FileUpload label="Other Document" fileName={documents.otherDoc?.name} onChange={(e) => handleFileChange(e, "otherDoc")} onRemove={() => setDocuments(prev => ({ ...prev, otherDoc: null }))} />
+                                    <FileUpload name="doForm" label="DO Form" fileName={documents.doForm?.name} onChange={(e) => handleFileChange(e, "doForm")} onRemove={() => setDocuments(prev => ({ ...prev, doForm: null }))} required={true} error={errors.doForm} />
+                                    <FileUpload name="customForm" label="Custom Form" fileName={documents.customForm?.name} onChange={(e) => handleFileChange(e, "customForm")} onRemove={() => setDocuments(prev => ({ ...prev, customForm: null }))} required={true} error={errors.customForm}/>
+                                    <FileUpload name="packingList" label="Packing List/Invoice" fileName={documents.packingList?.name} onChange={(e) => handleFileChange(e, "packingList")} onRemove={() => setDocuments(prev => ({ ...prev, packingList: null }))} required={true} error={errors.packingList}/>
+                                    <FileUpload name="otherDoc" label="Other Document" fileName={documents.otherDoc?.name} onChange={(e) => handleFileChange(e, "otherDoc")} onRemove={() => setDocuments(prev => ({ ...prev, otherDoc: null }))} />
                                 </div>
                             </div>
                         </div>
@@ -572,11 +583,14 @@ const SelectField = ({ label, name, value, onChange, error, required, options })
     </div>
 );
 
-const FileUpload = ({ label, onChange, fileName, onRemove }) => (
+const FileUpload = ({ label, name, onChange, fileName, onRemove, required, error }) => (
     <div className="flex flex-col gap-1">
-        <label className="text-sm font-semibold">{label}</label>
+        <label className="text-sm font-semibold">{label} {required && <span className="text-red-500">*</span>}</label>
         <div className="relative group">
-            <div className="p-3 rounded-xl border border-gray-200 bg-white flex justify-between items-center text-gray-400 cursor-pointer">
+            <div className={`p-3 rounded-xl border bg-white flex justify-between items-center transition-all shadow-sm
+                ${error ? 'border-red-500' : 'border-gray-200'} 
+                ${!fileName ? 'text-gray-400' : 'text-gray-800'}`}
+            >
                 <span className="truncate">{fileName || "Upload Doc"}</span>
                 {fileName ? (
                     <button
@@ -594,8 +608,20 @@ const FileUpload = ({ label, onChange, fileName, onRemove }) => (
                 )}
             </div>
             {!fileName && (
-                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={onChange}/>
+                <input name={name} type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={onChange}/>
             )}
         </div>
+        <AnimatePresence>
+            {error && (
+                <motion.span
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="text-[11px] text-red-500 font-semibold mt-1 ml-1"
+                >
+                    {error}
+                </motion.span>
+            )}
+        </AnimatePresence>
     </div>
 );

@@ -11,7 +11,7 @@ import {getUserById} from "../../../services/userService.js";
 import * as XLSX from 'xlsx';
 import {useNavigate} from "react-router-dom";
 import StatusInfographic from "../../ROTComponents/ROTStatistics.jsx";
-import {getAssignedHaulierByContainerId} from "../../../services/assignedHaulier.js";
+import {getAleAssignedHaulierByContainerId} from "../../../services/aleAssignedHaulierService.js";
 
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
@@ -117,9 +117,11 @@ export function ALEYourBookings ()  {
             const enrichedData = await Promise.all(
                 haulierContainers.map(async (cont) => {
                     try {
-                        const assignment = await getAssignedHaulierByContainerId(cont.containerId);
+                        const assignment = await getAleAssignedHaulierByContainerId(cont.containerId);
+                        console.log(assignment);
                         return {
                             ...cont,
+                            date: assignment?.timeSlot?.date,
                             timeSlot: assignment?.timeSlot?.time || "N/A"
                         };
                     } catch (err) {
@@ -160,6 +162,12 @@ export function ALEYourBookings ()  {
         if (container.status === "RFC") return container.rtRFCTime || container.rfcTime;
         if (container.status === "Rejected") return container.rejectedTime;
         if (container.status === "Deleted") return container.deletedTime;
+        if (container.status === "Approved-AKPS") return container.approvedAKPSTime;
+        if (container.status === "Approved-Custom") return container.approvedCustomTime;
+        if (container.status === "Approved-Complete") return container.approvedBothTime;
+        if (container.status === "Rejected-AKPS") return container.rejectedAKPSTime;
+        if (container.status === "Rejected-Custom") return container.rejectedCustomTime;
+        if (container.status === "Rejected-Both") return container.rejectedBothTime;
         return null;
     };
 
@@ -207,11 +215,9 @@ export function ALEYourBookings ()  {
                 console.log(gatedOutDate.toISOString());
                 const today = new Date();
                 const diffInTime = today.getTime() - gatedOutDate.getTime();
-                console.log(diffInTime);
                 const diffInDays = diffInTime / (1000 * 3600 * 24);
-                console.log(diffInDays);
 
-                if (diffInDays > 7) {
+                if (diffInDays > 1) {
                     isExpiredGateOut = true;
                 }
             }
@@ -509,12 +515,12 @@ export function ALEYourBookings ()  {
                                     return (
                                         <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
                                             <td className="p-4">{index + 1}</td>
-                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight">{cont?.aleBooking?.awbNumber}</td>
-                                            <td className="p-4">{cont?.aleBooking?.houseAWBNumber}</td>
+                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/haulier/booking/view/${cont.containerId}`)}>{cont?.aleBooking?.awbNumber}</td>
+                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/haulier/booking/view/${cont.containerId}`)}>{cont?.aleBooking?.houseAWBNumber}</td>
                                             <td className="p-4">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
                                             <td className="p-4 whitespace-nowrap">
                                                 <div className="flex flex-col">
-                                                    <span className="font-medium">{cont.rotDate}</span>
+                                                    <span className="font-medium">{cont.date ? cont.date : cont.rotDate}</span>
                                                     <span className="text-[11px] text-blue-500 font-bold bg-blue-50 px-2 py-0.5 rounded mt-1 w-fit">{cont.timeSlot}</span>
                                                 </div>
                                             </td>
