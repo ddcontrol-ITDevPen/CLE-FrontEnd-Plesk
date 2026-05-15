@@ -39,7 +39,7 @@ export function CustomsbookingList() {
     const [filterStatus, setFilterStatus] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [sortConfig, setSortConfig] = useState({ key: 'booking.awbNumber', direction: 'desc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'timeStamp', direction: 'desc' });
 
     const navigate = useNavigate();
 

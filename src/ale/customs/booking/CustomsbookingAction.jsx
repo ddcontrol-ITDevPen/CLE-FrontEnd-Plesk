@@ -208,8 +208,8 @@ export function CustomsbookingAction() {
                 status: finalStatus,
                 // Update the specific timestamps
                 ApprovedCustomTime: statusModal.nextStatus === "Approved-Custom" ? now : currentContainer.approvedCustomTime,
-                // If it becomes Approved-Complete, we ensure the custom time is set
-                ApprovedBothTime: finalStatus === "Approved-Complete" ? currentContainer.approvedBothTime : currentContainer.approvedCustomTime,
+                // If it becomes Approved-Complete, we ensure the custom time is setApprovedBothTime: finalStatus === "Approved-Complete" ? currentContainer.approvedBothTime : currentContainer.approvedCustomTime,
+                ApprovedBothTime: finalStatus === "Approved-Complete" ? now : null,
                 RejectedCustomTime: statusModal.nextStatus === "Rejected-Custom" ? now : currentContainer.rejectedCustomTime,
                 CustomRejectReason: statusModal.nextStatus === "Rejected-Custom"
                     ? statusModal.remarks

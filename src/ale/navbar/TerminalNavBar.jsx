@@ -23,7 +23,7 @@ export default function TerminalNavBar({ role = "terminal" }) {
         { icon: LucideFile, label: "Booking List", path: "/ale/terminal/terminalList" },
         { icon: LucideArchive, label: "Archived ROTs", path: "/" },
         { icon: LucideMapPinned, label: "Track & Trace", path: "/ale/rot/track" },
-        { icon: LucideFile, label: "View Document", path: "/ale/forwarding/rot/document/view" }
+        //{ icon: LucideFile, label: "View Document", path: "/ale/forwarding/rot/document/view" }
     ];
 
     return (

@@ -208,7 +208,7 @@ export function AkpsbookingAction() {
                 // Update the specific timestamps
                 ApprovedAKPSTime: statusModal.nextStatus === "Approved-AKPS" ? now : currentContainer.approvedAKPSTime,
                 // If it becomes Approved-Complete, we ensure the custom time is set
-                ApprovedBothTime: finalStatus === "Approved-Complete" ? currentContainer.approvedBothTime : currentContainer.approvedAKPSTime,
+                ApprovedBothTime: finalStatus === "Approved-Complete" ? now : null,
                 RejectedAKPSTime: statusModal.nextStatus === "Rejected-AKPS" ? now : currentContainer.rejectedAKPSTime,
                 AKPSRejectReason: statusModal.nextStatus === "Rejected-AKPS"
                     ? statusModal.remarks
