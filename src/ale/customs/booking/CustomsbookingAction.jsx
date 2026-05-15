@@ -536,8 +536,8 @@ export function CustomsbookingAction() {
                             </div>
 
                             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                                {statusModal.nextStatus === "Approved-Custom" ? "Approve Job?" :
-                                    statusModal.nextStatus === "Examine-Custom" ? "Examine Job?" :
+                                {statusModal.nextStatus === "Approved-Custom" ? "Approve?" :
+                                    statusModal.nextStatus === "Examine-Custom" ? "Examine?" :
                                         "Confirm Rejection?"}
                             </h2>
 

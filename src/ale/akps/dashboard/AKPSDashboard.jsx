@@ -10,7 +10,7 @@ import {
     History,
     ArrowUpRight,
     UserCircle,
-    List
+    List, UserCheck, CheckCircle2, LogOut
 } from "lucide-react";
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
@@ -79,7 +79,7 @@ export function AKPSDashboard() {
             try {
                 const userData = await getUserById(userId);
                 const forwardingId = userData?.companyCode;
-                console.log(forwardingId);
+                console.log(userData);
 
                 if (!forwardingId) {
                     console.warn("User has no associated forwarding ID");
@@ -134,29 +134,29 @@ export function AKPSDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <StatCard
                         title="Enroute"
-                        value={containers.length}
-                        icon={LayoutDashboard}
+                        value={containers.filter(c => c.status === "Enroute").length}
+                        icon={Truck}
                         colorClass="bg-orange-600"
                         borderClass="border-orange-600"
                     />
                     <StatCard
                         title="Approved-AKPS"
-                        value={containers.filter(c => c.status === "Assigned").length}
-                        icon={Clock}
+                        value={containers.filter(c => c.status === "Approved-Custom").length}
+                        icon={UserCheck}
                         colorClass="bg-amber-500"
                         borderClass="border-amber-500"
                     />
                     <StatCard
                         title="Approved-Complete"
-                        value={containers.filter(c => c.status === "Enroute").length}
-                        icon={Truck}
+                        value={containers.filter(c => c.status === "Approved-Complete").length}
+                        icon={CheckCircle2}
                         colorClass="bg-indigo-500"
                         borderClass="border-indigo-500"
                     />
                     <StatCard
-                        title="Gated-Out"
-                        value={containers.filter(c => c.status === "Completed").length}
-                        icon={ClipboardCheck}
+                        title="Gate-Out"
+                        value={containers.filter(c => c.status === "Gate-Out").length}
+                        icon={LogOut}
                         colorClass="bg-emerald-500"
                         borderClass="border-emerald-500"
                     />

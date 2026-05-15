@@ -34,10 +34,11 @@ export function CustomsbookingList() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusModal, setStatusModal] = useState({ isOpen: false, id: null, nextStatus: "", remarks: "" });
+   
     const [filterStatus, setFilterStatus] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'booking.awbNumber', direction: 'desc' });
 
     const navigate = useNavigate();
 
@@ -107,7 +108,7 @@ export function CustomsbookingList() {
         try {
             setIsLoading(true);
             const data = await getAleContainers();
-
+            console.log("Row Data (cont):", data);
             // Terminal usually sees ALL or filtered by location later
             setContainers(data || []);
         } catch (error) {
@@ -132,17 +133,16 @@ export function CustomsbookingList() {
         if (container.status === "Gate-Out") return container.rtGatedOutTime || container.gatedOutTime;
         if (container.status === "Delivered") return container.rtDeliveredTime || container.deliveredTime;
         if (container.status === "RFC") return container.rtRFCTime || container.rfcTime;
+        if (container.status === "Accepted") return container.acceptedTime;
         if (container.status === "Rejected") return container.rejectedTime;
         if (container.status === "Deleted") return container.deletedTime;
         if (container.status === "Approved-Custom") return container.approvedCustomTime;
-        if (container.status === "Approved-Akps") return container.akpsAcceptedTime;
+        if (container.status === "Approved-AKPS") return container.akpsAcceptedTime;
         if (container.status === "Approved-Complete") return container.approvedBothTime;
         if (container.status === "Rejected-Both") return container.rejectedBothTime;
         if (container.status === "Rejected-Custom") return container.rejectedCustomTime;
-        if (container.status === "Rejected-Akps") return container.akpsRejectedTime;
-        if (container.status === "Examine-Custom") return container.examineCustomTime;
-        if (container.status === "Examine-Akps") return container.akpsExamineTime;
-        if (container.status === "Examine-Complete") return container.examineBothTime;
+        if (container.status === "Rejected-AKPS") return container.akpsRejectedTime;
+        
         return null;
     };
 
@@ -200,7 +200,6 @@ export function CustomsbookingList() {
                 })) || []
             };
 
-            console.log("Submitting Payload:", payload);
 
             await updateAleContainer(statusModal.id, payload);
 
@@ -232,12 +231,12 @@ export function CustomsbookingList() {
                 let isExpiredGateOut = false;
                 if (cont.status === "Gate-Out" && cont.gatedOutTime) {
                     const gatedOutDate = new Date(cont.gatedOutTime);
-                    console.log(gatedOutDate.toISOString());
+                
                     const today = new Date();
                     const diffInTime = today.getTime() - gatedOutDate.getTime();
-                    console.log(diffInTime);
+                    
                     const diffInDays = diffInTime / (1000 * 3600 * 24);
-                    console.log(diffInDays);
+                    
 
                     if (diffInDays > 7) {
                         isExpiredGateOut = true;
@@ -484,7 +483,7 @@ export function CustomsbookingList() {
                         ) : filteredContainers.length > 0 ? (
                                 filteredContainers.map((cont, index) => {
 
-                                    console.log("Row Data (cont):", cont);
+                                 
                                     
                                     const theme = STATUS_CONFIG[cont.status] || { bg: "bg-gray-100", text: "text-gray-700", border: "border-gray-200" };
 
@@ -498,7 +497,7 @@ export function CustomsbookingList() {
 
                                             {/* Custom Form No from AleBooking */}
 
-                                            <td className="p-4">
+                                            <td className="p-4 text-center">
                                                 {(() => {
                                                     const type = cont.aleBooking?.customFormType;
                                                     // Pick the color class based on the type, or use default
@@ -517,7 +516,7 @@ export function CustomsbookingList() {
                                                 })()}
                                             </td>
                                             {/* AWB / House Number */}
-                                            <td className="p-4">
+                                            <td className="p-4 text-center">
                                                 <div className="flex flex-col">
                                                     <span className="font-medium">{cont.aleBooking?.awbNumber || "N/A"}</span> 
                                                     <span className="text-xs text-gray-500">{cont.aleBooking?.houseAWBNumber}</span>
@@ -579,10 +578,10 @@ export function CustomsbookingList() {
                                                 <div className="flex justify-center">
                                                     {(() => {
                                                         // Logic based on GatedIn/Out Timestamps
-                                                        if (cont.gatedInTime) {
+                                                        if (cont.acceptedTime) {
                                                             return <Check className="text-emerald-500" size={20} strokeWidth={3} />;
                                                         }
-                                                        if (cont.gatedOutTime) {
+                                                        if (cont.rejectedTime) {
                                                             // Returns an X cross in red as requested
                                                             return <LucideX className="text-red-500" size={20} strokeWidth={3} />;
                                                         }
@@ -679,8 +678,8 @@ export function CustomsbookingList() {
                             </div>
 
                             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                                {statusModal.nextStatus === "Approved-Custom" ? "Approve Job?" :
-                                    statusModal.nextStatus === "Examine-Custom" ? "Examine Job?" :
+                                {statusModal.nextStatus === "Approved-Custom" ? "Approve?" :
+                                    statusModal.nextStatus === "Examine-Custom" ? "Examine?" :
                                         "Confirm Rejection?"}
                             </h2>
 

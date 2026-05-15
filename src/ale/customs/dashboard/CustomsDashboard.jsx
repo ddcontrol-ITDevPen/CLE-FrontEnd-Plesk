@@ -5,6 +5,9 @@ import {
     LayoutDashboard,
     PlusCircle,
     Truck,
+    UserCheck,       // Approved-Custom (Officer)
+    CheckCircle2,    // Approved-Complete (Tick)
+    LogOut,          // Gate-Out
     ClipboardCheck,
     Clock,
     History,
@@ -133,30 +136,30 @@ export function CustomsDashboard() {
                 {/* Stat Cards - Bright Left Border Style */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <StatCard
-                        title="Total ROT"
-                        value={containers.length}
-                        icon={LayoutDashboard}
+                        title="Enroute"
+                        value={containers.filter(c => c.status === "Enroute").length}
+                        icon={Truck}
                         colorClass="bg-orange-600"
                         borderClass="border-orange-600"
                     />
                     <StatCard
-                        title="Pending"
-                        value={containers.filter(c => c.status === "Assigned").length}
-                        icon={Clock}
+                        title="Approved-Custom"
+                        value={containers.filter(c => c.status === "Approved-Custom").length}
+                        icon={UserCheck}
                         colorClass="bg-amber-500"
                         borderClass="border-amber-500"
                     />
                     <StatCard
-                        title="Enroute"
-                        value={containers.filter(c => c.status === "Enroute").length}
-                        icon={Truck}
+                        title="Approved-Complete"
+                        value={containers.filter(c => c.status === "Approved-Complete").length}
+                        icon={CheckCircle2}
                         colorClass="bg-indigo-500"
                         borderClass="border-indigo-500"
                     />
                     <StatCard
-                        title="Completed"
-                        value={containers.filter(c => c.status === "Completed").length}
-                        icon={ClipboardCheck}
+                        title="Gate-Out"
+                        value={containers.filter(c => c.status === "Gate-Out").length}
+                        icon={LogOut}
                         colorClass="bg-emerald-500"
                         borderClass="border-emerald-500"
                     />

@@ -39,7 +39,7 @@ export function AkpsbookingList() {
     const [filterStatus, setFilterStatus] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'booking.awbNumber', direction: 'desc' });
 
     const navigate = useNavigate();
 
@@ -135,6 +135,7 @@ export function AkpsbookingList() {
         if (container.status === "Gate-Out") return container.rtGatedOutTime || container.gatedOutTime;
         if (container.status === "Delivered") return container.rtDeliveredTime || container.deliveredTime;
         if (container.status === "RFC") return container.rtRFCTime || container.rfcTime;
+        if (container.status === "Accepted") return container.acceptedTime;
         if (container.status === "Rejected") return container.rejectedTime;
         if (container.status === "Deleted") return container.deletedTime;
         if (container.status === "Approved-Custom") return container.approvedCustomTime;
@@ -489,8 +490,8 @@ export function AkpsbookingList() {
 
                                     return (
                                         <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
-                                            <td className="p-4">{index + 1}</td>
-                                            <td className="p-4">
+                                            <td className="p-4 text-center">{index + 1}</td>
+                                            <td className="p-4 text-center">
                                                 {(() => {
                                                     const type = cont.aleBooking?.customFormType;
                                                     // Pick the color class based on the type, or use default
@@ -509,7 +510,7 @@ export function AkpsbookingList() {
                                                 })()}
                                             </td>
                                             {/* AWB / House Number */}
-                                            <td className="p-4">
+                                            <td className="p-4 text-center">
                                                 <div className="flex flex-col">
                                                     <span className="font-medium">{cont.aleBooking?.awbNumber || "N/A"}</span>
                                                     <span className="text-xs text-gray-500">{cont.aleBooking?.houseAWBNumber}</span>
@@ -571,10 +572,10 @@ export function AkpsbookingList() {
                                                 <div className="flex justify-center">
                                                     {(() => {
                                                         // Logic based on GatedIn/Out Timestamps
-                                                        if (cont.gatedInTime) {
+                                                        if (cont.acceptedTime) {
                                                             return <Check className="text-emerald-500" size={20} strokeWidth={3} />;
                                                         }
-                                                        if (cont.gatedOutTime) {
+                                                        if (cont.rejectedTime) {
                                                             // Returns an X cross in red as requested
                                                             return <LucideX className="text-red-500" size={20} strokeWidth={3} />;
                                                         }
@@ -671,8 +672,8 @@ export function AkpsbookingList() {
                             </div>
 
                             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                                {statusModal.nextStatus === "Approved-AKPS" ? "Approve Job?" :
-                                    statusModal.nextStatus === "Examine-AKPS" ? "Examine Job?" :
+                                {statusModal.nextStatus === "Approved-AKPS" ? "Approve?" :
+                                    statusModal.nextStatus === "Examine-AKPS" ? "Examine?" :
                                         "Confirm Rejection?"}
                             </h2>
 

@@ -3,7 +3,7 @@ import Layout from "../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search, Calendar, FileDown, Eye, Edit, Trash2,
-    FileText, AlertCircle, CheckCircle2, PencilRuler, Clock
+    FileText, AlertCircle, CheckCircle2, PencilRuler, Clock, LucideX, Check
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import {getAleContainers, deleteAleContainer, updateAleContainer, getAleContainerById} from "../../services/aleContainerService.js";
@@ -35,7 +35,9 @@ export function TerminalList ()  {
     const [filterStatus, setFilterStatus] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'booking.awbNumber', direction: 'desc' });
+    const [statusModal, setStatusModal] = useState({ isOpen: false, id: null, nextStatus: "", remarks: "" });
+
     const navigate = useNavigate();
     useEffect(() => {
         fetchData();
@@ -141,6 +143,10 @@ export function TerminalList ()  {
         if (container.status === "Approved-AKPS") return container.approvedAKPSTime;
         if (container.status === "Approved-Custom") return container.approvedCustomTime;
         if (container.status === "Approved-Complete") return container.approvedBothTime;
+        if (container.status === "Rejected-Both") return container.rejectedBothTime;
+        if (container.status === "Rejected-Custom") return container.rejectedCustomTime;
+        if (container.status === "Rejected-AKPS") return container.akpsRejectedTime;
+
         return null;
     };
     
@@ -308,29 +314,49 @@ export function TerminalList ()  {
         }
     };
 
-    const handleDelete = async () => {
-        const toastId = toast.loading("Deleting record...");
+    const handleStatusUpdate = async () => {
+        const toastId = toast.loading(`Updating status to ${statusModal.nextStatus}...`);
         try {
-            const currentContainer = await getAleContainerById(deleteModal.id);
-            console.log(currentContainer);
+            const currentContainer = await getAleContainerById(statusModal.id);
+
+            // --- ADD LOGS HERE ---
+            console.log("Full Container Data:", currentContainer);
+            console.log("To Address Value:", currentContainer.toAddress);
+            console.log("Is it an array?:", Array.isArray(currentContainer.toAddress));
+            // -------
+
+            const now = new Date().toISOString();
             const user = await getUserById(localStorage.getItem("userId"));
-            const updatedBy = user.fullName + " - " + user.companyName
+            const updatedBy = `${user.fullName} - ${user.companyName}`;
+            
             const payload = {
                 ...currentContainer,
-                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
-                status: "Deleted",
-                deletedTime: new Date().toISOString(),
-                deletedRemarks: deleteModal.remarks,
+                // Map addresses to prevent circular reference errors
+                status: statusModal.nextStatus,
+
+                // Update the specific timestamps
+                AcceptedTime: statusModal.nextStatus === "Accepted" ? now : currentContainer.acceptedTime,
+                RejectedTime: statusModal.nextStatus === "Rejected" ? now : currentContainer.rejectedTime,
+                RejectedRemarks: statusModal.nextStatus === "Rejected"
+                    ? statusModal.remarks
+                    : currentContainer.rejectedRemarks,
                 UpdatedBy: updatedBy,
             };
-            await updateAleContainer(deleteModal.id, payload);
-            toast.success("Record deleted successfully", { id: toastId });
-            setDeleteModal({ isOpen: false, id: null, remarks: "" });
-            fetchData();
+            
+            await updateAleContainer(statusModal.id, payload);
+            // 1. Show success message
+            toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
+
+            // 2. IMMEDIATELY close the modal state
+            setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
+
+            // 3. REFRESH THE DATA IMMEDIATELY
+            // This is the missing piece that updates the table without a reload
+            await fetchData(); //
+            
         } catch (error) {
-            const serverMessage = error.response?.data?.message || error.response?.data || "Unknown Error";
-            console.log("Deleted Error: ", serverMessage);
-            toast.error("Deletion failed. Please try again.", { id: toastId });
+            console.error(error);
+            toast.error("Database sync error. Please contact admin.", { id: toastId });
         }
     };
 
@@ -540,11 +566,32 @@ export function TerminalList ()  {
                                                 <div className="flex items-center justify-center gap-3">
                                                     <Eye size={18}
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}/>
-                                                    {cont.status === "Assigned" &&
-                                                        <Edit size={18}
-                                                              className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/ale/forwarding/rot/edit/form1/${cont.containerId}`)}/>
+                                                  
+                                                    {cont.status === "Enroute" || cont.status ==="Approved-AKPS" || cont.status === "Approved-Custom" || cont.status === "Approved-Complete" &&
+                                                        <>
+                                                            <button
+                                                                onClick={() => setStatusModal({
+                                                                    isOpen: true,
+                                                                    id: cont.containerId,
+                                                                    nextStatus: "Accepted"
+                                                                })}    
+                                                                    className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Reject / Examine ">
+                                                                <Check size={18} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setStatusModal({
+                                                                    isOpen: true,
+                                                                    id: cont.containerId,
+                                                                    nextStatus: "Rejected",
+                                                                    remarks: ""
+                                                                })}
+                                                                className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+                                                                title="Reject"
+                                                            >
+                                                                <LucideX size={18} />
+                                                            </button>                                                  </>
                                                     }
-                                                    {cont.status !== "Gate-Out" && cont.status !== "Gate-In" && cont.status !== "Rejected-Custom" && cont.status !== "Rejected-AKPS" && cont.status !== "Rejected" && cont.status !== "Assigned" && cont.status !== "Enroute" &&
+                                                    {cont.status === "Approved-Complete" || cont.status === "Accepted" &&
                                                         <Clock
                                                             size={18}
                                                             className="text-green-600 cursor-pointer hover:text-green-800"
@@ -604,47 +651,68 @@ export function TerminalList ()  {
 
             </div>
 
-            {/* Deletion Confirmation Modal */}
+            {/* Accept&Reject Confirmation Modal */}
             <AnimatePresence>
-                {deleteModal.isOpen && (
+                {statusModal.isOpen && (
                     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center relative"
+                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center"
                         >
                             <div className="mb-6 flex justify-center">
-                                <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
-                                    <AlertCircle size={40} />
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                                    statusModal.nextStatus === "Accepted" ? "bg-green-100 text-green-600" :
+                                            "bg-red-100 text-red-600"
+                                }`}>
+                                    {statusModal.nextStatus === "Accepted" ? <CheckCircle2 size={40} /> :
+                                            <AlertCircle size={40} />}
                                 </div>
                             </div>
 
-                            <h2 className="text-2xl font-bold text-system-color mb-4">Deletion Confirmation</h2>
-                            <p className="text-gray-700 mb-8 leading-relaxed">
-                                Are you sure you want to delete this record? We recommend only deleting if the BL or Booking Number is incorrect.
+                            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                                {statusModal.nextStatus === "Accepted" ? "Accept" :
+                                        "Confirm Rejection?"}
+                            </h2>
+
+                            <p className="text-gray-500 mb-6">
+                                {statusModal.nextStatus === "Rejected"
+                                    ? "Please provide a reason for rejecting this booking."
+                                    : "Are you sure you want to proceed with this action?"}
                             </p>
 
-                            <div className="text-left mb-6">
-                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Reason for Deletion *</label>
-                                <textarea
-                                    className="w-full mt-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm min-h-[100px]"
-                                    placeholder="e.g., Incorrect Booking Number provided by client..."
-                                    value={deleteModal.remarks}
-                                    onChange={(e) => setDeleteModal({ ...deleteModal, remarks: e.target.value })}
-                                />
-                            </div>
+                            {/* REJECTION INPUT FIELD */}
+                            {statusModal.nextStatus === "Rejected" && (
+                                <div className="mb-6 text-left">
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                                        Reject Reason
+                                    </label>
+                                    <textarea
+                                        autoFocus
+                                        value={statusModal.remarks}
+                                        onChange={(e) => setStatusModal({ ...statusModal, remarks: e.target.value })}
+                                        placeholder="Type reason here..."
+                                        className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-red-500 focus:ring-0 transition-all h-28 resize-none text-sm"
+                                    />
+                                </div>
+                            )}
 
                             <div className="flex gap-4">
                                 <button
-                                    onClick={() => setDeleteModal({ isOpen: false, id: null })}
+                                    onClick={() => setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" })}
                                     className="flex-1 py-3 border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={handleDelete}
-                                    className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold shadow-lg hover:bg-system-color-dark transition-all"
+                                    onClick={handleStatusUpdate}
+                                    // Disable confirm if rejecting but no reason is provided
+                                    disabled={statusModal.nextStatus === "Rejected" && !statusModal.remarks?.trim()}
+                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
+                                        statusModal.nextStatus === "Accepted" ? "bg-green-600 hover:bg-green-700" :
+                                                "bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:shadow-none"
+                                    }`}
                                 >
                                     Confirm
                                 </button>

@@ -530,7 +530,7 @@ export function AkpsbookingAction() {
                             </div>
 
                             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                                {statusModal.nextStatus === "Approved-AKPS" ? "Approve Job?" :
+                                {statusModal.nextStatus === "Approved-AKPS" ? "Approve?" :
                                         "Confirm Rejection?"}
                             </h2>
 
