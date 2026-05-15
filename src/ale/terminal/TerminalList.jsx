@@ -566,31 +566,32 @@ export function TerminalList ()  {
                                                 <div className="flex items-center justify-center gap-3">
                                                     <Eye size={18}
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}/>
-                                                  
-                                                    {cont.status === "Enroute" || cont.status ==="Approved-AKPS" || cont.status === "Approved-Custom" || cont.status === "Approved-Complete" &&
-                                                        <>
-                                                            <button
-                                                                onClick={() => setStatusModal({
-                                                                    isOpen: true,
-                                                                    id: cont.containerId,
-                                                                    nextStatus: "Accepted"
-                                                                })}    
-                                                                    className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Reject / Examine ">
-                                                                <Check size={18} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => setStatusModal({
-                                                                    isOpen: true,
-                                                                    id: cont.containerId,
-                                                                    nextStatus: "Rejected",
-                                                                    remarks: ""
-                                                                })}
-                                                                className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
-                                                                title="Reject"
-                                                            >
-                                                                <LucideX size={18} />
-                                                            </button>                                                  </>
-                                                    }
+                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) && (
+                                                        <button
+                                                            onClick={() => setStatusModal({
+                                                                isOpen: true,
+                                                                id: cont.containerId,
+                                                                nextStatus: "Accepted"
+                                                            })}
+                                                            className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Reject / Examine ">
+                                                            <Check size={18} />
+                                                        </button>
+                                                    )}
+                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) && (
+                                                        <button
+                                                            onClick={() => setStatusModal({
+                                                                isOpen: true,
+                                                                id: cont.containerId,
+                                                                nextStatus: "Rejected",
+                                                                remarks: ""
+                                                            })}
+                                                            className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+                                                            title="Reject"
+                                                        >
+                                                            <LucideX size={18} />
+                                                        </button>
+                                                    )}
+                                                   
                                                     {cont.status === "Approved-Complete" || cont.status === "Accepted" &&
                                                         <Clock
                                                             size={18}
