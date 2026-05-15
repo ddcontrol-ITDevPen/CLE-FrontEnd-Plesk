@@ -66,6 +66,7 @@ import {CustomsbookingList} from "../ale/customs/booking/CustomsbookingList.jsx"
 import {CustomsbookingDetails} from "../ale/customs/booking/CustomsbookingDetails.jsx";
 import {CustomsbookingAction} from "../ale/customs/booking/CustomsbookingAction.jsx";
 import {TerminalList} from "../ale/terminal/TerminalList.jsx"
+import {UserManagement} from "../ale/UserManagement/UserManagement.jsx";
 
 export default function AppRouter() {
     return (
@@ -596,6 +597,14 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <TerminalList />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/user/management"
+                    element={
+                        <ProtectedRoute>
+                            <UserManagement />
                         </ProtectedRoute>
                     }
                 />

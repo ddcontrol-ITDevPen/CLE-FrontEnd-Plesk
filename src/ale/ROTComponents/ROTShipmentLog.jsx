@@ -57,6 +57,8 @@ const ShipmentLog = (data) => {
             return { icon: <Truck size={16} />, color: "bg-enroute", text: "text-enroute" };
         if (lowerLabel.includes("accepted"))
             return { icon: <Check size={16} />, color: "bg-accepted", text: "text-enroute" };
+        if (lowerLabel.includes("approved"))
+            return { icon: <Check size={16} />, color: "bg-delivered-rfc", text: "text-delivered-rfc" };
         if (lowerLabel.includes("gate-in"))
             return { icon: <LogIn size={16} />, color: "bg-gate-in-out", text: "gate-in-out" };
         if (lowerLabel.includes("gate-out"))

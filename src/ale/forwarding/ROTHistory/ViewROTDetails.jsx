@@ -317,15 +317,15 @@ export function ALEViewROTDetails() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
-                                        <div className="flex gap-1">
-                                            <button onClick={() => handlePreview(doc.filePath, doc.fileName)} className="p-1.5 hover:bg-blue-50 text-gray-500 hover:text-blue-600 rounded-md"><Eye size={16} /></button>
-                                            <button onClick={() => handleDownload(doc.filePath, doc.fileName)} className="p-1.5 hover:bg-green-50 text-gray-500 hover:text-green-600 rounded-md"><Download size={16} /></button>
+                                    <div className="flex items-center justify-start gap-4 mt-4 pt-3 border-t border-gray-50">
+                                        <div className="flex gap-4">
+                                            <button onClick={() => handlePreview(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-blue-50 text-gray-500 hover:text-blue-600 rounded-md"><Eye size={16} />Preview</button>
+                                            <button onClick={() => handleDownload(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-green-50 text-gray-500 hover:text-green-600 rounded-md"><Download size={16}/>Download</button>
                                         </div>
-                                        <div className="flex gap-1">
-                                            <button onClick={() => { setEditModal({ isOpen: true, doc }); setNewFileName(doc.fileName); }} className="p-1.5 hover:bg-amber-50 text-gray-500 hover:text-amber-600 rounded-md"><Edit3 size={16} /></button>
-                                            <button onClick={() => setDeleteModal({ isOpen: true, docId: doc.bookingDocumentId })} className="p-1.5 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-md"><Trash2 size={16} /></button>
-                                        </div>
+                                        {/*<div className="flex gap-1">*/}
+                                        {/*    <button onClick={() => { setEditModal({ isOpen: true, doc }); setNewFileName(doc.fileName); }} className="p-1.5 hover:bg-amber-50 text-gray-500 hover:text-amber-600 rounded-md"><Edit3 size={16} /></button>*/}
+                                        {/*    <button onClick={() => setDeleteModal({ isOpen: true, docId: doc.bookingDocumentId })} className="p-1.5 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-md"><Trash2 size={16} /></button>*/}
+                                        {/*</div>*/}
                                     </div>
                                 </div>
                             ))}
