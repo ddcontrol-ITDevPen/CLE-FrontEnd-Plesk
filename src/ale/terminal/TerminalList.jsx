@@ -437,7 +437,7 @@ export function TerminalList ()  {
                         <button
                             key={status}
                             onClick={() => setFilterStatus(status)}
-                            className={`px-5 py-2 rounded-lg font-bold border transition-all
+                            className={`px-4 py-2 rounded-lg font-bold border transition-all
                                 ${filterStatus === status
                                 ? `${STATUS_CONFIG[status].bg} ${STATUS_CONFIG[status].text} ${STATUS_CONFIG[status].border} shadow-md ring-2 ring-offset-1 ring-opacity-50`
                                 : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
