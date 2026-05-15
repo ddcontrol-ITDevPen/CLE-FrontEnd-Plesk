@@ -15,6 +15,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import * as XLSX from 'xlsx';
 import {getUserById} from "../../../services/userService.js";
+import {getAleAssignedHaulierByContainerId} from "../../../services/aleAssignedHaulierService.js";
 
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
@@ -109,9 +110,30 @@ export function AkpsbookingList() {
         try {
             setIsLoading(true);
             const data = await getAleContainers();
+            const enrichedData = await Promise.all(
+                data.map(async (cont) => {
+                    try {
+                        const assignment = await getAleAssignedHaulierByContainerId(cont.containerId);
+                        console.log(assignment);
+                        return {
+                            ...cont,
+                            pmNo: assignment?.primeMover?.plateNumber,
+                            timeSlot: assignment?.timeSlot?.time || "N/A"
+                        };
+                    } catch (err) {
+                        console.error("No assignment found for", cont.containerId);
+                        return { ...cont, timeSlot: "N/A" };
+                    }
+                })
+            );
 
+            const sortedData = enrichedData.sort((a, b) => {
+                const dateA = new Date(getStatusTimestamp(a) || 0);
+                const dateB = new Date(getStatusTimestamp(b) || 0);
+                return dateB - dateA;
+            });
             
-            setContainers(data || []);
+            setContainers(sortedData || []);
         } catch (error) {
             console.error("Failed to fetch terminal data:", error); // Logs the actual error object
             toast.error("Failed to fetch terminal data");
@@ -240,7 +262,7 @@ export function AkpsbookingList() {
                     const diffInDays = diffInTime / (1000 * 3600 * 24);
                     console.log(diffInDays);
 
-                    if (diffInDays > 7) {
+                    if (diffInDays > 1) {
                         isExpiredGateOut = true;
                     }
                 }
@@ -430,7 +452,7 @@ export function AkpsbookingList() {
                         <tr>
                             <th className="p-4 border-b w-10 text-center">No.</th>
                             <th className="p-4 border-b">
-                                <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('booking.customFormNo')}>
+                                <div className="flex items-center gap-1 cursor-pointer text-center" onClick={() => handleSort('booking.customFormNo')}>
                                     Custom Form No.
                                     {sortConfig.key === 'booking.customFormNo' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
                                 </div>
@@ -491,7 +513,7 @@ export function AkpsbookingList() {
                                     return (
                                         <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
                                             <td className="p-4 text-center">{index + 1}</td>
-                                            <td className="p-4 text-center">
+                                            <td className="p-4 text-center leading-tight">
                                                 {(() => {
                                                     const type = cont.aleBooking?.customFormType;
                                                     // Pick the color class based on the type, or use default
@@ -499,12 +521,12 @@ export function AkpsbookingList() {
 
                                                     return (
                                                         <div className={`flex flex-col p-2 rounded-lg border ${colorClass}`}>
-                <span className="font-bold underline">
-                    {cont.aleBooking?.customFormNo || "N/A"}
-                </span>
+                                                            <span className="font-bold underline">
+                                                                {cont.aleBooking?.customFormNo || "N/A"}
+                                                            </span>
                                                             <span className="text-xs font-black uppercase tracking-tighter">
-                    {type || "No Type"}
-                </span>
+                                                                {type || "No Type"}
+                                                            </span>
                                                         </div>
                                                     );
                                                 })()}
@@ -520,7 +542,7 @@ export function AkpsbookingList() {
                                             <td className="p-4 text-xs font-bold text-gray-600">{cont.aleBooking?.movementType}</td>
 
                                             <td className="p-4 text-gray-600">{cont.haulierName}</td>
-                                            <td className="p-4 text-gray-600">{cont.aleBooking?.customReceiptNo}</td>
+                                            <td className="p-4 text-gray-600">{cont?.pmNo}</td>
 
 
                                             <td className="p-4 text-[12px] text-gray-500">
