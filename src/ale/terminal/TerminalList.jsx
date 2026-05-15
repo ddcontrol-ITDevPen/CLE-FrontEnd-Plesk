@@ -544,26 +544,26 @@ export function TerminalList ()  {
                                     const theme = STATUS_CONFIG[cont.status] || {bg: "bg-gray-100", text: "text-gray-700"};
                                     return (
                                         <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
-                                            <td className="p-4">{index + 1}</td>
-                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}>{cont.aleBooking.awbNumber}</td>
-                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}s>{cont.aleBooking.houseAWBNumber}</td>
-                                            <td className="p-4">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
-                                            <td className="p-4 whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>
-                                            <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
+                                            <td className="p-4 text-center">{index + 1}</td>
+                                            <td className="p-4 text-center font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}>{cont.aleBooking.awbNumber}</td>
+                                            <td className="p-4 text-center font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}s>{cont.aleBooking.houseAWBNumber}</td>
+                                            <td className="p-4 text-center">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
+                                            <td className="p-4 text-center whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>
+                                            <td className="p-4 text-center whitespace-nowrap">{cont.rotDate}</td>
                                             <td className="p-4 text-center">
                                                 {/* Status Badge using Theme Colors */}
                                                 <span className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase tracking-wider whitespace-nowrap ${theme.bg} ${theme.text}`}>
                                             {cont.status}
                                         </span>
                                             </td>
-                                            <td className="p-4 text-[12px] whitespace-normal break-words leading-tight text-gray-600">
+                                            <td className="p-4 text-center text-[12px] whitespace-normal break-words leading-tight text-gray-600">
                                                 {getStatusTimestamp(cont) ? new Date(getStatusTimestamp(cont)).toLocaleString() : "-"}
                                             </td>
-                                            <td className="p-4">{getLocationName(cont, 'from')}</td>
-                                            <td className="p-4">{getLocationName(cont, 'to')}</td>
-                                            <td className="p-4">
+                                            <td className="p-4 text-center">{getLocationName(cont, 'from')}</td>
+                                            <td className="p-4 text-center">{getLocationName(cont, 'to')}</td>
+                                            <td className="p-4 text-left">
                                                 {/* Horizontal Action Icons */}
-                                                <div className="flex items-center justify-center gap-3">
+                                                <div className="flex items-center justify-start gap-3">
                                                     <Eye size={18}
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}/>
                                                     {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) &&  cont.acceptedTime === null && (

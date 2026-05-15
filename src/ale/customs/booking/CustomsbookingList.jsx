@@ -546,13 +546,13 @@ export function CustomsbookingList() {
                                                 </div>
                                             </td>
 
-                                            <td className="p-4 text-xs font-bold text-gray-600">{cont.aleBooking?.movementType}</td>
+                                            <td className="p-4 text-center text-xs font-bold text-gray-600">{cont.aleBooking?.movementType}</td>
 
-                                            <td className="p-4 text-gray-600">{cont.haulierName}</td>
-                                            <td className="p-4 text-gray-600">{cont?.pmNo}</td>
+                                            <td className="p-4 text-center text-gray-600">{cont.haulierName}</td>
+                                            <td className="p-4 text-center text-gray-600">{cont?.pmNo}</td>
                                      
 
-                                            <td className="p-4 text-[12px] text-gray-500">
+                                            <td className="p-4 text-center text-[12px] text-gray-500">
                                                 {displayTime ? new Date(displayTime).toLocaleString('en-GB', {
                                                     dateStyle: 'short',
                                                     timeStyle: 'short'
@@ -612,9 +612,9 @@ export function CustomsbookingList() {
                                                     })()}
                                                 </div>
                                             </td>
-                                            <td className="p-4">
+                                            <td className="p-4 text-left">
                                                 {/* Horizontal Action Icons */}
-                                                <div className="flex items-center justify-center gap-3">
+                                                <div className="flex items-center justify-start gap-3">
                                                     {/* 1. Show Approve/Reject buttons ONLY IF Custom is Approved and AKPS is still pending (null or empty) */}
                                                   
                                                     {["Enroute", "Approved-AKPS", "Accepted"].includes(cont.status) && (
