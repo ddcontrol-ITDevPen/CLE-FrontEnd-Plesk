@@ -13,6 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import * as XLSX from 'xlsx';
 import {getUserById} from "../../../services/userService.js";
+import {getAleAssignedHaulierByContainerId} from "../../../services/aleAssignedHaulierService.js";
 
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
@@ -110,7 +111,29 @@ export function CustomsbookingList() {
             const data = await getAleContainers();
             console.log("Row Data (cont):", data);
             // Terminal usually sees ALL or filtered by location later
-            setContainers(data || []);
+            const enrichedData = await Promise.all(
+                data.map(async (cont) => {
+                    try {
+                        const assignment = await getAleAssignedHaulierByContainerId(cont.containerId);
+                        console.log(assignment);
+                        return {
+                            ...cont,
+                            pmNo: assignment?.primeMover?.plateNumber,
+                            timeSlot: assignment?.timeSlot?.time || "N/A"
+                        };
+                    } catch (err) {
+                        console.error("No assignment found for", cont.containerId);
+                        return { ...cont, timeSlot: "N/A" };
+                    }
+                })
+            );
+
+            const sortedData = enrichedData.sort((a, b) => {
+                const dateA = new Date(getStatusTimestamp(a) || 0);
+                const dateB = new Date(getStatusTimestamp(b) || 0);
+                return dateB - dateA;
+            });
+            setContainers(sortedData || []);
         } catch (error) {
             toast.error("Failed to fetch terminal data");
         } finally {
@@ -238,7 +261,7 @@ export function CustomsbookingList() {
                     const diffInDays = diffInTime / (1000 * 3600 * 24);
                     
 
-                    if (diffInDays > 7) {
+                    if (diffInDays > 1) {
                         isExpiredGateOut = true;
                     }
                 }
@@ -428,7 +451,7 @@ export function CustomsbookingList() {
                         <tr>
                             <th className="p-4 border-b w-10 text-center">No.</th>
                             <th className="p-4 border-b">
-                                <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('booking.customFormNo')}>
+                                <div className="flex items-center gap-1 cursor-pointer text-center" onClick={() => handleSort('booking.customFormNo')}>
                                     Custom Form No.
                                     {sortConfig.key === 'booking.customFormNo' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
                                 </div>
@@ -526,7 +549,7 @@ export function CustomsbookingList() {
                                             <td className="p-4 text-xs font-bold text-gray-600">{cont.aleBooking?.movementType}</td>
 
                                             <td className="p-4 text-gray-600">{cont.haulierName}</td>
-                                            <td className="p-4 text-gray-600">{cont.aleBooking?.customReceiptNo}</td>
+                                            <td className="p-4 text-gray-600">{cont?.pmNo}</td>
                                      
 
                                             <td className="p-4 text-[12px] text-gray-500">
