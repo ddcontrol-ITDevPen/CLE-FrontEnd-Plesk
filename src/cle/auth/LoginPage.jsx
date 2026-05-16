@@ -11,6 +11,26 @@ const portImage3 = "../assets/portImage1.png";
 const cleLogo = "../assets/CLE-Logo.png";
 const aleLogo = "../assets/ALE-Logo.png";
 
+const ACCESS_OPTIONS = {
+    CLE: [
+        { value: "PNG", label: "Penang" },
+        { value: "PKG", label: "Port Klang" },
+        { value: "PGD", label: "Pasir Gudang" },
+        { value: "KTN", label: "Kuantan" }
+    ],
+    ALE: [
+        { value: "PEN", label: "PEN" },
+        { value: "KUL", label: "KUL" },
+        { value: "JHB", label: "JHB" },
+        { value: "LGK", label: "LGK" }
+    ],
+    WLE: [
+        { value: "WH1", label: "Warehouse 1" },
+        { value: "WH2", label: "Warehouse 2" },
+        { value: "WH3", label: "Warehouse 3" }
+    ]
+};
+
 export default function LoginPage() {
     const [isSuccess, setIsSuccess] = useState(false);
     const [access, setAccess] = useState('CLE');
@@ -161,6 +181,7 @@ export default function LoginPage() {
                                             value={location}
                                             onChange={(e) => setLocation(e.target.value)}
                                             isDropdown
+                                            access={access}
                                             errorText={error && !location ? "Please select a location" : null}
                                             required
                                         />
@@ -232,7 +253,7 @@ export default function LoginPage() {
     );
 }
 
-const InputField = ({ icon: Icon, type, placeholder, value, onChange, isPassword, isDropdown, showPassword, setShowPassword, errorText, ...props }) => {
+const InputField = ({ icon: Icon, type, placeholder, value, onChange, isPassword, isDropdown, showPassword, setShowPassword, errorText, access, ...props }) => {
     const inputBaseClasses = `w-full rounded-xl border ${errorText ? 'border-red-500' : 'border-gray-300'} py-3 pl-12 pr-10 text-black placeholder:text-gray-400 focus:border-system-color focus:ring-1 focus:ring-systemn-color transition-all`;
 
     return (
@@ -244,10 +265,9 @@ const InputField = ({ icon: Icon, type, placeholder, value, onChange, isPassword
             {isDropdown ? (
                 <select value={value} onChange={onChange} className={`${inputBaseClasses} appearance-none`} {...props}>
                     <option value="" disabled>{placeholder}</option>
-                    <option value="PNG">Penang</option>
-                    <option value="PKG">Port Klang</option>
-                    <option value="PGD">Pasir Gudang</option>
-                    <option value="KTN">Kuantan</option>
+                    {ACCESS_OPTIONS[access]?.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
                 </select>
             ) : (
                 <input
@@ -288,6 +308,6 @@ const EntityCard = ({ logo, name, isSelected, onClick }) => (
             ? 'border-system-color ring-1 ring-bg-system-color shadow-lg'
             : 'border-gray-200 bg-white hover:border-system-color hover:shadow-md'}`}
     >
-        <img src={logo} alt={name} className="max-h-[65px] object-contain" />
+        <img src={logo} alt={name} className="min-h-[80px] object-contain" />
     </button>
 );

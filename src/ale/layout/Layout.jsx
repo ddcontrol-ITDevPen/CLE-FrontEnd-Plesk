@@ -72,7 +72,7 @@ export default function Layout({ children, role }) {
                                     ? `${user?.FullName || "Forwarding"}`
                                     : localStorage.getItem("userName") || "User"}
                             </p>
-                            <p className="text-system-color/80 text-xs font-regular capitalize">{user?.Role}</p>
+                            <p className="text-system-color/80 text-xs font-regular capitalize">{user?.Role === "haulier" ? "Trucker" : user?.Role}</p>
                         </div>
                         {/*<div className="flex justify-end items-center gap-3 pl-5 lg:justify-end">*/}
                         {/*    <button className="text-center w-full font-semibold text-white bg-system-color rounded-lg px-4 py-1.5 cursor-pointer">*/}
@@ -112,7 +112,7 @@ export default function Layout({ children, role }) {
                                         <LucideUsers className="size-4" /> Profile
                                     </button>
 
-                                    <button
+                                    <button 
                                         onClick={() => { navigate("/user/management"); setIsDropdownOpen(false); }}
                                         className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 hover:text-system-color transition-colors"
                                     >

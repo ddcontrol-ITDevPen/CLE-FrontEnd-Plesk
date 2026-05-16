@@ -418,7 +418,7 @@ export function ALEROTHistory ()  {
                         <button
                             key={status}
                             onClick={() => setFilterStatus(status)}
-                            className={`px-5 py-2 rounded-lg font-bold border transition-all
+                            className={`px-4 py-2 rounded-lg font-bold border transition-all
                                 ${filterStatus === status
                                 ? `${STATUS_CONFIG[status].bg} ${STATUS_CONFIG[status].text} ${STATUS_CONFIG[status].border} shadow-md ring-2 ring-offset-1 ring-opacity-50`
                                 : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
@@ -476,7 +476,7 @@ export function ALEROTHistory ()  {
                                 </div>
                             </th>
                             <th className="p-4 border-b w-30 text-center">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('status')}>
+                                <div className="flex items-center justify-center gap-1" onClick={() => handleSort('status')}>
                                     Status
                                     {sortConfig.key === 'status' && (
                                         <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
@@ -544,7 +544,7 @@ export function ALEROTHistory ()  {
                                     <td className="p-4">{getLocationName(cont, 'to')}</td>
                                     <td className="p-4">
                                         {/* Horizontal Action Icons */}
-                                        <div className="flex items-center justify-center gap-3">
+                                        <div className="flex items-center gap-3">
                                             <Eye size={18}
                                                  className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}/>
                                             {cont.status === "Assigned" &&   

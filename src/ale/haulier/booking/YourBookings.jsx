@@ -3,7 +3,7 @@ import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search, Calendar, FileDown, Eye, Edit, Trash2,
-    FileText, AlertCircle, CheckCircle2, LucideX, Check
+    FileText, AlertCircle, CheckCircle2, LucideX, Check, PencilRuler, CircleX
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import {getAleContainers, deleteAleContainer, updateAleContainer, getAleContainerById} from "../../../services/aleContainerService.js";
@@ -415,7 +415,7 @@ export function ALEYourBookings ()  {
                         <button
                             key={status}
                             onClick={() => setFilterStatus(status)}
-                            className={`px-5 py-2 rounded-lg font-bold border transition-all
+                            className={`px-4 py-2 rounded-lg font-bold border transition-all
                                 ${filterStatus === status
                                 ? `${STATUS_CONFIG[status].bg} ${STATUS_CONFIG[status].text} ${STATUS_CONFIG[status].border} shadow-md ring-2 ring-offset-1 ring-opacity-50`
                                 : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
@@ -465,7 +465,7 @@ export function ALEYourBookings ()  {
                                 </div>
                             </th>
                             <th className="p-4 border-b w-30 text-center">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('status')}>
+                                <div className="flex items-center justify-center gap-1" onClick={() => handleSort('status')}>
                                     Status
                                     {sortConfig.key === 'status' && (
                                         <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
@@ -538,7 +538,7 @@ export function ALEYourBookings ()  {
                                             <td className="p-4">{getLocationName(cont, 'to')}</td>
                                             <td className="p-4">
                                                 {/* Horizontal Action Icons */}
-                                                <div className="flex items-center justify-center gap-3">
+                                                <div className="flex items-center gap-3">
                                                     {cont.status === "Assigned" && (
                                                         <button onClick={() => navigate(`/ale/haulier/booking/assign/${cont.containerId}`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Enroute">
                                                             <Check size={18} />
@@ -594,6 +594,28 @@ export function ALEYourBookings ()  {
                             )}
                         </tbody>
                     </table>
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-6 px-2 pt-2">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><Check size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Accept</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-red-50 rounded-md text-red-500"><LucideX size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Reject</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-600"><Eye size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">View Details</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><Edit size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Edit Trucker Details</span>
+                    </div>
                 </div>
             </div>
 

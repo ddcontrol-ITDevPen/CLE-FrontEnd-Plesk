@@ -33,7 +33,10 @@ const ShipmentLog = (data) => {
         {label: "Accepted", time: data.acceptedTime},
         {label: "Enroute", time: data.enrouteTime},
         {label: "Assigned", time: data.assignedTime},
-    ].filter(t => t.time);
+    ].filter(t => t.time)
+        .sort((a, b) => {
+            return new Date(b.time).getTime() - new Date(a.time).getTime();
+        });
 
     const auditLogs = [...(data.updateHistory || [])].sort((a, b) =>
         new Date(b.updatedTime) - new Date(a.updatedTime)
@@ -69,32 +72,32 @@ const ShipmentLog = (data) => {
             <div className="bg-card-color p-8 rounded-xl shadow-sm border border-gray-100">
                 <h3 className="text-system-color font-bold mb-8 uppercase tracking-wider flex items-center gap-2"><History size={18} />Log of Audit</h3>
                 <div className="max-h-[600px] min-h-[200px] overflow-y-auto overflow-x-hidden pr-4 scrollbar-thin scrollbar-thumb-slate-200 pl-12 relative">
-                    <div className="absolute left-[30px] top-0 bottom-0 w-0.5 bg-blue-100"></div>
-                    <div className="space-y-10">
-                    {auditLogs.map((log, idx) => (
-                        <div key={idx} className="relative">
-                            <div className="absolute -left-[33px] top-0 w-8 h-8 rounded-full border-4 border-white shadow-sm flex items-center justify-center text-white z-auto bg-slate-400">
-                                <User size={12} />
-                            </div>
+                    <div className="relative space-y-10">
+                        <div className="absolute -left-[18px] top-0 bottom-0 w-0.5 bg-blue-100" />
+                        {auditLogs.map((log, idx) => (
+                            <div key={idx} className="relative">
+                                <div className="absolute -left-[33px] top-0 w-8 h-8 rounded-full border-4 border-white shadow-sm flex items-center justify-center text-white z-auto bg-slate-400">
+                                    <User size={12} />
+                                </div>
 
-                            <div className="flex flex-col ml-3">
-                                <p className="text-sm font-bold text-slate-700">
-                                    {log.updatedBy || "System User"}
-                                </p>
-                                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                                    Modified: <span className="font-medium text-slate-600">{log.updateAction || "Record updated"}</span>
-                                </p>
-                                <div className="mt-2 flex items-center gap-3">
+                                <div className="flex flex-col ml-3">
+                                    <p className="text-sm font-bold text-slate-700">
+                                        {log.updatedBy || "System User"}
+                                    </p>
+                                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                                        Modified: <span className="font-medium text-slate-600">{log.action || "Record updated"}</span>
+                                    </p>
+                                    <div className="mt-2 flex items-center gap-3">
                                     <span className="text-[11px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full border border-slate-200">
                                         {new Date(log.updatedTime).toLocaleDateString()}
                                     </span>
-                                    <span className="text-[11px] text-slate-400">
+                                        <span className="text-[11px] text-slate-400">
                                         {new Date(log.updatedTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
                     </div>
                     {auditLogs.length === 0 && <p className="text-slate-400 italic text-sm">No audit history available.</p>}
                 </div>
@@ -102,45 +105,45 @@ const ShipmentLog = (data) => {
             <div className="bg-card-color p-8 rounded-xl shadow-sm border border-gray-100">
                 <h3 className="text-system-color font-bold mb-8 uppercase tracking-wider flex items-center gap-2"><LucideTruck size={18} />Log of Shipment</h3>
                 <div className="max-h-[600px] min-h-[200px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-200 pl-12 relative">
-                    <div className="absolute left-[30px] top-1 bottom-10 w-0.5 bg-blue-100"></div>
-                    <div className="space-y-10">
-                    {timeline.map((step, idx) => {
-                        const styles = getStatusStyles(step.label);
-                        return(
-                            <div key={idx} className="relative">
-                                {/* Icon Container */}
-                                <div className={`absolute -left-[33px] top-1 w-8 h-8 rounded-full border-4 border-white shadow-md flex items-center justify-center text-white z-auto 
+                    <div className="relative space-y-10">
+                        <div className="absolute -left-[18px] top-0 bottom-0 w-0.5 bg-blue-100" />
+                        {timeline.map((step, idx) => {
+                            const styles = getStatusStyles(step.label);
+                            return(
+                                <div key={idx} className="relative">
+                                    {/* Icon Container */}
+                                    <div className={`absolute -left-[33px] top-1 w-8 h-8 rounded-full border-4 border-white shadow-md flex items-center justify-center text-white z-auto 
                                 ${styles.color} ${idx === 0 ? "ring-3 ring-opacity-100 ring-blue-500" : ""}`}
-                                >
-                                    {styles.icon}
-                                </div>
+                                    >
+                                        {styles.icon}
+                                    </div>
 
-                                <div className="flex flex-col md:flex-row pt-1 gap-2 md:gap-0 ml-3">
-                                    <p className="text-lg font-semibold text-gray-800 w-30">
-                                        {step.label}
-                                    </p>
-                                    <div className="w-55">
-                                        <p className="text-sm text-gray-500 font-medium">
-                                            {new Date(step.time).toLocaleDateString()}
+                                    <div className="flex flex-col md:flex-row pt-1 gap-2 md:gap-0 ml-3">
+                                        <p className="text-lg font-semibold text-gray-800 w-30">
+                                            {step.label}
                                         </p>
-                                        <p className="text-xs text-gray-400">
-                                            {new Date(step.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
-                                        {data.status === "Deleted" && step.label === "Deleted" && (
-                                            <div className="w-fit text-xs text-accent-danger font-bold italic mt-2 bg-red-50 p-2 rounded-lg border border-red-100">
-                                                Reason: {data.deletedRemarks || "N/A"}
-                                            </div>
-                                        )}
-                                        {data.status === "Rejected" && step.label === "Rejected" && (
-                                            <div className="w-fit text-xs text-accent-danger font-bold italic mt-2 bg-red-50 p-2 rounded-lg border border-red-100">
-                                                Reason: {data.rejectedRemarks || "N/A"}
-                                            </div>
-                                        )}
+                                        <div className="w-55">
+                                            <p className="text-sm text-gray-500 font-medium">
+                                                {new Date(step.time).toLocaleDateString()}
+                                            </p>
+                                            <p className="text-xs text-gray-400">
+                                                {new Date(step.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </p>
+                                            {data.status === "Deleted" && step.label === "Deleted" && (
+                                                <div className="w-fit text-xs text-accent-danger font-bold italic mt-2 bg-red-50 p-2 rounded-lg border border-red-100">
+                                                    Reason: {data.deletedRemarks || "N/A"}
+                                                </div>
+                                            )}
+                                            {data.status === "Rejected" && step.label === "Rejected" && (
+                                                <div className="w-fit text-xs text-accent-danger font-bold italic mt-2 bg-red-50 p-2 rounded-lg border border-red-100">
+                                                    Reason: {data.rejectedRemarks || "N/A"}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
                     </div>
                     {timeline.length === 0 && <p className="text-gray-400 italic">No movement logs recorded yet.</p>}
                 </div>

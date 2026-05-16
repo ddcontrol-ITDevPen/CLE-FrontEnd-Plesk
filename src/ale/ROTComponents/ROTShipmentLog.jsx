@@ -42,7 +42,10 @@ const ShipmentLog = (data) => {
         // {label: "Examine-Custom", time: data.examineCustomTime},
         {label: "Enroute", time: data.enrouteTime},
         {label: "Assigned", time: data.assignedTime},
-    ].filter(t => t.time);
+    ].filter(t => t.time)
+        .sort((a, b) => { 
+            return new Date(b.time).getTime() - new Date(a.time).getTime();
+        });
 
     const auditLogs = [...(data.updateHistory || [])].sort((a, b) =>
         new Date(b.updatedTime) - new Date(a.updatedTime)
@@ -80,9 +83,9 @@ const ShipmentLog = (data) => {
             <div className="bg-card-color p-8 rounded-xl shadow-sm border border-gray-100">
                 <h3 className="text-system-color font-bold mb-8 uppercase tracking-wider flex items-center gap-2"><History size={18} />Log of Audit</h3>
                 <div className="max-h-[600px] min-h-[200px] overflow-y-auto overflow-x-hidden pr-4 scrollbar-thin scrollbar-thumb-slate-200 pl-12 relative">
-                    <div className="absolute left-[30px] top-0 bottom-0 w-0.5 bg-blue-100"></div>
-                    <div className="space-y-10">
-                    {auditLogs.map((log, idx) => (
+                    <div className="relative space-y-10">
+                        <div className="absolute -left-[18px] top-0 bottom-0 w-0.5 bg-blue-100" />
+                    {auditLogs.map((log, idx) => (  
                         <div key={idx} className="relative">
                             <div className="absolute -left-[33px] top-0 w-8 h-8 rounded-full border-4 border-white shadow-sm flex items-center justify-center text-white z-auto bg-slate-400">
                                 <User size={12} />
@@ -113,8 +116,8 @@ const ShipmentLog = (data) => {
             <div className="bg-card-color p-8 rounded-xl shadow-sm border border-gray-100">
                 <h3 className="text-system-color font-bold mb-8 uppercase tracking-wider flex items-center gap-2"><LucideTruck size={18} />Log of Shipment</h3>
                 <div className="max-h-[600px] min-h-[200px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-200 pl-12 relative">
-                    <div className="absolute left-[30px] top-1 bottom-10 w-0.5 bg-blue-100"></div>
-                    <div className="space-y-10">
+                    <div className="relative space-y-10">
+                        <div className="absolute -left-[18px] top-0 bottom-0 w-0.5 bg-blue-100" />
                     {timeline.map((step, idx) => {
                         const styles = getStatusStyles(step.label);
                         return(
