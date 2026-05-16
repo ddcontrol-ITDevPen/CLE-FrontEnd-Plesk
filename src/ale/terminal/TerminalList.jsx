@@ -607,7 +607,7 @@ export function TerminalList ()  {
                                                     }
                                                     <FileText
                                                         size={18}
-                                                        className="text-blue-600-600 cursor-pointer hover:text-blue-800"
+                                                        className="text-blue-600 cursor-pointer hover:text-blue-800"
                                                         onClick={() => navigate(`/ale/rot/view/pdf/${cont.containerId}`)}/>
                                                 </div>
                                             </td>
@@ -650,6 +650,37 @@ export function TerminalList ()  {
                     </table>
                 </div>
 
+                <div className="flex flex-wrap items-center gap-6 px-2 pt-2">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><Check size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Accept</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-red-50 rounded-md text-red-500"><LucideX size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Reject</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-600"><Eye size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">View Details</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><Clock size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Gate In</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-red-50 rounded-md text-red-600"><Clock size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Gate Out</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-blue-50 rounded-md text-blue-600"><FileText size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">View PDF</span>
+                    </div>
+                </div>
             </div>
 
             {/* Accept&Reject Confirmation Modal */}

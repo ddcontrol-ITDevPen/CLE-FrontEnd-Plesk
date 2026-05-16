@@ -528,12 +528,12 @@ export function CustomsbookingList() {
 
                                                     return (
                                                         <div className={`flex flex-col p-2 rounded-lg border ${colorClass}`}>
-                <span className="font-bold underline">
-                    {cont.aleBooking?.customFormNo || "N/A"}
-                </span>
+                                                            <span className="font-bold underline">
+                                                                {cont.aleBooking?.customFormNo || "N/A"}
+                                                            </span>
                                                             <span className="text-xs font-black uppercase tracking-tighter">
-                    {type || "No Type"}
-                </span>
+                                                                {type || "No Type"}
+                                                            </span>
                                                         </div>
                                                     );
                                                 })()}
@@ -637,11 +637,8 @@ export function CustomsbookingList() {
                                                             <LucideX size={18} />
                                                         </button>
                                                     )}
-
                                                     <Eye size={18}
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/customs/booking/bookingdetails/${cont.containerId}`)}/>
-
-
                                                 </div>
                                             </td>
                                         </tr>
@@ -681,6 +678,23 @@ export function CustomsbookingList() {
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-6 px-2 pt-2">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><Check size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Accept</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-red-50 rounded-md text-red-500"><LucideX size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Reject</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-600"><Eye size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">View Details</span>
+                    </div>
                 </div>
             </div>
             <AnimatePresence>
