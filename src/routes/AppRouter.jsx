@@ -30,11 +30,8 @@ import {CreateBookingForm} from "../cle/haulier/booking/CreateBookingForm.jsx";
 import {EditCreateBooking} from "../cle/haulier/booking/EditCreateBooking.jsx";
 import {ALEForwardingDashboard} from "../ale/forwarding/dashboard/ForwardingDashboard.jsx";
 import {ALEAddROTForm} from "../ale/forwarding/ROT/AddROTForm.jsx";
-import {ALEAddROTForm2} from "../ale/forwarding/ROT/AddROTForm2.jsx";
 import {ALEROTHistory} from "../ale/forwarding/ROTHistory/ROTHistory.jsx";
 import {ALEViewROTDetails} from "../ale/forwarding/ROTHistory/ViewROTDetails.jsx";
-import {ALEEditROTForm} from "../ale/forwarding/ROT/EditROT1.jsx";
-import {ALEEditROTForm2} from "../ale/forwarding/ROT/EditROT2.jsx";
 import {ALEViewROTPDF} from "../ale/forwarding/ROTHistory/ViewROTPDF.jsx";
 import {ALETrackROT} from "../ale/forwarding/TrackROT/TrackROT.jsx";
 import {ALEViewROTDocument} from "../ale/forwarding/Document/ViewROTDocument.jsx";
@@ -315,14 +312,6 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/ale/forwarding/rot/add/form2"
-                    element={
-                        <ProtectedRoute>
-                            <ALEAddROTForm2 />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
                     path="/akps/bookinglist"
                     element={
                         <ProtectedRoute>
@@ -351,22 +340,6 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <ALEViewROTDetails />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/ale/forwarding/rot/edit/form1/:id"
-                    element={
-                        <ProtectedRoute>
-                            <ALEEditROTForm />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/ale/forwarding/rot/edit/form2/:id"
-                    element={
-                        <ProtectedRoute>
-                            <ALEEditROTForm2 />
                         </ProtectedRoute>
                     }
                 />
