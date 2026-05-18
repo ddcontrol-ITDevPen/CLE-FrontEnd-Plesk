@@ -15,10 +15,11 @@ import {
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
-import {getAllAleBookingsByForwarding} from "../../../services/aleBookingService.js";
-import {getAllAleContainersByForwarding} from "../../../services/aleContainerService.js";
+import {getAleContainers, getAllAleContainersByForwarding} from "../../../services/aleContainerService.js";
 import {toast} from "sonner";
 import {getUserById} from "../../../services/userService.js";
+import {getAleContainerAudits} from "../../../services/aleContainerAuditService.js";
+
 
 export function AKPSDashboard() {
     const navigate = useNavigate();
@@ -77,29 +78,48 @@ export function AKPSDashboard() {
         const fetchData = async () => {
             setIsLoading(true);
             try {
+                // 1. Identify the current user's audit signature
                 const userData = await getUserById(userId);
-                const forwardingId = userData?.companyCode;
-                console.log(userData);
+                const updatedByString = `${userData.fullName} - ${userData.companyName}`;
 
-                if (!forwardingId) {
-                    console.warn("User has no associated forwarding ID");
-                    setIsLoading(false);
-                    return;
-                }
-
-                const [bookingData, containerData] = await Promise.all([
-                    getAllAleBookingsByForwarding(forwardingId),
-                    getAllAleContainersByForwarding(forwardingId),
+                // 2. Fetch general datasets
+                // We fetch all audits to find which items this specific user has updated
+                const [allContainers, allAudits] = await Promise.all([
+                    getAleContainers(),
+                    getAleContainerAudits()
                 ]);
-                setBookings(bookingData || []);
-                setContainers(containerData || []);
+
+                // 3. Filter Audits for the current user
+                const myAudits = allAudits.filter(audit => audit.updatedBy === updatedByString);
+
+                // Create a Set of unique containerIds and bookingIds the user has worked on
+                const myAuditedContainerIds = new Set(myAudits.map(a => a.containerId));
+                const myAuditedBookingIds = new Set(myAudits.map(a => a.bookingId));
+
+                // 4. Filter Containers and Bookings based on the Audit matches
+                const filteredContainers = allContainers.filter(cont =>
+                    myAuditedContainerIds.has(cont.containerId)
+                );
+
+                // If you need the bookings list to also reflect only user-audited items:
+                // This assumes containers have a nested booking object or you'd need a getBookings service
+                const filteredBookings = filteredContainers.map(c => c.booking).filter(Boolean);
+
+                // Remove duplicates from the booking list
+                const uniqueBookings = Array.from(new Map(filteredBookings.map(b => [b.bookingId, b])).values());
+
+                // 5. Update GUI State
+                setContainers(filteredContainers);
+                setBookings(uniqueBookings);
+
             } catch (error) {
-                console.error("Dashboard Fetch Error:", error);
-                toast.error("Failed to load dashboard data");
+                console.error("AKPS Dashboard Fetch Error:", error);
+                toast.error("Failed to load your specific dashboard data");
             } finally {
                 setIsLoading(false);
             }
-        }
+        };
+
         fetchData();
     }, [userId, navigate]);
 
@@ -141,7 +161,7 @@ export function AKPSDashboard() {
                     />
                     <StatCard
                         title="Approved-AKPS"
-                        value={containers.filter(c => c.status === "Approved-Custom").length}
+                        value={containers.filter(c => c.status === "Approved-AKPS").length}
                         icon={UserCheck}
                         colorClass="bg-amber-500"
                         borderClass="border-amber-500"
@@ -184,7 +204,7 @@ export function AKPSDashboard() {
                                 <h3 className="text-lg font-bold flex items-center gap-2">
                                     <History size={20} className="text-gray-600" /> Recent Activity
                                 </h3>
-                                <button className="text-system-color text-xs font-bold hover:underline" onClick={() => navigate("/ale/forwarding/rot/history")}>View All</button>
+                                <button className="text-system-color text-xs font-bold hover:underline" onClick={() => navigate("/akps/bookinglist")}>View All</button>
                             </div>
                             <div className="space-y-4">
                                 {isLoading ? (
@@ -193,7 +213,7 @@ export function AKPSDashboard() {
                                     recentContainers.map((cont) => (
                                         <div
                                             key={cont.containerId}
-                                            onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}
+                                            onClick={() => navigate(`/ale/akps/booking/bookingdetails/${cont.containerId}`)}
                                             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group cursor-pointer hover:bg-gray-100 transition-colors"
                                         >
                                             <div className="overflow-hidden">

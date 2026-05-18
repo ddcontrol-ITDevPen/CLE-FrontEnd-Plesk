@@ -15,8 +15,8 @@ import {
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
-import {getAllAleBookingsByForwarding} from "../../services/aleBookingService.js";
-import {getAllAleContainersByForwarding} from "../../services/aleContainerService.js";
+import {getAleBookings} from "../../services/aleBookingService.js";
+import {getAleContainers} from "../../services/aleContainerService.js";
 import {toast} from "sonner";
 import {getUserById} from "../../services/userService.js";
 
@@ -77,29 +77,48 @@ export function TerminalDashboard() {
         const fetchData = async () => {
             setIsLoading(true);
             try {
+                // 1. Get User's Terminal ID
                 const userData = await getUserById(userId);
-                const forwardingId = userData?.companyCode;
-                console.log("ForwardingId:", forwardingId);
+                const terminalId = userData?.companyCode; // or companyId depending on your schema
 
-                if (!forwardingId) {
-                    console.warn("User has no associated forwarding ID");
+                if (!terminalId) {
+                    console.warn("User has no terminal ID associated");
                     setIsLoading(false);
                     return;
                 }
 
-                const [bookingData, containerData] = await Promise.all([
-                    getAllAleBookingsByForwarding(forwardingId),
-                    getAllAleContainersByForwarding(forwardingId),
+                // 2. Fetch all data
+                const [allBookings, allContainers] = await Promise.all([
+                    getAleBookings(),
+                    getAleContainers()
                 ]);
-                setBookings(bookingData || []);
-                setContainers(containerData || []);
+
+                // 3. Filter containers by Terminal ID
+                const terminalContainers = allContainers.filter(
+                    container => container.terminalId === terminalId
+                );
+
+                // 4. Get matching ROT Numbers from those containers
+                const validRotNumbers = new Set(
+                    terminalContainers.map(c => c.rotNumber || c.rotNo).filter(Boolean)
+                );
+
+                // 5. Filter bookings that match those ROT Numbers
+                const terminalBookings = allBookings.filter(
+                    booking => validRotNumbers.has(booking.rotNumber || booking.rotNo)
+                );
+
+                // 6. Update GUI State
+                setContainers(terminalContainers);
+                setBookings(terminalBookings);
+
             } catch (error) {
-                console.error("Dashboard Fetch Error:", error);
-                toast.error("Failed to load dashboard data");
+                console.error("Terminal Dashboard Fetch Error:", error);
+                toast.error("Failed to load terminal specific data");
             } finally {
                 setIsLoading(false);
             }
-        }
+        };
         fetchData();
     }, [userId, navigate]);
 
