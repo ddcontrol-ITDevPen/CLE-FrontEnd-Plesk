@@ -38,8 +38,8 @@ import {ALEEditROTForm2} from "../ale/forwarding/ROT/EditROT2.jsx";
 import {ALEViewROTPDF} from "../ale/forwarding/ROTHistory/ViewROTPDF.jsx";
 import {ALETrackROT} from "../ale/forwarding/TrackROT/TrackROT.jsx";
 import {ALEViewROTDocument} from "../ale/forwarding/Document/ViewROTDocument.jsx";
-import {ALEForwardingProfile} from "../ale/profile/ForwardingProfile.jsx";
-import {ALEForwardingEditProfile} from "../ale/profile/ForwardingEditProfile.jsx";
+import {ALEProfile} from "../ale/profile/Profile.jsx";
+import {ALEEditProfile} from "../ale/profile/EditProfile.jsx";
 import {ALEHaulierDashboard} from "../ale/haulier/dashboard/HaulierDashboard.jsx";
 import {ALEYourBookings} from "../ale/haulier/booking/YourBookings.jsx";
 import {ALEViewBookings} from "../ale/haulier/booking/ViewBookings.jsx";
@@ -67,6 +67,8 @@ import {CustomsbookingDetails} from "../ale/customs/booking/CustomsbookingDetail
 import {CustomsbookingAction} from "../ale/customs/booking/CustomsbookingAction.jsx";
 import {TerminalList} from "../ale/terminal/TerminalList.jsx"
 import {UserManagement} from "../ale/UserManagement/UserManagement.jsx";
+import {ViewUser} from "../ale/UserManagement/ViewUser.jsx";
+import {AddUser} from "../ale/UserManagement/AddUser.jsx";
 
 export default function AppRouter() {
     return (
@@ -396,7 +398,7 @@ export default function AppRouter() {
                     path="/ale/profile"
                     element={
                         <ProtectedRoute>
-                            <ALEForwardingProfile />
+                            <ALEProfile />
                         </ProtectedRoute>
                     }
                 />
@@ -404,7 +406,7 @@ export default function AppRouter() {
                     path="/ale/profile/edit"
                     element={
                         <ProtectedRoute>
-                            <ALEForwardingEditProfile />
+                            <ALEEditProfile />
                         </ProtectedRoute>
                     }
                 />
@@ -605,6 +607,22 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <UserManagement />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/user/management/view/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ViewUser />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/user/management/add"
+                    element={
+                        <ProtectedRoute>
+                            <AddUser />
                         </ProtectedRoute>
                     }
                 />

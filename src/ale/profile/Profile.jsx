@@ -8,7 +8,7 @@ import {
 import { getUserById } from "../../services/userService.js";
 import {useNavigate} from "react-router-dom";
 
-export function ALEForwardingProfile() {
+export function ALEProfile() {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -29,7 +29,6 @@ export function ALEForwardingProfile() {
                         setUpdatedByUser(updatedUser);
                     }
                 }
-                console.log("role:");
                 console.log("role:", getUserRole);
             } catch (error) {
                 console.error("Error fetching profile", error);

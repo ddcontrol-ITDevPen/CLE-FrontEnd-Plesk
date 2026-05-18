@@ -6,7 +6,7 @@ import { getUserById, updateUser } from "../../services/userService.js";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 
-export function ALEForwardingEditProfile() {
+export function ALEEditProfile() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("general");
     const [loading, setLoading] = useState(true);
