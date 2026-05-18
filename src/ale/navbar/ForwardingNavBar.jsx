@@ -20,7 +20,7 @@ export default function ForwardingNavBar({ role = "forwarder" }) {
 
     const menuItems = [
         { icon: LucideHome, label: "Dashboard", path: "/ale/forwarding/dashboard" },
-        { icon: LucideTruck, label: "Create ROT", path: "/ale/forwarding/rot/add/form1" },
+        { icon: LucideTruck, label: "Create ROT", path: "/ale/forwarding/rot/search" },
         { icon: LucideHistory, label: "Your ROTs", path: "/ale/forwarding/rot/history" },
         { icon: LucideArchive, label: "Archived ROTs", path: "/" },
         { icon: LucideMapPinned, label: "Track & Trace", path: "/ale/rot/track" },

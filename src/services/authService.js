@@ -3,7 +3,7 @@ import api from "./api";
 const AUTH_URL = "/auth";
 
 export const login = async (userId, password, region, access) => {
-    const response = await api.post(`${AUTH_URL}/login`, {userId, password, companyRegion: region, access});
+    const response = await api.post(`${AUTH_URL}/login`, {userId, password, region, access});
     return response.data;
 };
 

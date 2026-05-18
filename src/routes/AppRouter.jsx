@@ -66,6 +66,7 @@ import {TerminalList} from "../ale/terminal/TerminalList.jsx"
 import {UserManagement} from "../ale/UserManagement/UserManagement.jsx";
 import {ViewUser} from "../ale/UserManagement/ViewUser.jsx";
 import {AddUser} from "../ale/UserManagement/AddUser.jsx";
+import {SearchROT} from "../ale/forwarding/ROT/ROTSearch.jsx";
 
 export default function AppRouter() {
     return (
@@ -300,6 +301,14 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <ALEForwardingDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/forwarding/rot/search"
+                    element={
+                        <ProtectedRoute>
+                            <SearchROT />
                         </ProtectedRoute>
                     }
                 />

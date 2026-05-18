@@ -6,10 +6,11 @@ import {login} from "../../services/authService.js";
 import {useNavigate} from "react-router-dom";
 
 const portImage1 = "../assets/portImage1.png";
-const portImage2 = "../assets/portImage1.png";
-const portImage3 = "../assets/portImage1.png";
+const portImage2 = "../assets/portImage2.png";
+const portImage3 = "../assets/portImage3.png";
 const cleLogo = "../assets/CLE-Logo.png";
 const aleLogo = "../assets/ALE-Logo.png";
+const claLogo = "../assets/CLA-Logo.png";
 
 const ACCESS_OPTIONS = {
     CLE: [
@@ -24,11 +25,6 @@ const ACCESS_OPTIONS = {
         { value: "JHB", label: "JHB" },
         { value: "LGK", label: "LGK" }
     ],
-    WLE: [
-        { value: "WH1", label: "Warehouse 1" },
-        { value: "WH2", label: "Warehouse 2" },
-        { value: "WH3", label: "Warehouse 3" }
-    ]
 };
 
 export default function LoginPage() {
@@ -53,16 +49,13 @@ export default function LoginPage() {
             setIsLoading(false);
             return;
         }
-        
-        const loginData = {
-            userId: username,
-            password: password,
-            location: location,
-            access: access
-        };
 
         try {
             const userData = await login(username, password, location, access);
+            if (!userData) {
+                throw new Error("No user data received from server.");
+            }
+            
             localStorage.setItem("userId", userData.userId);
             localStorage.setItem("userName", userData.fullName);
             localStorage.setItem("role", userData.role);
@@ -103,7 +96,7 @@ export default function LoginPage() {
                 <motion.div
                     layout
                     transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                    className="w-1/2 bg-system-color relative"
+                    className="w-6/13 bg-system-color relative"
                 >
                     <img
                         src={portImage1}
@@ -122,7 +115,7 @@ export default function LoginPage() {
                 </motion.div>
                 <motion.div
                     layout
-                    className="w-1/2 p-12 px-16 flex flex-col justify-center bg-white"
+                    className="w-7/13 p-9 px-12 flex flex-col justify-center bg-white"
                 >
                     <AnimatePresence mode="wait">
                         {!isSuccess ? (
@@ -141,13 +134,18 @@ export default function LoginPage() {
                                             logo={cleLogo}
                                             name="CLE"
                                             isSelected={access === 'CLE'}
-                                            onClick={() => setAccess('CLE')}
+                                            onClick={() => {setAccess('CLE'); setLocation(''); setError(''); }}
                                         />
                                         <EntityCard
                                             logo={aleLogo}
                                             name="ALE"
                                             isSelected={access === 'ALE'}
-                                            onClick={() => setAccess('ALE')}
+                                            onClick={() => {setAccess('ALE'); setLocation(''); setError(''); }}
+                                        />
+                                        <EntityCard
+                                            logo={claLogo}
+                                            name="CLA"
+                                            onClick={() => window.location.href = "https://www.clap.my"}
                                         />
                                         {/* Empty Placeholder Card from Figma */}
                                         <div className="h-[60px] w-1/3 rounded-xl border border-gray-200 bg-white"></div>
