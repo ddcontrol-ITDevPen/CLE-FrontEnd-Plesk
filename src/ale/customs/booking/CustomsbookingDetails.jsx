@@ -11,6 +11,7 @@ import {toast} from "sonner";
 import {getUserById} from "../../../services/userService.js";
 import {getAleBookingDocumentByBookingNumber} from "../../../services/aleBookingDocumentService.js";
 import ROTShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
+import {getAleAssignedHaulierByContainerId} from "../../../services/aleAssignedHaulierService.js";
 
 export function CustomsbookingDetails() {
     const { id } = useParams();
@@ -20,6 +21,7 @@ export function CustomsbookingDetails() {
     const [companyDetails, setCompanyDetails] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [billingPartyName, setBillingPartyName] = useState(null);
+    const [assignedHaulier, setAssignedHaulier] = useState(null);
     const [previewData, setPreviewData] = useState({ url: null, type: null, fileName: null });
 
     // --- NEW STATES FOR DOCUMENTS ---
@@ -32,9 +34,12 @@ export function CustomsbookingDetails() {
                 const result = await getAleContainerById(id);
                 console.log(result);
                 setData(result);
-                const forwardingId = result.aleBooking?.forwardingId;
-                const forwardingInfo = await getCompanyById(forwardingId);
-                setForwarding(forwardingInfo);
+                try {
+                    const assignedData = await getAleAssignedHaulierByContainerId(id);
+                    setAssignedHaulier(assignedData);
+                } catch {
+                    setAssignedHaulier(null);
+                }
                 if (result.aleBooking?.billingParty) {
                     try {
                         const company = await getCompanyById(result.aleBooking.billingParty);
@@ -42,6 +47,10 @@ export function CustomsbookingDetails() {
                     } catch {
                         setBillingPartyName("N/A");
                     }
+                }
+                if (result.rotNumber) {
+                    const docs = await getAleBookingDocumentByBookingNumber(result.rotNumber);
+                    setDocuments(docs);
                 }
             } catch (error) {
                 console.error("Error fetching ROT details:", error);
@@ -204,25 +213,26 @@ export function CustomsbookingDetails() {
                     <Section title="Shipping Information">
                         <InfoRow label="From" value={getLocationName(data, "from")} />
                         <InfoRow label="To" value={getLocationName(data, "to")} />
-                        <InfoRow label="Shipping Agent" value={data.aleBooking?.shippingAgentName} />
+                        <InfoRow label="Shipping Agent" value={data.aleBooking?.airlineName} />
                         <InfoRow label="Billing Party" value={billingPartyName} />
                         <InfoRow label="ROT Date" value={data.rotDate} />
                     </Section>
 
                     <Section title="Container Information">
-                        <InfoRow label="No." value={data.containerNumber} />
+                        <InfoRow label="Package Quantity." value={data.packageQuantity} />
                         <InfoRow label="Size" value={data.containerSize} />
                         <InfoRow label="Type" value={data.containerType} />
                         <InfoRow label="VGM" value={data.vgm} />
-                        <InfoRow label="Trailer Type" value={data.trailerType} />
+                        <InfoRow label="Volumetric" value={data.trailerType} />
                     </Section>
 
-                    <Section title="Forwarding Information">
-                        <InfoRow label="Name" value={forwarding?.companyName} />
-                        <InfoRow label="Address" value={forwarding?.address} />
-                        <InfoRow label="PIC Name" value={forwarding?.picName} />
-                        <InfoRow label="PIC Number" value={forwarding?.handphoneNumber} />
-                        <InfoRow label="PIC Email" value={forwarding?.emailAddress} />
+                   
+                    <Section title="Trucker/Transporter Information">
+                        <InfoRow label="Name" value={data.haulierName} />
+                        <InfoRow label="Address" value={data.haulier?.address} />
+                        <InfoRow label="PIC Name" value={data.haulier?.picName} />
+                        <InfoRow label="PIC Number" value={data.haulier?.handphoneNumber} />
+                        <InfoRow label="PIC Email" value={data.haulier?.emailAddress} />
                     </Section>
 
                     <Section title="Consignee Information">
@@ -233,21 +243,22 @@ export function CustomsbookingDetails() {
                         <InfoRow label="PIC Email" value={data.consignee?.emailAddress} />
                     </Section>
 
-                    <Section title="Port Information">
-                        <InfoRow label="Name" value={data.port?.companyName} />
-                        <InfoRow label="Address" value={data.port?.address} />
-                        <InfoRow label="PIC Name" value={data.port?.picName} />
-                        <InfoRow label="PIC Number" value={data.port?.handphoneNumber} />
-                        <InfoRow label="PIC Email" value={data.port?.emailAddress} />
+                    <Section title="Terminal Information">
+                        <InfoRow label="Name" value={data.terminal?.companyName} />
+                        <InfoRow label="Address" value={data.terminal?.address} />
+                        <InfoRow label="PIC Name" value={data.terminal?.picName} />
+                        <InfoRow label="PIC Number" value={data.terminal?.handphoneNumber} />
+                        <InfoRow label="PIC Email" value={data.terminal?.emailAddress} />
                     </Section>
 
-                    <Section title="Depot Information">
-                        <InfoRow label="Name" value={data.depotName} />
-                        <InfoRow label="Address" value={data.depot?.address} />
-                        <InfoRow label="PIC Name" value={data.depot?.picName} />
-                        <InfoRow label="PIC Number" value={data.depot?.handphoneNumber} />
-                        <InfoRow label="PIC Email" value={data.depot?.emailAddress} />
+                    <Section title="Assigned Trucker Information">
+                        <InfoRow label="Driver Name" value={`${assignedHaulier?.driver?.name || "N/A"} (${assignedHaulier?.driver?.mobileNumber || "N/A"} / ${assignedHaulier?.driver?.emailAddress || "N/A"})`} />
+                        <InfoRow label="PM No." value={assignedHaulier?.primeMover?.plateNumber || "N/A"} />
+                        <InfoRow label="Trailer No." value={`${assignedHaulier?.trailer?.plateNumber || "N/A"} - ${assignedHaulier?.trailer?.type || "N/A"}`} />
+                        <InfoRow label="Time Slot" value={`${assignedHaulier?.timeSlot?.date || "N/A"} @ ${assignedHaulier?.timeSlot?.time || "N/A"}`} />
+                        <InfoRow label="Trucker Remarks" value={data?.aleBooking?.haulierRemarks || "N/A"} />
                     </Section>
+
                 </div>
                 
                 {/* Updated Document Grid Section */}

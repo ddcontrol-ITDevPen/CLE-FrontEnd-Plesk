@@ -18,10 +18,10 @@ import {
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
-import {getAllAleBookingsByForwarding} from "../../../services/aleBookingService.js";
-import {getAllAleContainersByForwarding} from "../../../services/aleContainerService.js";
+import {getAleContainers, getAllAleContainersByForwarding} from "../../../services/aleContainerService.js";
 import {toast} from "sonner";
 import {getUserById} from "../../../services/userService.js";
+import {getAleContainerAudits} from "../../../services/aleContainerAuditService.js";
 
 export function CustomsDashboard() {
     const navigate = useNavigate();
@@ -80,29 +80,48 @@ export function CustomsDashboard() {
         const fetchData = async () => {
             setIsLoading(true);
             try {
+                // 1. Get user signature
                 const userData = await getUserById(userId);
-                const forwardingId = userData?.companyCode;
-                console.log(forwardingId);
+                const updatedByString = `${userData.fullName} - ${userData.companyName}`;
 
-                if (!forwardingId) {
-                    console.warn("User has no associated forwarding ID");
-                    setIsLoading(false);
-                    return;
-                }
-
-                const [bookingData, containerData] = await Promise.all([
-                    getAllAleBookingsByForwarding(forwardingId),
-                    getAllAleContainersByForwarding(forwardingId),
+                // 2. Fetch data sets
+                const [allContainers, allAudits] = await Promise.all([
+                    getAleContainers(),
+                    getAleContainerAudits()
                 ]);
-                setBookings(bookingData || []);
-                setContainers(containerData || []);
+
+                // 3. Filter audits matching this user
+                const myAudits = allAudits.filter(audit => audit.updatedBy === updatedByString);
+
+                // 4. Create a Set of containerIds this user has touched
+                const auditedContainerIds = new Set(myAudits.map(a => a.containerId));
+
+                // 5. Filter containers based on the audit matches
+                const filteredContainers = allContainers.filter(container =>
+                    auditedContainerIds.has(container.containerId)
+                );
+
+                // 6. Derive unique bookings from the filtered containers
+                const filteredBookings = filteredContainers
+                    .map(c => c.booking)
+                    .filter(Boolean);
+
+                const uniqueBookings = Array.from(
+                    new Map(filteredBookings.map(b => [b.bookingId, b])).values()
+                );
+
+                // 7. Update GUI
+                setContainers(filteredContainers);
+                setBookings(uniqueBookings);
+
             } catch (error) {
-                console.error("Dashboard Fetch Error:", error);
-                toast.error("Failed to load dashboard data");
+                console.error("Customs Dashboard Fetch Error:", error);
+                toast.error("Failed to load your audited data");
             } finally {
                 setIsLoading(false);
             }
-        }
+        };
+
         fetchData();
     }, [userId, navigate]);
 
@@ -187,7 +206,7 @@ export function CustomsDashboard() {
                                 <h3 className="text-lg font-bold flex items-center gap-2">
                                     <History size={20} className="text-gray-600" /> Recent Activity
                                 </h3>
-                                <button className="text-system-color text-xs font-bold hover:underline" onClick={() => navigate("/ale/forwarding/rot/history")}>View All</button>
+                                <button className="text-system-color text-xs font-bold hover:underline" onClick={() => navigate("/customs/bookinglist")}>View All</button>
                             </div>
                             <div className="space-y-4">
                                 {isLoading ? (
@@ -196,7 +215,7 @@ export function CustomsDashboard() {
                                     recentContainers.map((cont) => (
                                         <div
                                             key={cont.containerId}
-                                            onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}
+                                            onClick={() => navigate(`/ale/customs/booking/bookingdetails/${cont.containerId}`)}
                                             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group cursor-pointer hover:bg-gray-100 transition-colors"
                                         >
                                             <div className="overflow-hidden">

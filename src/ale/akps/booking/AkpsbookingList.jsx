@@ -629,7 +629,7 @@ export function AkpsbookingList() {
                                                         </button>
                                                     )}
                                                     <Eye size={18}
-                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/customs/booking/bookingdetails/${cont.containerId}`)}/>
+                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/akps/booking/bookingdetails/${cont.containerId}`)}/>
                                                 </div>
                                             </td>
                                         </tr>

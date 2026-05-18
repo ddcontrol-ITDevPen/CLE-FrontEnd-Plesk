@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../../ale/layout/Layout.jsx";
 import {getAleContainerById} from "../../../services/aleContainerService.js";
 import { motion } from "framer-motion";
-import {ArrowLeft, Clock, Download, ExternalLink, Eye, File, FileImage, FileText, X} from "lucide-react";
+import {ArrowLeft, Clock, Download, Edit3, ExternalLink, Eye, File, FileImage, FileText, Trash2, X} from "lucide-react";
 import ShipmentLog from "../../../ale/ALEComponents/ALEShipmentLog.jsx";
 import {getCompanyById} from "../../../services/companyService.js";
 import api from "../../../services/api.js";
@@ -11,6 +11,7 @@ import {toast} from "sonner";
 import {getUserById} from "../../../services/userService.js";
 import {getAleBookingDocumentByBookingNumber} from "../../../services/aleBookingDocumentService.js";
 import ROTShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
+import {getAleAssignedHaulierByContainerId} from "../../../services/aleAssignedHaulierService.js";
 
 export function AkpsbookingDetails() {
     const { id } = useParams();
@@ -21,27 +22,35 @@ export function AkpsbookingDetails() {
     const [isLoading, setIsLoading] = useState(true);
     const [billingPartyName, setBillingPartyName] = useState(null);
     const [previewData, setPreviewData] = useState({ url: null, type: null, fileName: null });
+    const [assignedHaulier, setAssignedHaulier] = useState(null);
 
     // --- NEW STATES FOR DOCUMENTS ---
     const [documents, setDocuments] = useState([]);
     const [isDocsLoading, setIsDocsLoading] = useState(false);
-    
+
     useEffect(() => {
         const fetchDetails = async () => {
             try {
                 const result = await getAleContainerById(id);
                 console.log(result);
                 setData(result);
-                const forwardingId = result.booking?.forwardingId;
-                const forwardingInfo = await getCompanyById(forwardingId);
-                setForwarding(forwardingInfo);
-                if (result.booking?.billingParty) {
+                try {
+                    const assignedData = await getAleAssignedHaulierByContainerId(id);
+                    setAssignedHaulier(assignedData);
+                } catch {
+                    setAssignedHaulier(null);
+                }
+                if (result.aleBooking?.billingParty) {
                     try {
-                        const company = await getCompanyById(result.booking.billingParty);
+                        const company = await getCompanyById(result.aleBooking.billingParty);
                         setBillingPartyName(company?.companyName || "N/A");
                     } catch {
                         setBillingPartyName("N/A");
                     }
+                }
+                if (result.rotNumber) {
+                    const docs = await getAleBookingDocumentByBookingNumber(result.rotNumber);
+                    setDocuments(docs);
                 }
             } catch (error) {
                 console.error("Error fetching ROT details:", error);
@@ -52,7 +61,7 @@ export function AkpsbookingDetails() {
         fetchDetails();
     }, [id]);
 
-    // 2.  NEW EFFECT: Automatically fetch documents when data.rotNumber is ready
+    // 2. NEW EFFECT: Automatically fetch documents when data.rotNumber is ready
     useEffect(() => {
         const fetchDocuments = async () => {
             if (!data?.rotNumber) return;
@@ -71,9 +80,9 @@ export function AkpsbookingDetails() {
 
         fetchDocuments();
     }, [data?.rotNumber]); // Runs as soon as data.rotNumber is set
-    
+
     const getLocationName = (cont, type) => {
-        const { movementType, tripType } = cont.aleBooking || {};
+        const { movementType, tripType } = cont.booking || {};
 
         if (type === 'from') {
             if (tripType) {
@@ -86,7 +95,7 @@ export function AkpsbookingDetails() {
                 if (movementType === "Import") return cont.depotName || "Depot";
                 if (movementType === "Export") return cont.portName || "Port";
             }
-            return cont.aleBooking?.fromName || "N/A";
+            return cont.booking?.fromName || "N/A";
         } else {
             if (tripType) {
                 if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
@@ -120,6 +129,7 @@ export function AkpsbookingDetails() {
             <span className="text-gray-900 font-semibold">{value || "N/A"}</span>
         </>
     );
+
 
     const getFileIcon = (fileName) => {
         const ext = fileName.split('.').pop().toLowerCase();
@@ -156,6 +166,7 @@ export function AkpsbookingDetails() {
             toast.error("Download failed. Your session may have expired.");
         }
     };
+
     return (
         <Layout role="akps">
             <div className="space-y-6 max-w-7xl mx-auto pb-10">
@@ -175,24 +186,24 @@ export function AkpsbookingDetails() {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-12 text-sm">
                         <div className="space-y-3">
                             <div className="flex justify-between"><span className="text-gray-500">ROT Number.</span> <span className="font-bold">{data.rotNumber || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">BL/Booking Number</span> <span className="font-bold">{data.booking?.blOrBookingNumber || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">House BL Number</span> <span className="font-bold">{data.booking?.houseBLNumber || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">SCN.</span> <span className="font-bold">{data.booking?.scn || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Movement Type</span> <span className="font-bold text-blue-600">{data.booking?.movementType || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">AWB Number</span> <span className="font-bold">{data.aleBooking?.awbNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">House Number</span> <span className="font-bold">{data.aleBooking?.houseAWBNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">SCN.</span> <span className="font-bold">{data.aleBooking?.scn || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Movement Type</span> <span className="font-bold text-blue-600">{data.aleBooking?.movementType || "N/A"}</span></div>
                         </div>
                         <div className="space-y-3">
-                            <div className="flex justify-between"><span className="text-gray-500">Type of Trip</span> <span className="font-bold">{data.booking?.tripType || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">ETA</span> <span className="font-bold">{data.booking?.eta || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">POD/POL</span> <span className="font-bold">{data.booking?.portLocation || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Seal No.</span> <span className="font-bold">{data.booking?.sealNumber || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Forwarding Remarks</span> <span className="font-bold italic">{data.booking?.forwardingRemarks || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Type of Trip</span> <span className="font-bold">{data.aleBooking?.tripType || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">ETA</span> <span className="font-bold">{data.aleBooking?.eta || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">POD/POL</span> <span className="font-bold">{data.aleBooking?.portLocation || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Seal No.</span> <span className="font-bold">{data.aleBooking?.sealNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Forwarding Remarks</span> <span className="font-bold italic">{data.aleBooking?.forwardingRemarks || "N/A"}</span></div>
                         </div>
                         <div className="space-y-3">
-                            <div className="flex justify-between"><span className="text-gray-500">Custom Form No.</span> <span className="font-bold">{data.booking?.customFormNo || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Custom Receipt No.</span> <span className="font-bold">{data.booking?.customReceiptNo || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">DIC Number</span> <span className="font-bold">{data.booking?.dicNumber || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">ZB Number</span> <span className="font-bold">{data.booking?.zbNumber || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Container Quantity</span> <span className="font-bold">{data.booking?.containerQuantity || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Custom Form No.</span> <span className="font-bold">{data.aleBooking?.customFormNo || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Custom Receipt No.</span> <span className="font-bold">{data.aleBooking?.customReceiptNo || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">DIC Number</span> <span className="font-bold">{data.aleBooking?.dicNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">ZB Number</span> <span className="font-bold">{data.aleBooking?.zbNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Container Quantity</span> <span className="font-bold">{data.aleBooking?.containerQuantity || "N/A"}</span></div>
                         </div>
                     </div>
                 </div>
@@ -202,25 +213,25 @@ export function AkpsbookingDetails() {
                     <Section title="Shipping Information">
                         <InfoRow label="From" value={getLocationName(data, "from")} />
                         <InfoRow label="To" value={getLocationName(data, "to")} />
-                        <InfoRow label="Shipping Agent" value={data.aleBooking?.shippingAgentName} />
+                        <InfoRow label="Shipping Agent" value={data.aleBooking?.airlineName} />
                         <InfoRow label="Billing Party" value={billingPartyName} />
                         <InfoRow label="ROT Date" value={data.rotDate} />
                     </Section>
 
                     <Section title="Container Information">
-                        <InfoRow label="No." value={data.containerNumber} />
+                        <InfoRow label="Package Quantity." value={data.packageQuantity} />
                         <InfoRow label="Size" value={data.containerSize} />
                         <InfoRow label="Type" value={data.containerType} />
                         <InfoRow label="VGM" value={data.vgm} />
-                        <InfoRow label="Trailer Type" value={data.trailerType} />
+                        <InfoRow label="Volumetric" value={data.trailerType} />
                     </Section>
 
-                    <Section title="Forwarding Information">
-                        <InfoRow label="Name" value={forwarding.companyName} />
-                        <InfoRow label="Address" value={forwarding.address} />
-                        <InfoRow label="PIC Name" value={forwarding.picName} />
-                        <InfoRow label="PIC Number" value={forwarding.handphoneNumber} />
-                        <InfoRow label="PIC Email" value={forwarding.emailAddress} />
+                    <Section title="Trucker/Transporter Information">
+                        <InfoRow label="Name" value={data.haulierName} />
+                        <InfoRow label="Address" value={data.haulier?.address} />
+                        <InfoRow label="PIC Name" value={data.haulier?.picName} />
+                        <InfoRow label="PIC Number" value={data.haulier?.handphoneNumber} />
+                        <InfoRow label="PIC Email" value={data.haulier?.emailAddress} />
                     </Section>
 
                     <Section title="Consignee Information">
@@ -231,22 +242,24 @@ export function AkpsbookingDetails() {
                         <InfoRow label="PIC Email" value={data.consignee?.emailAddress} />
                     </Section>
 
-                    <Section title="Port Information">
-                        <InfoRow label="Name" value={data.port?.companyName} />
-                        <InfoRow label="Address" value={data.port?.address} />
-                        <InfoRow label="PIC Name" value={data.port?.picName} />
-                        <InfoRow label="PIC Number" value={data.port?.handphoneNumber} />
-                        <InfoRow label="PIC Email" value={data.port?.emailAddress} />
+                    <Section title="Terminal Information">
+                        <InfoRow label="Name" value={data.terminal?.companyName} />
+                        <InfoRow label="Address" value={data.terminal?.address} />
+                        <InfoRow label="PIC Name" value={data.terminal?.picName} />
+                        <InfoRow label="PIC Number" value={data.terminal?.handphoneNumber} />
+                        <InfoRow label="PIC Email" value={data.terminal?.emailAddress} />
                     </Section>
 
-                    <Section title="Depot Information">
-                        <InfoRow label="Name" value={data.depotName} />
-                        <InfoRow label="Address" value={data.depot?.address} />
-                        <InfoRow label="PIC Name" value={data.depot?.picName} />
-                        <InfoRow label="PIC Number" value={data.depot?.handphoneNumber} />
-                        <InfoRow label="PIC Email" value={data.depot?.emailAddress} />
+                    <Section title="Assigned Trucker Information">
+                        <InfoRow label="Driver Name" value={`${assignedHaulier?.driver?.name || "N/A"} (${assignedHaulier?.driver?.mobileNumber || "N/A"} / ${assignedHaulier?.driver?.emailAddress || "N/A"})`} />
+                        <InfoRow label="PM No." value={assignedHaulier?.primeMover?.plateNumber || "N/A"} />
+                        <InfoRow label="Trailer No." value={`${assignedHaulier?.trailer?.plateNumber || "N/A"} - ${assignedHaulier?.trailer?.type || "N/A"}`} />
+                        <InfoRow label="Time Slot" value={`${assignedHaulier?.timeSlot?.date || "N/A"} @ ${assignedHaulier?.timeSlot?.time || "N/A"}`} />
+                        <InfoRow label="Trucker Remarks" value={data?.aleBooking?.haulierRemarks || "N/A"} />
                     </Section>
+
                 </div>
+
                 {/* Updated Document Grid Section */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between border-b pb-2">
