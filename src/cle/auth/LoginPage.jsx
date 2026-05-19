@@ -65,14 +65,12 @@ export default function LoginPage() {
             const dbAccess = userData.access || "";
             
             if (access === 'CLE' && dbAccess.includes('CLE')) {
-                
                 setTimeout(() => {
                     navigate(`/${userData.role.toLowerCase()}/dashboard`);
-                    
                 }, 2000);
             } else if (access === 'ALE' && dbAccess.includes('ALE')) {
                 setTimeout(() => {
-                    navigate(`/ale/${userData.role.toLowerCase()}/dashboard`);
+                    navigate(`/ale/${userData.role.toLowerCase() === "booking agent" ? "bookingAgent" : userData.role.toLowerCase()}/dashboard`);
                 }, 2000);
             } else {
                 toast.error("Wrong access!")

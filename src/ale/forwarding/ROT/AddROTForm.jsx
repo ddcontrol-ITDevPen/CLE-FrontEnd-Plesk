@@ -130,7 +130,7 @@ export function ALEAddROTForm() {
             forwarding: savedData.forwarding || localStorage.getItem("companyName") || "",
             carrierReferenceNumber: stateBooking.carrierReferenceNumber || savedData.carrierReferenceNumber || "",
             totalPackageQuantity: stateBooking.totalPackageQuantity || savedData.totalPackageQuantity || 1,
-            Weight: stateBooking.Weight || savedData.Weight || 0.0,
+            weight: stateBooking.weight || stateBooking.Weight || savedData.weight || 0.0,
             ssmNumber: stateBooking.ssmNumber || savedData.ssmNumber || "",
             size: stateBooking.size || savedData.size || "",
         }));

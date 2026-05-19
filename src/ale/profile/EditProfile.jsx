@@ -139,7 +139,9 @@ export function ALEEditProfile() {
             Haulier: "haulier",
             Terminal: "terminal",
             AKPS: "akps",
-            Custom: "custom"
+            Custom: "custom",
+            "Booking Agent": "bookingAgent",
+            Consignee: "consignee",
         };
         return roles[role] || "";
     };

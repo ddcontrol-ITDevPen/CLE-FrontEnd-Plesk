@@ -50,7 +50,9 @@ export function UserManagement() {
             Haulier: "haulier",
             Terminal: "terminal",
             Akps: "akps",
-            Customs: "customs"
+            Customs: "customs",
+            "Booking Agent": "bookingAgent",
+            Consignee: "consignee",
         };
         return roles[role] || "";
     };
