@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {CircleChevronDown, LucideArrowBigRightDash, LucideShieldUser, LucideTruck, Trash2, Upload} from "lucide-react";
 import {getCompanies} from "../../../services/companyService.js";
-import {getAleBookings, registerAleBooking} from "../../../services/aleBookingService.js";
+import {getAleBookings, registerAleBooking, updateAleBooking} from "../../../services/aleBookingService.js";
 import {getUserById} from "../../../services/userService.js";
 import {toast, Toaster} from "sonner";
-import {registerAleBookingDocument} from "../../../services/aleBookingDocumentService.js";
+import {getAleBookingDocuments, registerAleBookingDocument} from "../../../services/aleBookingDocumentService.js";
 import {registerAleContainer} from "../../../services/aleContainerService.js";
 
 export function ALEAddROTForm() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [bookings, setBookings] = useState([]);
     const [isLoadingPorts, setIsLoadingPorts] = useState(false);
     const [hauliers, setHauliers] = useState([]);
@@ -22,6 +23,7 @@ export function ALEAddROTForm() {
     const [terminalChoice, setTerminalChoice] = useState([]);
     const [haulierChoice, setHaulierChoice] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [rotNumber, setRotNumber] = useState("");
 
     const rotNumberGenerator = () => {
         const newNumber = (Math.floor(Math.random() * 9000000000) + 1).toString().padStart(10, "0");
@@ -61,9 +63,21 @@ export function ALEAddROTForm() {
         externalConsigneeName: "",
         externalConsigneeAddress: "",
         externalConsigneeContact: "",
+        carrierReferenceNumber: "",
+        totalPackageQuantity: 1,
+        weight: 1.0,
+        ssmNumber: "",
+        size: "",
     });
 
     const [documents, setDocuments] = useState({
+        doForm: null,
+        customForm: null,
+        packingList: null,
+        otherDoc: null
+    });
+
+    const [existingDocuments, setExistingDocuments] = useState({
         doForm: null,
         customForm: null,
         packingList: null,
@@ -74,42 +88,57 @@ export function ALEAddROTForm() {
 
     useEffect(() => {
         const savedData = JSON.parse(localStorage.getItem("pendingROT") || "{}");
+        const stateBooking = location.state?.bookingData || {};
+        const isPreloaded = location.state?.isPreloadedRecord || false;
+        const targetRotNumber = stateBooking.rotNumber || null;
+
+        if (targetRotNumber) {
+            setRotNumber(targetRotNumber);
+        }
+        
         setFormData(prev => ({
             ...prev,
-            movementType: savedData.movementType || "Import",
-            rotNumber: savedData.rotNumber || rotNumberGenerator(),
-            awbNumber: savedData.awbNumber || "",
-            houseAWBNumber: savedData.houseAWBNumber || "",
-            flightNumber: savedData.flightNumber || "",
-            terminalLocation: savedData.terminalLocation || "",
-            eta: savedData.eta || "",
-            sealNo: savedData.sealNo || "",
-            forwardingRemarks: savedData.forwardingRemarks || "",
-            customFormType: savedData.customFormType || "",
-            customFormNo: savedData.customFormNo || "",
-            customReceiptNo: savedData.customReceiptNo || "",
-            dicNumber: savedData.dicNumber || "",
-            zbNumber: savedData.zbNumber || "",
+            awbNumber: stateBooking.awbNumber || savedData.awbNumber || "",
+            houseAWBNumber: stateBooking.houseAWBNumber || savedData.houseAWBNumber || "",
+            movementType: stateBooking.movementType || savedData.movementType || "Import",
+            rotNumber: stateBooking.rotNumber || savedData.rotNumber || rotNumberGenerator(),
+            flightNumber: stateBooking.flightNumber || savedData.flightNumber || "",
+            terminalLocation: stateBooking.terminalLocation || savedData.terminalLocation || "",
+            eta: stateBooking.eta ? stateBooking.eta.split('T')[0] : (savedData.eta || ""),
+            sealNo: stateBooking.sealNumber || stateBooking.sealNo || savedData.sealNo || "",
+            forwardingRemarks: stateBooking.forwardingRemarks || savedData.forwardingRemarks || "",
+            customFormType: stateBooking.customFormType || savedData.customFormType || "",
+            customFormNo: stateBooking.customFormNo || savedData.customFormNo || "",
+            customReceiptNo: stateBooking.customReceiptNo || savedData.customReceiptNo || "",
+            dicNumber: stateBooking.dicNumber || savedData.dicNumber || "",
+            zbNumber: stateBooking.zbNumber || savedData.zbNumber || "",
+            airline: stateBooking.airlineId || stateBooking.airline || savedData.airline || "",
+            billingParty: stateBooking.billingParty || savedData.billingParty || "",
+            truckQuantity: stateBooking.truckQuantity || savedData.truckQuantity || 1,
+            packageQuantity: stateBooking.packageQuantity || savedData.packageQuantity || 1,
+            containerType: stateBooking.containerType || savedData.containerType || "",
+            containerSize: stateBooking.containerSize || savedData.containerSize || "",
+            vgm: stateBooking.vgm || savedData.vgm || "",
+            volumeMetricWeight: stateBooking.volumeMetricWeight || savedData.volumeMetricWeight || "",
+            rotDate: stateBooking.rotDate ? stateBooking.rotDate.split('T')[0] : (savedData.rotDate || ""),
+            haulier: stateBooking.haulierId || stateBooking.haulier || savedData.haulier || "",
+            consignee: stateBooking.consigneeId || stateBooking.consignee || savedData.consignee || "",
+            haulierChoice: stateBooking.haulierChoice || savedData.haulierChoice || "Single",
+            externalConsigneeName: stateBooking.externalConsigneeName || savedData.externalConsigneeName || "",
+            externalConsigneeAddress: stateBooking.externalConsigneeAddress || savedData.externalConsigneeAddress || "",
+            externalConsigneeContact: stateBooking.externalConsigneeContact || savedData.externalConsigneeContact || "",
             forwarding: savedData.forwarding || localStorage.getItem("companyName") || "",
-            airline: savedData.airline || "",
-            billingParty: savedData.billingParty || "",
-            truckQuantity: savedData.truckQuantity || 1,
-            packageQuantity: savedData.packageQuantity || 1,
-            containerType: savedData.containerType || "",
-            containerSize: savedData.containerSize || "",
-            vgm: savedData.vgm || "",
-            volumeMetricWeight: savedData.volumeMetricWeight || "",
-            trailerType: savedData.trailerType || "",
-            rotDate: savedData.rotDate || "",
-            haulier: savedData.haulier || "",
-            consignee: savedData.consignee || "",
-            // terminal: savedData.terminal || "",
-            // terminalChoice: savedData.terminalChoice || "Single",
-            haulierChoice: savedData.haulierChoice || "Single",
-            externalConsigneeName: savedData.externalConsigneeName || "",
-            externalConsigneeAddress: savedData.externalConsigneeAddress || "",
-            externalConsigneeContact: savedData.externalConsigneeContact || "",
+            carrierReferenceNumber: stateBooking.carrierReferenceNumber || savedData.carrierReferenceNumber || "",
+            totalPackageQuantity: stateBooking.totalPackageQuantity || savedData.totalPackageQuantity || 1,
+            Weight: stateBooking.Weight || savedData.Weight || 0.0,
+            ssmNumber: stateBooking.ssmNumber || savedData.ssmNumber || "",
+            size: stateBooking.size || savedData.size || "",
         }));
+        
+        if (isPreloaded) {
+            toast.success("All fields populating successfully from matching booking records!");
+        }
+        
         const fetchData = async () => {
             setIsLoadingPorts(true);
             try {
@@ -121,7 +150,7 @@ export function ALEAddROTForm() {
                     const currentForwardingName = localStorage.getItem("companyName") || "Forwarding";
                     const user = await getUserById(localStorage.getItem("userId"));
                     const currentForwardingCode = user.companyCode;
-                    const consignees = data.filter(h => h.role === "Consignee").map(h => ({companyName: h.companyName, companyCode: h.companyCode, address: h.address}));
+                    const consignees = data.filter(h => h.role === "Consignee").map(h => ({companyName: h.companyName, companyCode: h.companyCode, address: h.address, ssmNo: h.ssmNo || h.ssmNumber}));
                     const billingParty = [{companyName: currentForwardingName, companyCode: currentForwardingCode}, ...consignees];
                     setTerminals(terminalLocations);
                     setHauliers(haulier);
@@ -131,6 +160,26 @@ export function ALEAddROTForm() {
                 }
                 const bookings = await getAleBookings();
                 setBookings(bookings || []);
+
+                if (targetRotNumber) {
+                    try {
+                        const allDocs = await getAleBookingDocuments();
+                        if (Array.isArray(allDocs)) {
+                            const filteredDocs = allDocs.filter(doc => doc.rotNumber === targetRotNumber || doc.key === targetRotNumber);
+                            console.log(filteredDocs);
+                            const mappedExistingDocs = { doForm: null, customForm: null, packingList: null, otherDoc: null };
+                            filteredDocs.forEach(doc => {
+                                if (doc.documentType === "DO Form") mappedExistingDocs.doForm = doc.fileName || "DO_Form_Uploaded";
+                                if (doc.documentType === "Custom Form") mappedExistingDocs.customForm = doc.fileName || "Custom_Form_Uploaded";
+                                if (doc.documentType === "Packing List") mappedExistingDocs.packingList = doc.fileName || "Packing_List_Uploaded";
+                                if (doc.documentType === "Other Document") mappedExistingDocs.otherDoc = doc.fileName || "Other_Document_Uploaded";
+                            });
+                            setExistingDocuments(mappedExistingDocs);
+                        }
+                    } catch (docError) {
+                        console.error("Failed to fetch matching booking documents:", docError);
+                    }
+                }
             } catch (error) {
                 console.error("Failed to load data:", error);
                 setHauliers([]);
@@ -143,14 +192,21 @@ export function ALEAddROTForm() {
             }
         };
         fetchData();
-    }, []);
+    }, [location.state]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => {
             const newData = { ...prev, [name]: value };
             if (name === "haulierChoice" && value === "Multiple") newData.haulier = "";
-            //if (name === "terminalChoice" && value === "Multiple") newData.terminal = "";
+            if (name === "consignee") {
+                if (value === "Other") {
+                    newData.ssmNumber = "";
+                } else {
+                    const selectedCompany = consignees.find(c => c.companyCode === value);
+                    newData.ssmNumber = selectedCompany?.ssmNo || selectedCompany?.ssmNumber || "";
+                }
+            }
             return newData;
         });
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
@@ -173,6 +229,16 @@ export function ALEAddROTForm() {
         }
     };
 
+    const handleRemoveExistingFile = async (type) => {
+        try {
+            setExistingDocuments(prev => ({...prev, [type]: null}));
+            toast.info(`Removed server reference for ${type}. Ready for new file upload.`);
+        } catch (err) {
+            console.error("Error clearing existing document:", err);
+            toast.error("Could not reset the server document slot.");
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = {};
@@ -187,6 +253,7 @@ export function ALEAddROTForm() {
         if (!formData.terminalLocation) newErrors.terminalLocation = `Terminal is required!`;
         if (!formData.eta) newErrors.eta = "ETA is required!";
         if (!formData.customFormNo) newErrors.customFormNo = "Custom Form Number is required!";
+        if (!formData.customFormType) newErrors.customFormType = "Custom Form Type is required!";
         //if (!formData.customReceiptNo) newErrors.customReceiptNo = "Custom Receipt No is required!";
         //if (!formData.dicNumber) newErrors.dicNumber = "DIC Number is required!";
         //if (!formData.zbNumber) newErrors.zbNumber = "Zon Bebas Number is required!";
@@ -198,6 +265,7 @@ export function ALEAddROTForm() {
         if (!formData.packageQuantity) {newErrors.packageQuantity = "Number of Packages is required!";}
         else if (isNaN(formData.packageQuantity)) {newErrors.packageQuantity = "Package Quantity should be a number!";}
         else if (Number(formData.packageQuantity) <= 0) {newErrors.packageQuantity = "Package Quantity must be greater than zero!";}
+        else if (Number(formData.packageQuantity) > Number(formData.totalPackageQuantity)) {newErrors.packageQuantity = "Package Quantity should not be more than Total Package Quantity!";}
         
         if (!formData.airline) newErrors.airline = "Shipping Agent is required!";
         if (!formData.billingParty) newErrors.billingParty = "Billing Party is required!";
@@ -228,16 +296,21 @@ export function ALEAddROTForm() {
             if (!formData.externalConsigneeContact) newErrors.externalConsigneeContact = "Consignee Contact Information is required!";
         }
 
-        if (!documents.doForm) newErrors.doForm = "DO Form is required!";
-        if (!documents.packingList) newErrors.packingList = "Packing List is required!";
-        if (!documents.customForm) newErrors.customForm = "Custom Form is required!";
+        if (isNaN(formData.totalPackageQuantity)) {newErrors.totalPackageQuantity = "Total Package Quantity should be a number!";}
+        else if (Number(formData.totalPackageQuantity) <= 0) {newErrors.totalPackageQuantity = "Total Package Quantity must be greater than zero!";}
+        else if (Number(formData.totalPackageQuantity) < Number(formData.packageQuantity)) {newErrors.totalPackageQuantity = "Total Package Quantity should not be less than Package Quantity!";}
+        else if (Number(formData.packageQuantity * formData.truckQuantity) !== Number(formData.totalPackageQuantity)) {newErrors.totalPackageQuantity = "Total Package Quantity should be a multiply of truck and package quantity!";}
 
-        // const isBookingNumberDuplicate = bookings.some(
-        //     (b) => b.blOrBookingNumber?.toLowerCase() === formData.awbNumber?.toLowerCase()
-        // );
-        // if (isBookingNumberDuplicate) {
-        //     newErrors.awbNumber = `Booking Number already exists, please enter another number!`;
-        // }
+        if (isNaN(formData.weight)) {newErrors.weight = "Weight should be a number!";}
+        else if (Number(formData.weight) <= 0) {newErrors.weight = "Weight must be greater than zero!";}
+
+        // if (isNaN(formData.size)) {newErrors.size = "Size should be a number!";}
+        // else if (Number(formData.size) <= 0) {newErrors.size = "Size must be greater than zero!";}
+
+
+        if (!documents.doForm && !existingDocuments.doForm) newErrors.doForm = "DO Form is required!";
+        if (!documents.packingList && !existingDocuments.packingList) newErrors.packingList = "Packing List is required!";
+        if (!documents.customForm && !existingDocuments.customForm) newErrors.customForm = "Custom Form is required!";
         
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -269,11 +342,31 @@ export function ALEAddROTForm() {
                 dicNumber: formData.dicNumber || "",
                 zbNumber: formData.zbNumber || "",
                 truckQuantity: Number(formData.truckQuantity),
+                carrierReferenceNumber: formData.carrierReferenceNumber,
+                totalPackageQuantity: Number(formData.totalPackageQuantity),
+                weight: Number(formData.weight),
+                size: formData.size,
             };
-            console.log(bookingPayload);
 
-            const savedBooking = await registerAleBooking(bookingPayload);
-            const rotNumber = savedBooking.rotNumber;
+            if (formData.consignee && formData.consignee !== "Other") {
+                const selectedConsignee = consignees.find(c => c.companyCode === formData.consignee);
+                bookingPayload.ConsigneeId = formData.consignee;
+                bookingPayload.SSMNumber = selectedConsignee?.ssmNo;
+            } else {
+                bookingPayload.externalConsigneeName = formData.externalConsigneeName;
+                bookingPayload.externalConsigneeAddress = formData.externalConsigneeAddress;
+                bookingPayload.externalConsigneeContact = formData.externalConsigneeContact;
+            }
+
+            let rotNum = "";
+            if (rotNumber) {
+                console.log("Updating existing record data:", bookingPayload);
+                await updateAleBooking(rotNumber, bookingPayload);
+            } else {
+                console.log("Registering new booking record:", bookingPayload);
+                const savedBooking = await registerAleBooking(bookingPayload);
+                rotNum = savedBooking.rotNumber;
+            }
 
             const docTypes = {
                 doForm: "DO Form",
@@ -306,7 +399,7 @@ export function ALEAddROTForm() {
                     ROTDate: formattedRotDate,
                     Status: "Assigned",
                     AssignedTime: new Date().toISOString(),
-                    ROTNumber: rotNumber,
+                    ROTNumber: rotNum,
                 };
                 
                 if (formData.consignee && formData.consignee !== "Other") {
@@ -431,12 +524,34 @@ export function ALEAddROTForm() {
                                             <InputField label="Consignee/Shipper Contact Information" name="externalConsigneeContact" value={formData.externalConsigneeContact} onChange={handleChange} placeholder="012-3456789, john@example.com" error={errors.externalConsigneeContact} required />
                                         </>
                                     )}
+                                    <InputField label="SSM/ROC No." name="ssmNumber" value={formData.ssmNumber} onChange={handleChange} readOnly={formData.consignee && formData.consignee !== "Other"} />
+                                    <InputField label="Carrier Reference No." name="carrierReferenceNumber" value={formData.carrierReferenceNumber} onChange={handleChange} />
                                     <InputField label="Forwarding Remarks" name="forwardingRemarks" value={formData.forwardingRemarks} onChange={handleChange} placeholder="* Commodity/Special Handling/Others *" />
                                 </div>
                             </div>
                         </div>
 
-                        {/* --- SECTION 2: TRUCK DETAILS --- */}
+                        {/* --- SECTION 2: PACKAGE DETAILS --- */}
+                        <div className="bg-white rounded-2xl shadow-sm border mt-5 border-gray-100 overflow-hidden">
+                            <div className="bg-gradient-to-r from-teal-50 to-green-100 p-6 flex items-center gap-4 border-b border-gray-200">
+                                <div className="bg-gray-700 p-2 rounded-lg text-white">
+                                    <LucideTruck size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-800">Package Details</h2>
+                                    <p className="text-sm text-gray-500">Measurements and quantities</p>
+                                </div>
+                            </div>
+                            <div className="p-8">
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                    <InputField label="Total Package Quantity" name="totalPackageQuantity" value={formData.totalPackageQuantity} onChange={handleChange} error={errors.totalPackageQuantity} />
+                                    <InputField label="Weight" name="weight" value={formData.weight} onChange={handleChange} error={errors.weight} />
+                                    <InputField label="Size" name="size" value={formData.size} onChange={handleChange}/>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* --- SECTION 3: TRUCK DETAILS --- */}
                         <div className="bg-white rounded-2xl shadow-sm border mt-5 border-gray-100 overflow-hidden">
                             <div className="bg-gradient-to-r from-gray-100 to-slate-200 p-6 flex items-center gap-4 border-b border-gray-200">
                                 <div className="bg-gray-700 p-2 rounded-lg text-white">
@@ -461,7 +576,7 @@ export function ALEAddROTForm() {
                             </div>
                         </div>
 
-                        {/* --- SECTION 3: CUSTOMS & TRACKING --- */}
+                        {/* --- SECTION 4: CUSTOMS & TRACKING --- */}
                         <div className="bg-white rounded-2xl shadow-sm border mt-5 border-gray-100 overflow-hidden">
                             <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 flex items-center gap-4 border-b border-purple-100">
                                 <div className="bg-purple-600 p-2 rounded-lg text-white">
@@ -485,7 +600,7 @@ export function ALEAddROTForm() {
                             </div>
                         </div>
 
-                        {/* --- SECTION 4: FORMS & DOCUMENTS --- */}
+                        {/* --- SECTION 5: FORMS & DOCUMENTS --- */}
                         <div className="bg-white rounded-2xl shadow-sm border mt-5 border-gray-100 overflow-hidden">
                             <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 flex items-center gap-4 border-b border-purple-100">
                                 <div className="bg-orange-600 p-2 rounded-lg text-white">
@@ -498,17 +613,17 @@ export function ALEAddROTForm() {
                             </div>
                             <div className="p-8 space-y-6">
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                    <FileUpload name="doForm" label="DO Form" fileName={documents.doForm?.name} onChange={(e) => handleFileChange(e, "doForm")} onRemove={() => setDocuments(prev => ({ ...prev, doForm: null }))} required={true} error={errors.doForm} />
-                                    <FileUpload name="customForm" label="Custom Form" fileName={documents.customForm?.name} onChange={(e) => handleFileChange(e, "customForm")} onRemove={() => setDocuments(prev => ({ ...prev, customForm: null }))} required={true} error={errors.customForm}/>
-                                    <FileUpload name="packingList" label="Packing List/Invoice" fileName={documents.packingList?.name} onChange={(e) => handleFileChange(e, "packingList")} onRemove={() => setDocuments(prev => ({ ...prev, packingList: null }))} required={true} error={errors.packingList}/>
-                                    <FileUpload name="otherDoc" label="Other Document" fileName={documents.otherDoc?.name} onChange={(e) => handleFileChange(e, "otherDoc")} onRemove={() => setDocuments(prev => ({ ...prev, otherDoc: null }))} />
+                                    <FileUpload name="doForm" label="DO Form" fileName={documents.doForm?.name || existingDocuments.doForm} onChange={(e) => handleFileChange(e, "doForm")} onRemove={() => documents.doForm ? setDocuments(prev => ({ ...prev, doForm: null })) : handleRemoveExistingFile("doForm")} required={true} error={errors.doForm} />
+                                    <FileUpload name="customForm" label="Custom Form" fileName={documents.customForm?.name || existingDocuments.customForm} onChange={(e) => handleFileChange(e, "customForm")} onRemove={() => documents.customForm ? setDocuments(prev => ({ ...prev, customForm: null })) : handleRemoveExistingFile("customForm")} required={true} error={errors.customForm}/>
+                                    <FileUpload name="packingList" label="Packing List/Invoice" fileName={documents.packingList?.name || existingDocuments.packingList} onChange={(e) => handleFileChange(e, "packingList")} onRemove={() => documents.packingList ? setDocuments(prev => ({ ...prev, packingList: null })) : handleRemoveExistingFile("packingList")} required={true} error={errors.packingList}/>
+                                    <FileUpload name="otherDoc" label="Other Document" fileName={documents.otherDoc?.name || existingDocuments.otherDoc} onChange={(e) => handleFileChange(e, "otherDoc")} onRemove={() => documents.otherDoc ? setDocuments(prev => ({ ...prev, otherDoc: null })) : handleRemoveExistingFile("otherDoc")} />
                                 </div>
                             </div>
                         </div>
                     </section>
 
                     <div className="flex justify-end pt-4">
-                        <button type="submit" className="group flex items-center gap-3 bg-system-color text-white px-12 py-4 rounded-lg font-bold shadow-lg hover:bg-system-color-dark hover:-translate-y-1 transition-all active:scale-95">
+                        <button type="submit" className="group flex items-center gap-3 bg-system-color text-white px-12 py-4 mb-8 rounded-lg font-bold shadow-lg hover:bg-system-color-dark hover:-translate-y-1 transition-all active:scale-95">
                             {isSubmitting ? "Processing..." : "Submit"}
                             <LucideArrowBigRightDash size={24} className="group-hover:translate-x-1 transition-transform" />
                         </button>
