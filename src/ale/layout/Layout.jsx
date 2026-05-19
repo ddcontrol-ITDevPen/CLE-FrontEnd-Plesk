@@ -58,6 +58,8 @@ export default function Layout({ children, role }) {
                 {user?.Role === "terminal" && <TerminalNavBar />}
                 {user?.Role === "customs" && <CustomsNavBar />}
                 {user?.Role === "akps" && <AKPSNavBar />}
+                {user?.Role === "booking agent" && <AKPSNavBar />}
+                {user?.Role === "consignee" && <AKPSNavBar />}
                 {/*other roles*/}
             </div>
 

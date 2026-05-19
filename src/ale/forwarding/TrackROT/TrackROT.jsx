@@ -78,8 +78,23 @@ export function ALETrackROT () {
         setSelectedShipment(shipment);
     };
 
+    const getUserRole = () => {
+        const role = localStorage.getItem("role");
+        const roles = {
+            Forwarding: "forwarder",
+            Haulier: "haulier",
+            Terminal: "terminal",
+            Akps: "akps",
+            Customs: "customs",
+            "Booking Agent": "bookingAgent",
+            Consignee: "consignee",
+        };
+        return roles[role] || "";
+    };
+
+
     return (
-        <Layout role="forwarder">
+        <Layout role={getUserRole}>
             <Toaster richColors position="top-right" />
             <div className="space-y-6">
                 <div className="flex flex-col gap-0">
@@ -87,7 +102,6 @@ export function ALETrackROT () {
                     <p className="text-gray-500 text-sm">Track your shipments in real-time</p>
                 </div>
 
-                {/* Search Input Section - Card Design from your screenshot */}
                 {!selectedShipment && (
                     <div className="bg-gradient-to-br from-blue-100 to-teal-50 p-12 rounded-3xl border border-blue-100 flex flex-col items-center justify-center space-y-6 shadow-sm">
                         <div className="bg-gradient-to-br from-blue-400 to-system-color-dark p-4 rounded-full shadow-lg">
