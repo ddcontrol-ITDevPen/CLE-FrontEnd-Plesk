@@ -5,7 +5,7 @@ import {
     LucideHistory,
     LucideHome,
     LucideLogOut,
-    LucideMapPinned,
+    LucideMapPinned, LucideSend,
     LucideTruck, LucideUserCheck
 } from "lucide-react";
 import {logout} from "../../services/authService.js";
@@ -20,7 +20,8 @@ export default function ConsigneeNavBar({ role = "forwarder" }) {
 
     const menuItems = [
         { icon: LucideHome, label: "Dashboard", path: "/ale/consignee/dashboard" },
-        { icon: LucideTruck, label: "Create ROT", path: "/ale/consignee/rot/add/form" },
+        // { icon: LucideTruck, label: "Create ROT", path: "/ale/consignee/rot/add/form" },
+        { icon: LucideSend, label: "Your Submissions", path: "/ale/consignee/submission/history" },
         { icon: LucideHistory, label: "Your ROTs", path: "/ale/consignee/rot/history" },
         { icon: LucideArchive, label: "Archived ROTs", path: "/" },
         { icon: LucideMapPinned, label: "Track & Trace", path: "/ale/rot/track" },

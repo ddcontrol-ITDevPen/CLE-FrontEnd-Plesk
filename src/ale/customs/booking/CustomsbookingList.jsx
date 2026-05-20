@@ -84,16 +84,24 @@ export function CustomsbookingList() {
             "Shipping Line": cont.booking?.shippingAgentName || "N/A",
             "Forwarding": cont.booking?.forwardingName || "N/A",
             "ROT Date": cont?.rotDate || "N/A",
-            "Vessel Name": cont.booking?.vesselName || "N/A",
             "From Location": getLocationName(cont, 'from'),
             "To Location": getLocationName(cont, 'to'),
+            "Consignee Name": cont.aleBooking?.consigneeCompany?.companyName || cont.aleBooking?.externalConsigneeName || "N/A",
             "Consignee Address": cont.toAddress && cont.toAddress.length > 0
                 ? cont.toAddress.map(a => a.address).join(", ")
                 : "N/A",
-            "Custom Form No": cont.booking?.customFormNo || "N/A",
-            "Custom Receipt No": cont.booking?.customReceiptNo || "N/A",
-            "DIC Number": cont.booking?.dicNumber || "N/A",
-            "ZB Number": cont.booking?.zbNumber || "N/A",
+            "SSM Number": cont.aleBooking?.ssmNumber || "N/A",
+            "Flight Number": cont.aleBooking?.flightNumber || "N/A",
+            "Carrier Reference Number" : cont.aleBooking?.carrierReferenceNumber || "N/A",
+            "Total Package Quantity": cont.aleBooking?.totalPackageQuantity || "N/A",
+            "Weight": cont.aleBooking?.weight || "N/A",
+            "Size": cont.aleBooking?.size || "N/A",
+            "ETA": cont.aleBooking.eta || "N/A",
+            "Custom Form Type": cont.aleBooking?.customFormType || "N/A",
+            "Custom Form No": cont.aleBooking?.customFormNo || "N/A",
+            "Custom Receipt No": cont.aleBooking?.customReceiptNo || "N/A",
+            "DIC Number": cont.aleBooking?.dicNumber || "N/A",
+            "ZB Number": cont.aleBooking?.zbNumber || "N/A",
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
