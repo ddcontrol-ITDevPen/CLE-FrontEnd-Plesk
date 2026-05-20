@@ -23,7 +23,6 @@ const ACCESS_OPTIONS = {
         { value: "PEN", label: "PEN" },
         { value: "KUL", label: "KUL" },
         { value: "JHB", label: "JHB" },
-        { value: "LGK", label: "LGK" }
     ],
 };
 

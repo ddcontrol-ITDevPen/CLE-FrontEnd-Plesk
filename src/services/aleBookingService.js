@@ -36,3 +36,13 @@ export const getAllAleBookingsByHaulier = async (id) => {
     const res = await api.get(`${BASE_URL}/all/haulier/${id}`);
     return res.data;
 }
+
+export const getAllAleBookingsByBookingAgent = async (id) => {
+    const res = await api.get(`${BASE_URL}/all/bookingAgent/${id}`);
+    return res.data;
+}
+
+export const getAllAleBookingsByConsignee = async (id) => {
+    const res = await api.get(`${BASE_URL}/all/consignee/${id}`);
+    return res.data;
+}

@@ -35,3 +35,13 @@ export const getAllAleContainersByHaulier = async (id) => {
     const res = await api.get(`${BASE_URL}/all/haulier/${id}`);
     return res.data;
 }
+
+export const getAllAleContainersByBookingAgent = async (id) => {
+    const res = await api.get(`${BASE_URL}/all/bookingAgent/${id}`);
+    return res.data;
+}
+
+export const getAllAleContainersByConsignee = async (id) => {
+    const res = await api.get(`${BASE_URL}/all/consignee/${id}`);
+    return res.data;
+}

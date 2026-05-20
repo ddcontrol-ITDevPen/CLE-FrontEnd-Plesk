@@ -12,6 +12,8 @@ import TerminalNavBar from "../navBar/TerminalNavBar.jsx";
 import CustomsNavBar from "../navBar/CustomsNavBar.jsx";
 import AKPSNavBar from "../navBar/AKPSNavBar.jsx";
 import {NotificationOverlay} from "../Notification/NotificationOverlay.jsx";
+import BookingAgentNavBar from "../navbar/BookingAgentNavBar.jsx";
+import ConsigneeNavBar from "../navbar/ConsigneeNavBar.jsx";
 
 export default function Layout({ children, role }) {
 
@@ -58,8 +60,8 @@ export default function Layout({ children, role }) {
                 {user?.Role === "terminal" && <TerminalNavBar />}
                 {user?.Role === "customs" && <CustomsNavBar />}
                 {user?.Role === "akps" && <AKPSNavBar />}
-                {user?.Role === "booking agent" && <AKPSNavBar />}
-                {user?.Role === "consignee" && <AKPSNavBar />}
+                {user?.Role === "booking agent" && <BookingAgentNavBar />}
+                {user?.Role === "consignee" && <ConsigneeNavBar />}
                 {/*other roles*/}
             </div>
 
