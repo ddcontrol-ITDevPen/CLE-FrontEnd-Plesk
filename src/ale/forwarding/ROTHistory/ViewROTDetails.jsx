@@ -236,6 +236,20 @@ export function ALEViewROTDetails() {
                         </div>
                     </div>
                 </div>
+                <div className="bg-card-color p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 className="text-system-color font-bold mb-4 border-b pb-2">Package Information</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-12 text-sm">
+                        <div className="space-y-3">
+                            <div className="flex justify-between"><span className="text-gray-500">Total Package Quantity</span> <span className="font-bold">{data.aleBooking?.updatedTotalPackageQuantity || data.aleBooking?.totalPackageQuantity || "N/A"}</span></div>
+                           </div>
+                        <div className="space-y-3">
+                            <div className="flex justify-between"><span className="text-gray-500">Weight</span> <span className="font-bold">{data.aleBooking.updatedWeight || data.aleBooking?.weight || "N/A"}</span></div>
+                            </div>
+                        <div className="space-y-3">
+                            <div className="flex justify-between"><span className="text-gray-500">Size</span> <span className="font-bold">{data.aleBooking?.size || "N/A"}</span></div>
+                            </div>
+                    </div>
+                </div>
 
                 {/* Grid Layout for details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -247,7 +261,7 @@ export function ALEViewROTDetails() {
                         <InfoRow label="ROT Date" value={data.rotDate} />
                     </Section>
 
-                    <Section title="Container Information">
+                    <Section title="Truck Information">
                         <InfoRow label="Package Quantity." value={data.packageQuantity} />
                         <InfoRow label="Size" value={data.containerSize} />
                         <InfoRow label="Type" value={data.containerType} />
@@ -264,10 +278,10 @@ export function ALEViewROTDetails() {
                     </Section>
 
                     <Section title="Consignee Information">
-                        <InfoRow label="Name" value={data.consignee?.companyName} />
-                        <InfoRow label="Address" value={data.toAddress?.map(a => a.address).join(", ")} />
+                        <InfoRow label="Name" value={data.consignee?.companyName || data.externalConsigneeName} />
+                        <InfoRow label="Address" value={data.toAddress?.map(a => a.address).join(", ") || data.externalConsigneeAddress} />
                         <InfoRow label="PIC Name" value={data.consignee?.picName} />
-                        <InfoRow label="PIC Number" value={data.consignee?.handphoneNumber} />
+                        <InfoRow label="PIC Number" value={data.consignee?.handphoneNumber || data.externalConsigneeContact} />
                         <InfoRow label="PIC Email" value={data.consignee?.emailAddress} />
                     </Section>
 

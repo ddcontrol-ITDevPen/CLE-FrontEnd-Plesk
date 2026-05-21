@@ -30,7 +30,7 @@ const STATUS_CONFIG = {
     //"Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
 
-export function ALEROTHistory ()  {
+export function ALEYourROTs ()  {
     const [containers, setContainers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -43,7 +43,7 @@ export function ALEROTHistory ()  {
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const navigate = useNavigate();
     const [error, setError] = useState(null);
-    
+
     useEffect(() => {
         fetchData();
     }, []);
@@ -118,15 +118,15 @@ export function ALEROTHistory ()  {
         XLSX.writeFile(workbook, `ROT_History_${new Date().toISOString().split('T')[0]}.xlsx`);
         toast.success("Excel file downloaded");
     };
-    
+
     const fetchData = async () => {
         try {
             setIsLoading(true);
             const user = await getUserById(localStorage.getItem("userId"));
-            const forwardingId = user.companyCode;
+            const bookingAgentId = user.companyCode;
             const data = await getAleContainers();
             const filteredData = await data
-                .filter(c => c.aleBooking.forwardingId === forwardingId)
+                .filter(c => c.aleBooking.bookingAgentId === bookingAgentId)
                 .sort((a, b) => {
                     const dateA = new Date(getStatusTimestamp(a) || 0);
                     const dateB = new Date(getStatusTimestamp(b) || 0);
@@ -167,7 +167,7 @@ export function ALEROTHistory ()  {
         if (container.status === "Rejected-Both") return container.rejectedBothTime;
         return null;
     };
-    
+
     const filteredContainers = useMemo(() => {
         let result = containers.filter(cont => {
             const matchesSearch =
@@ -178,8 +178,8 @@ export function ALEROTHistory ()  {
                 cont.haulierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.aleBooking.movementType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.consigneeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                cont.terminalName?.toLowerCase().includes(searchTerm.toLowerCase()) 
-            
+                cont.terminalName?.toLowerCase().includes(searchTerm.toLowerCase())
+
             let isExpiredGateOut = false;
             if (cont.status === "Gate-Out" && cont.gatedOutTime) {
                 const gatedOutDate = new Date(cont.gatedOutTime);
@@ -192,15 +192,15 @@ export function ALEROTHistory ()  {
                     isExpiredGateOut = true;
                 }
             }
-            
+
             const latestTimestamp = getStatusTimestamp(cont.status);
-            
-            
+
+
             let matchesStatus = false;
-                if(filterStatus === "All")
-                    matchesStatus = cont.status !== "Rejected" && !isExpiredGateOut;
-                else
-                    matchesStatus = cont.status === filterStatus;
+            if(filterStatus === "All")
+                matchesStatus = cont.status !== "Rejected" && !isExpiredGateOut;
+            else
+                matchesStatus = cont.status === filterStatus;
             const rotDate = cont.rotDate;
             let matchesDate = true;
 
@@ -209,7 +209,7 @@ export function ALEROTHistory ()  {
             } else if (startDate) {
                 matchesDate = rotDate === startDate;
             }
-            
+
             return matchesSearch && matchesStatus && matchesDate;
         });
         if (sortConfig.key !== null) {
@@ -285,7 +285,7 @@ export function ALEROTHistory ()  {
             return cont?.toName || "N/A";
         }
     };
-    
+
     const handleReject = async () => {
         if (!rejectModal.remarks || rejectModal.remarks.trim() === "") {
             setError(true);
@@ -302,7 +302,7 @@ export function ALEROTHistory ()  {
                 toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
                 status: "Rejected",
                 rejectedTime: new Date().toISOString(),
-                rejectedRemarks: rejectModal.remarks, 
+                rejectedRemarks: rejectModal.remarks,
                 updatedBy: updatedBy,
             };
             await updateAleContainer(rejectModal.id, payload);
@@ -529,59 +529,59 @@ export function ALEROTHistory ()  {
                                 </td>
                             </tr>
                         ) : filteredContainers.length > 0 ? (
-                        filteredContainers.map((cont, index) => {
-                            const theme = STATUS_CONFIG[cont.status] || {bg: "bg-gray-100", text: "text-gray-700"};
-                            return (
-                                <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
-                                    <td className="p-4">{index + 1}</td>
-                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}>{cont.aleBooking.awbNumber}</td>
-                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}>{cont.aleBooking.houseAWBNumber}</td>
-                                    <td className="p-4">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
-                                    <td className="p-4 whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>
-                                    <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
-                                    <td className="p-4 text-center">
-                                        {/* Status Badge using Theme Colors */}
-                                        <span className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase tracking-wider whitespace-nowrap ${theme.bg} ${theme.text}`}>
+                                filteredContainers.map((cont, index) => {
+                                    const theme = STATUS_CONFIG[cont.status] || {bg: "bg-gray-100", text: "text-gray-700"};
+                                    return (
+                                        <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
+                                            <td className="p-4">{index + 1}</td>
+                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}>{cont.aleBooking.awbNumber}</td>
+                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}>{cont.aleBooking.houseAWBNumber}</td>
+                                            <td className="p-4">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
+                                            <td className="p-4 whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>
+                                            <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
+                                            <td className="p-4 text-center">
+                                                {/* Status Badge using Theme Colors */}
+                                                <span className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase tracking-wider whitespace-nowrap ${theme.bg} ${theme.text}`}>
                                             {cont.status}
                                         </span>
-                                    </td>
-                                    <td className="p-4 text-[12px] whitespace-normal break-words leading-tight text-gray-600">
-                                        {getStatusTimestamp(cont) ? new Date(getStatusTimestamp(cont)).toLocaleString() : "-"}
-                                    </td>
-                                    <td className="p-4">{getLocationName(cont, 'from')}</td>
-                                    <td className="p-4">{getLocationName(cont, 'to')}</td>
-                                    <td className="p-4">
-                                        {/* Horizontal Action Icons */}
-                                        <div className="flex items-center gap-3">
-                                            <Eye size={18}
-                                                 className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}/>
-                                            {cont.status === "Assigned" &&   
-                                                <Edit size={18}
-                                                      className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => setEditModal({isOpen: true, id: cont.containerId, remarks: "", newDate: cont.rotDate, isSecureEdit: false, showDateField: false})}/>
-                                            }
-                                            {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) && (
-                                                <PencilRuler size={18}
-                                                      className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => setEditModal({isOpen: true, id: cont.containerId, remarks: "", newDate: cont.rotDate, isSecureEdit: true, showDateField: false})}/>
-                                            )}
-                                            {/*{cont.status !== "Deleted" &&*/}
-                                            {/*    <Trash2*/}
-                                            {/*        size={18}*/}
-                                            {/*        className="text-red-500 cursor-pointer hover:text-red-700"*/}
-                                            {/*        onClick={() => setDeleteModal({isOpen: true, id: cont.containerId, remarks: ""})}*/}
-                                            {/*    />*/}
-                                            {/*}*/}
-                                            {["Assigned", "Enroute"].includes(cont.status) && (
-                                                <CircleX size={18} className="text-red-500 cursor-pointer hover:text-red-700" onClick={() => setRejectModal({isOpen: true, id: cont.containerId, remarks: ""})}/>
-                                            )}
-                                            <FileText 
-                                                size={18} 
-                                                className="text-blue-600 cursor-pointer hover:text-blue-800"
-                                                onClick={() => navigate(`/ale/rot/view/pdf/${cont.containerId}`)}/>
-                                        </div>
-                                    </td>
-                                </tr>
-                            );
-                        }))
+                                            </td>
+                                            <td className="p-4 text-[12px] whitespace-normal break-words leading-tight text-gray-600">
+                                                {getStatusTimestamp(cont) ? new Date(getStatusTimestamp(cont)).toLocaleString() : "-"}
+                                            </td>
+                                            <td className="p-4">{getLocationName(cont, 'from')}</td>
+                                            <td className="p-4">{getLocationName(cont, 'to')}</td>
+                                            <td className="p-4">
+                                                {/* Horizontal Action Icons */}
+                                                <div className="flex items-center gap-3">
+                                                    <Eye size={18}
+                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}/>
+                                                    {cont.status === "Assigned" &&
+                                                        <Edit size={18}
+                                                              className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => setEditModal({isOpen: true, id: cont.containerId, remarks: "", newDate: cont.rotDate, isSecureEdit: false, showDateField: false})}/>
+                                                    }
+                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) && (
+                                                        <PencilRuler size={18}
+                                                                     className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => setEditModal({isOpen: true, id: cont.containerId, remarks: "", newDate: cont.rotDate, isSecureEdit: true, showDateField: false})}/>
+                                                    )}
+                                                    {/*{cont.status !== "Deleted" &&*/}
+                                                    {/*    <Trash2*/}
+                                                    {/*        size={18}*/}
+                                                    {/*        className="text-red-500 cursor-pointer hover:text-red-700"*/}
+                                                    {/*        onClick={() => setDeleteModal({isOpen: true, id: cont.containerId, remarks: ""})}*/}
+                                                    {/*    />*/}
+                                                    {/*}*/}
+                                                    {["Assigned", "Enroute"].includes(cont.status) && (
+                                                        <CircleX size={18} className="text-red-500 cursor-pointer hover:text-red-700" onClick={() => setRejectModal({isOpen: true, id: cont.containerId, remarks: ""})}/>
+                                                    )}
+                                                    <FileText
+                                                        size={18}
+                                                        className="text-blue-600 cursor-pointer hover:text-blue-800"
+                                                        onClick={() => navigate(`/ale/rot/view/pdf/${cont.containerId}`)}/>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                }))
                             : (
                                 <tr>
                                     <td colSpan="11" className="p-12 text-center">
@@ -787,7 +787,7 @@ export function ALEROTHistory ()  {
                     </div>
                 )}
             </AnimatePresence>
-            
+
             {/* Deletion Confirmation Modal */}
             <AnimatePresence>
                 {rejectModal.isOpen && (

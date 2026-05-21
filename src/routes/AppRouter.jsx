@@ -67,6 +67,12 @@ import {UserManagement} from "../ale/UserManagement/UserManagement.jsx";
 import {ViewUser} from "../ale/UserManagement/ViewUser.jsx";
 import {AddUser} from "../ale/UserManagement/AddUser.jsx";
 import {SearchROT} from "../ale/forwarding/ROT/ROTSearch.jsx";
+import {BADashboard} from "../ale/bookingAgent/dashboard/BADashboard.jsx";
+import {ALEYourSubmissions} from "../ale/bookingAgent/rot/YourSubmissions.jsx";
+import {ALEViewSubmission} from "../ale/bookingAgent/rot/ViewSubmission.jsx";
+import {ALECreateROT} from "../ale/bookingAgent/rot/CreateROT.jsx";
+import {ALEEditSubmission} from "../ale/bookingAgent/rot/EditSubmission.jsx";
+import {ALEYourROTs} from "../ale/bookingAgent/rot/YourROTs.jsx";
 
 export default function AppRouter() {
     return (
@@ -602,6 +608,62 @@ export default function AppRouter() {
                 />
                 <Route
                     path="/user/management/add"
+                    element={
+                        <ProtectedRoute>
+                            <AddUser />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/bookingAgent/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <BADashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/bookingAgent/rot/add/form"
+                    element={
+                        <ProtectedRoute>
+                            <ALECreateROT />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/bookingAgent/submission/history"
+                    element={
+                        <ProtectedRoute>
+                            <ALEYourSubmissions />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/bookingAgent/submission/view/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ALEViewSubmission />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/bookingAgent/submission/edit/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ALEEditSubmission />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/bookingAgent/rot/history"
+                    element={
+                        <ProtectedRoute>
+                            <ALEYourROTs />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/bookingAgent/rot/view/:id"
                     element={
                         <ProtectedRoute>
                             <AddUser />

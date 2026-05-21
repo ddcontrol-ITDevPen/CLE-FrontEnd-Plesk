@@ -2,7 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
-import {CircleChevronDown, LucideArrowBigRightDash, LucideShieldUser, LucideTruck, Trash2, Upload} from "lucide-react";
+import {
+    CircleChevronDown,
+    LucideArrowBigRightDash, LucideFile,
+    LucidePackage,
+    LucideShieldUser,
+    LucideTruck,
+    Trash2,
+    Upload
+} from "lucide-react";
 import {getCompanies} from "../../../services/companyService.js";
 import {getAleBookings, registerAleBooking, updateAleBooking} from "../../../services/aleBookingService.js";
 import {getUserById} from "../../../services/userService.js";
@@ -248,7 +256,7 @@ export function ALEAddROTForm() {
         // const portLabel = formData.movementType === "Import" ? "POD" : "POL";
         
         if (!formData.awbNumber) newErrors.awbNumber = `Air WayBill Number is required!`;
-        if (!formData.houseAWBNumber) newErrors.houseAWBNumber = "House BL Number is required!";
+        if (!formData.houseAWBNumber) newErrors.houseAWBNumber = "House AWB Number is required!";
         if (!formData.flightNumber) newErrors.flightNumber = "Flight Number is required!";
         if (!formData.terminalLocation) newErrors.terminalLocation = `Terminal is required!`;
         if (!formData.eta) newErrors.eta = "ETA is required!";
@@ -533,9 +541,9 @@ export function ALEAddROTForm() {
 
                         {/* --- SECTION 2: PACKAGE DETAILS --- */}
                         <div className="bg-white rounded-2xl shadow-sm border mt-5 border-gray-100 overflow-hidden">
-                            <div className="bg-gradient-to-r from-teal-50 to-green-100 p-6 flex items-center gap-4 border-b border-gray-200">
-                                <div className="bg-gray-700 p-2 rounded-lg text-white">
-                                    <LucideTruck size={24} />
+                            <div className="bg-gradient-to-r from-teal-50 to-green-50 p-6 flex items-center gap-4 border-b border-gray-200">
+                                <div className="bg-teal-700 p-2 rounded-lg text-white">
+                                    <LucidePackage size={24} />
                                 </div>
                                 <div>
                                     <h2 className="text-xl font-bold text-gray-800">Package Details</h2>
@@ -604,7 +612,7 @@ export function ALEAddROTForm() {
                         <div className="bg-white rounded-2xl shadow-sm border mt-5 border-gray-100 overflow-hidden">
                             <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 flex items-center gap-4 border-b border-purple-100">
                                 <div className="bg-orange-600 p-2 rounded-lg text-white">
-                                    <LucideShieldUser size={24} />
+                                    <LucideFile size={24} />
                                 </div>
                                 <div>
                                     <h2 className="text-xl font-bold text-gray-800">Forms & Documents</h2>

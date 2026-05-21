@@ -154,10 +154,13 @@ export function ALEViewROTPDF() {
                         <PDFRow label="AWB No." value={aleBooking.awbNumber} />
                         <PDFRow label="House AWB No." value={aleBooking.houseAWBNumber} />
                         <PDFRow label="Flight No." value={aleBooking.flightNumber} />
+                        <PDFRow label="Carrier Reference No." value={aleBooking?.carrierReferenceNumber} />
                         <PDFRow label="Terminal" value={aleBooking.terminalLocation} />
                         <PDFRow label="ETA" value={aleBooking.eta?.split('T')[0]} />
                         <PDFRow label="Seal No." value={aleBooking.sealNumber} />
-                        <PDFRow label="Forwarder Remarks" value={aleBooking?.forwarderRemarks} />
+                        <PDFRow label="Forwarding Remarks" value={aleBooking?.forwarderRemarks} />
+                        <PDFRow label="Weight" value={aleBooking?.updatedWeight || aleBooking?.weight} />
+                        <PDFRow label="Size" value={aleBooking?.size} />
                     </div>
 
                     {/* Section: Shipping Details */}
