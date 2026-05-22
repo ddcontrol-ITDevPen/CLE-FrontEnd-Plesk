@@ -147,9 +147,9 @@ export function ALEViewSubmission() {
                                 <DataField label="Company Address" value={data.consigneeCompany?.address || data.externalConsigneeAddress} />
                             </div>
                             <DataField label="SSM/ROC No." value={data?.ssmNumber || "N/A"} />
-                            <DataField label="Person In charge (PIC)" value={data.consignee?.picName || "N/A"} />
-                            <DataField label="PIC Contact Handphone" value={data.consignee?.handphoneNumber || data.externalConsigneeContact} />
-                            <DataField label="Email Address" value={data.consignee?.emailAddress || "N/A"} />
+                            <DataField label="Person In charge (PIC)" value={data.consigneeCompany?.picName || "N/A"} />
+                            <DataField label="PIC Contact Handphone" value={data.consigneeCompany?.handphoneNumber || data.externalConsigneeContact} />
+                            <DataField label="Email Address" value={data.consigneeCompany?.emailAddress || "N/A"} />
                         </InfoSection>
                     </div>
 
@@ -161,8 +161,8 @@ export function ALEViewSubmission() {
                             </div>
                             <div className="flex-1 grid grid-cols-1 gap-y-4">
                                 <DataField label="Total Package Quantity Units" value={`${data.totalPackageQuantity} (Updated Value: ${data.updatedTotalPackageQuantity || "N/A"})`} />
-                                <DataField label="Declared Weight Cargo Metric (KG)" value={`${data.weight} (Updated Value: ${data.updatedWeight|| "N/A"})`} />
-                                <DataField label="Dimension Sizing Group" value={data?.size || "N/A"} />
+                                <DataField label="Weight Cargo Metric (Tonne)" value={`${data.weight} (Updated Value: ${data.updatedWeight || "N/A"})`} />
+                                <DataField label="Dimension Size" value={data?.size || "N/A"} />
                             </div>
                         </div>
                     </div>
