@@ -23,7 +23,7 @@ export default function BookingAgentNavBar({ role = "forwarder" }) {
         { icon: LucideTruck, label: "Create ROT", path: "/ale/bookingAgent/rot/add/form" },
         { icon: LucideSend, label: "Your Submissions", path: "/ale/bookingAgent/submission/history" },
         { icon: LucideHistory, label: "Your ROTs", path: "/ale/bookingAgent/rot/history" },
-        { icon: LucideArchive, label: "Archived ROTs", path: "/" },
+        { icon: LucideArchive, label: "Archived ROTs", path: "/ale/bookingAgent/rot/archived" },
         { icon: LucideMapPinned, label: "Track & Trace", path: "/ale/rot/track" },
         // { icon: LucideFile, label: "View Document", path: "/ale/forwarding/rot/document/view" },
     ];

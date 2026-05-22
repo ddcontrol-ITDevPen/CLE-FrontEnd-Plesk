@@ -22,7 +22,7 @@ export default function ForwardingNavBar({ role = "forwarder" }) {
         { icon: LucideHome, label: "Dashboard", path: "/ale/forwarding/dashboard" },
         { icon: LucideTruck, label: "Create ROT", path: "/ale/forwarding/rot/search" },
         { icon: LucideHistory, label: "Your ROTs", path: "/ale/forwarding/rot/history" },
-        { icon: LucideArchive, label: "Archived ROTs", path: "/" },
+        { icon: LucideArchive, label: "Archived ROTs", path: "/ale/consignee/rot/archived" },
         { icon: LucideMapPinned, label: "Track & Trace", path: "/ale/rot/track" },
         // { icon: LucideFile, label: "View Document", path: "/ale/forwarding/rot/document/view" },
     ];
