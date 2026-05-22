@@ -51,7 +51,10 @@ export function ALETrackROT () {
             const containers = allContainers.filter(container => {
                 const isForwarder = container.aleBooking?.forwardingId === companyCode;
                 const isHaulier = container.haulierId === companyCode;
-                return isForwarder || isHaulier;
+                const isTerminal = container.terminalId === companyCode;
+                const isBookingAgent = container.aleBooking?.bookingAgentId === companyCode;
+                const isConsignee = container.consigneeId === companyCode;
+                return isForwarder || isHaulier || isTerminal || isBookingAgent || isConsignee;
             });
 
             const filtered = containers.filter(cont =>
