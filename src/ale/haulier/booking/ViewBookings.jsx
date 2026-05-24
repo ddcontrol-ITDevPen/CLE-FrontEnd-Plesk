@@ -213,7 +213,7 @@ export function ALEViewBookings() {
                         </button>
                         {data.status !== "Assigned" &&
                         <button className="flex items-center bg-system-color text-white font-bold rounded-lg px-4 py-2 gap-3 cursor-pointer"
-                                onClick={() => navigate(`/ale/haulier/booking/view/eCSN/${data.containerId}`)}>
+                                onClick={() => navigate(`/ale/booking/view/eCSN/${data.containerId}`)}>
                             <FileText
                                 size={20}
                                 className="text-blue-600-600 cursor-pointer hover:text-blue-800" />

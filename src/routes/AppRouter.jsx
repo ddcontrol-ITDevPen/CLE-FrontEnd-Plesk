@@ -73,6 +73,12 @@ import {ALEViewSubmission} from "../ale/bookingAgent/rot/ViewSubmission.jsx";
 import {ALECreateROT} from "../ale/bookingAgent/rot/CreateROT.jsx";
 import {ALEEditSubmission} from "../ale/bookingAgent/rot/EditSubmission.jsx";
 import {ALEYourROTs} from "../ale/bookingAgent/rot/YourROTs.jsx";
+import {ALEConsigneeDashboard} from "../ale/consignee/dashboard/ConsigneeDashboard.jsx";
+import {ALEConsigneeYourBookings} from "../ale/consignee/rot/YourBookings.jsx";
+import {ALEEditBooking} from "../ale/consignee/rot/EditBooking.jsx";
+import {ALEViewBooking} from "../ale/consignee/rot/ViewBooking.jsx";
+import {ALEConsigneeYourROTs} from "../ale/consignee/rot/YourROTs.jsx";
+import {ALEConsigneeArchivedROTs} from "../ale/consignee/rot/ArchivedROTs.jsx";
 
 export default function AppRouter() {
     return (
@@ -228,7 +234,7 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/haulier/booking/view/eCSN/:id"
+                    path="/booking/view/eCSN/:id"
                     element={
                         <ProtectedRoute>
                             <ViewECsnPDF />
@@ -447,7 +453,7 @@ export default function AppRouter() {
                 {/*    }*/}
                 {/*/>*/}
                 <Route
-                    path="/ale/haulier/booking/view/eCSN/:id"
+                    path="/ale/booking/view/eCSN/:id"
                     element={
                         <ProtectedRoute>
                             <ALEViewECsnPDF />
@@ -667,6 +673,54 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <AddUser />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/consignee/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <ALEConsigneeDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/consignee/booking/history"
+                    element={
+                        <ProtectedRoute>
+                            <ALEConsigneeYourBookings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/consignee/booking/view/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ALEViewBooking />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/consignee/booking/edit/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ALEEditBooking />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/consignee/rot/history"
+                    element={
+                        <ProtectedRoute>
+                            <ALEConsigneeYourROTs />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/consignee/rot/archived"
+                    element={
+                        <ProtectedRoute>
+                            <ALEConsigneeArchivedROTs />
                         </ProtectedRoute>
                     }
                 />
