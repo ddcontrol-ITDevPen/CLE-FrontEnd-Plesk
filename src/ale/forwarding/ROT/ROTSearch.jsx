@@ -52,13 +52,15 @@ export function SearchROT() {
                 setSearchStatus("NOT_FOUND");
                 return;
             }
+            console.log(baseMatches);
 
             const pendingRecords = baseMatches.filter(b =>
                 (b.terminalLocation === null || b.terminalLocation === "") &&
                 b.airlineId === null &&
-                (b.eta === null || b.eta === "") &&
+                (b.eta === null || b.eta === "0001-01-01") &&
                 (b.customFormType === null || b.customFormType === "")
             );
+            console.log(pendingRecords);
 
             if (pendingRecords.length > 0) {
                 toast.success("Existing reference layout found! Prefilling form...");

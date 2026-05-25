@@ -325,6 +325,7 @@ export function ALEAddROTForm() {
             return;
         }
         setIsSubmitting(true);
+        console.log("Form ROT NUMBER: ", formData.rotNumber);
         try{
             const userData = await getUserById(localStorage.getItem("userId"));
             const companyCode = await userData.companyCode;
@@ -369,11 +370,11 @@ export function ALEAddROTForm() {
             let rotNum = "";
             if (rotNumber) {
                 console.log("Updating existing record data:", bookingPayload);
-                await updateAleBooking(rotNumber, bookingPayload);
+                await updateAleBooking(formData.rotNumber, bookingPayload);
             } else {
                 console.log("Registering new booking record:", bookingPayload);
                 const savedBooking = await registerAleBooking(bookingPayload);
-                rotNum = savedBooking.rotNumber;
+                rotNum = formData.rotNumber;
             }
 
             const docTypes = {
@@ -407,7 +408,7 @@ export function ALEAddROTForm() {
                     ROTDate: formattedRotDate,
                     Status: "Assigned",
                     AssignedTime: new Date().toISOString(),
-                    ROTNumber: rotNum,
+                    ROTNumber: formData.rotNumber,
                 };
                 
                 if (formData.consignee && formData.consignee !== "Other") {
