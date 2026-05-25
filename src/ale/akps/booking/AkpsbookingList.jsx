@@ -618,6 +618,8 @@ export function AkpsbookingList() {
                                             <td className="p-4 text-left">
                                                 {/* Horizontal Action Icons */}
                                                 <div className="flex items-center justify-start gap-3">
+                                                    <Eye size={18}
+                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/akps/booking/bookingdetails/${cont.containerId}`)}/>
                                                     {/* 1. Show Approve/Reject buttons ONLY IF Custom is Approved and AKPS is still pending (null or empty) */}
                                                     {["Enroute", "Approved-Custom", "Accepted"].includes(cont.status) && (
                                                         <button onClick={() => navigate(`/ale/akps/booking/bookingaction/${cont.containerId}`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Reject  ">
@@ -638,8 +640,6 @@ export function AkpsbookingList() {
                                                             <LucideX size={18} />
                                                         </button>
                                                     )}
-                                                    <Eye size={18}
-                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/akps/booking/bookingdetails/${cont.containerId}`)}/>
                                                 </div>
                                             </td>
                                         </tr>
