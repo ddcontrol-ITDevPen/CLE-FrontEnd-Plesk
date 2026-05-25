@@ -133,7 +133,7 @@ const ShipmentLog = (data) => {
                                     <p className="text-lg font-semibold text-gray-800 w-30">
                                         {step.label}
                                     </p>
-                                    <div className="w-55">
+                                    <div className="w-55 ml-2">
                                         <p className="text-sm text-gray-500 font-medium">
                                             {new Date(step.time).toLocaleDateString()}
                                         </p>
