@@ -131,7 +131,7 @@ export function CustomsDashboard() {
                 <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">{title}</p>
                 <h3 className="text-2xl font-bold mt-1 text-gray-800">{value}</h3>
             </div>
-            <div className={`p-3 rounded-lg ${colorClass}`}>
+            <div className={`p-3 ml-1 rounded-lg ${colorClass}`}>
                 <Icon size={24} className="text-white" />
             </div>
         </div>
