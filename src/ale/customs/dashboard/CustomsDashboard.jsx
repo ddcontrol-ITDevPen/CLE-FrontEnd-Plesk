@@ -220,7 +220,7 @@ export function CustomsDashboard() {
                                         >
                                             <div className="overflow-hidden">
                                                 <p className="text-sm font-bold text-gray-700 truncate">
-                                                    {cont.containerNumber || cont.booking.blOrBookingNumber}
+                                                    {cont.aleBooking.awbNumber || "No AWB Number"}
                                                 </p>
                                                 <p className="text-xs text-gray-400">
                                                     {cont.assignedTime ? new Date(cont.assignedTime).toLocaleDateString() : 'Just now'}
