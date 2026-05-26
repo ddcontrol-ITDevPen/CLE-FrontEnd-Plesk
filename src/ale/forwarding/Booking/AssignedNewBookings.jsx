@@ -2,7 +2,7 @@ import React, {useState, useEffect, useMemo} from "react";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    Search, Calendar, FileDown, Eye, Edit, PencilRuler, LucideShieldUser
+    Search, Calendar, FileDown, Eye, Edit, PencilRuler, LucideShieldUser, FileSignature
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import {getUserById} from "../../../services/userService.js";
@@ -10,7 +10,7 @@ import * as XLSX from 'xlsx';
 import {useNavigate} from "react-router-dom";
 import {getAleBookingById, getAleBookings} from "../../../services/aleBookingService.js";
 
-export function ALEYourSubmissions ()  {
+export function ALEAssignedNewBookings ()  {
     const [bookings, setBookings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -71,16 +71,16 @@ export function ALEYourSubmissions ()  {
         try {
             setIsLoading(true);
             const user = await getUserById(localStorage.getItem("userId"));
-            const bookingAgentId = user.companyCode;
+            const forwardingAgentId = user.companyCode;
             const data = await getAleBookings();
             const filteredData = await data
-                .filter(b => b.bookingAgentId === bookingAgentId && (b.terminalLocation === null || b.terminalLocation === "") && b.airlineId === null)
+                .filter(b => b.forwardingId === forwardingAgentId && (b.billingParty === null || b.billingParty === "") && b.airlineId === null)
             console.log(filteredData);
             setBookings(filteredData);
         } catch (error) {
             toast.error("Failed to fetch booking information");
         } finally {
-            setIsLoading(false);
+            setIsLoading(false);  
         }
     };
 
@@ -178,7 +178,7 @@ export function ALEYourSubmissions ()  {
                     <h1 className="text-2xl font-bold">Request for Transport (ROT) History</h1>
                     <p className="text-gray-500 text-sm">Manage all your assigned ROTS here</p>
                 </div>
-                
+
                 {/* Toolbar */}
                 <div className="flex flex-wrap items-center gap-4">
                     <div className="relative flex-1 min-w-[300px]">
@@ -332,9 +332,21 @@ export function ALEYourSubmissions ()  {
                                                 {/* Horizontal Action Icons */}
                                                 <div className="flex items-center justify-center gap-3">
                                                     <Eye size={18}
-                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/bookingAgent/submission/view/${aleBooking.rotNumber}`)}/>
-                                                    <Edit size={18}
-                                                          className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/ale/bookingAgent/submission/edit/${aleBooking.rotNumber}`)}/>
+                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/booking/new/view`, {
+                                                             state: {
+                                                                isPreloadedRecord: true,
+                                                                bookingData: aleBooking
+                                                             }
+                                                        })}
+                                                    />
+                                                    <FileSignature size={18} 
+                                                        className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/ale/forwarding/rot/add/form1`, {
+                                                            state: {
+                                                                isPreloadedRecord: true,
+                                                                bookingData: aleBooking 
+                                                            }
+                                                        })}
+                                                    />
                                                     {/*{cont.status !== "Deleted" &&*/}
                                                     {/*    <Trash2*/}
                                                     {/*        size={18}*/}
@@ -357,7 +369,7 @@ export function ALEYourSubmissions ()  {
                                             <div className="space-y-1">
                                                 <p className="text-lg font-bold text-gray-800">No records found</p>
                                                 <p className="text-sm text-gray-500">
-                                                    {searchTerm || startDate 
+                                                    {searchTerm || startDate
                                                         ? "Try adjusting your filters or search terms to find what you're looking for."
                                                         : "There is currently no data available in the system."}
                                                 </p>
@@ -389,8 +401,8 @@ export function ALEYourSubmissions ()  {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><Edit size={14} /></div>
-                        <span className="text-[14px] font-medium text-gray-500">Edit ROT</span>
+                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><FileSignature size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Complete Booking Info</span>
                     </div>
 
                     {/*<div className="flex items-center gap-2">*/}
@@ -559,7 +571,7 @@ export function ALEYourSubmissions ()  {
             {/*                        {rejectModal.nextStatus === "Enroute" ? <CheckCircle2 size={40} /> : <AlertCircle size={40} />}*/}
             {/*                    </div>*/}
             {/*                </div>*/}
-            
+
             {/*                <h2 className="text-2xl font-bold text-gray-800 mb-2">*/}
             {/*                    Cancel Shipment*/}
             {/*                </h2>*/}
@@ -568,7 +580,7 @@ export function ALEYourSubmissions ()  {
             {/*                        ? "Confirming this will set the container status to Enroute."*/}
             {/*                        : "Are you sure you want to cancel this shipment or booking?"}*/}
             {/*                </p>*/}
-            
+
             {/*                <div className="text-left mb-6">*/}
             {/*                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Reason for Rejection *</label>*/}
             {/*                    <textarea*/}
@@ -588,7 +600,7 @@ export function ALEYourSubmissions ()  {
             {/*                        </p>*/}
             {/*                    )}*/}
             {/*                </div>*/}
-            
+
             {/*                <div className="flex gap-4">*/}
             {/*                    <button*/}
             {/*                        onClick={() => {*/}

@@ -79,6 +79,8 @@ import {ALEEditBooking} from "../ale/consignee/rot/EditBooking.jsx";
 import {ALEViewBooking} from "../ale/consignee/rot/ViewBooking.jsx";
 import {ALEConsigneeYourROTs} from "../ale/consignee/rot/YourROTs.jsx";
 import {ALEConsigneeArchivedROTs} from "../ale/consignee/rot/ArchivedROTs.jsx";
+import {ALEAssignedNewBookings} from "../ale/forwarding/Booking/AssignedNewBookings.jsx";
+import {ALEViewAssignedNewBooking} from "../ale/forwarding/Booking/ViewAssignedNewBooking.jsx";
 
 export default function AppRouter() {
     return (
@@ -329,6 +331,22 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <ALEAddROTForm />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/forwarding/booking/new"
+                    element={
+                        <ProtectedRoute>
+                            <ALEAssignedNewBookings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/forwarding/booking/new/view"
+                    element={
+                        <ProtectedRoute>
+                            <ALEViewAssignedNewBooking />
                         </ProtectedRoute>
                     }
                 />

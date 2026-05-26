@@ -194,35 +194,35 @@ export function ALEConsigneeYourBookings ()  {
                     </div>
                     <button className="p-2 border rounded-lg bg-blue-600 text-white"><Search size={20}/></button>
                     {/* Date Range Filter Group */}
-                    <div className="flex items-center bg-white border border-gray-200 rounded-lg p-1 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 transition-all">
-                        <div className="flex items-center px-2 border-r border-gray-100">
-                            <Calendar size={17} className="text-gray-400 mr-2" />
-                            <input
-                                type="date"
-                                className="outline-none py-2 text-gray-800 bg-transparent cursor-pointer"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                            />
-                        </div>
-                        <div className="flex items-center px-2">
-                            <span className="text-gray-400  mr-2">to</span>
-                            <input
-                                type="date"
-                                className="outline-none py-2 text-gray-700 bg-transparent cursor-pointer"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                min={startDate} // Prevents selecting end date before start date
-                            />
-                        </div>
-                        {(startDate || endDate) && (
-                            <button
-                                onClick={() => { setStartDate(""); setEndDate(""); }}
-                                className="ml-2 px-2 text-xs text-red-500 hover:font-bold border-l border-gray-100"
-                            >
-                                Clear
-                            </button>
-                        )}
-                    </div>
+                    {/*<div className="flex items-center bg-white border border-gray-200 rounded-lg p-1 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 transition-all">*/}
+                    {/*    <div className="flex items-center px-2 border-r border-gray-100">*/}
+                    {/*        <Calendar size={17} className="text-gray-400 mr-2" />*/}
+                    {/*        <input*/}
+                    {/*            type="date"*/}
+                    {/*            className="outline-none py-2 text-gray-800 bg-transparent cursor-pointer"*/}
+                    {/*            value={startDate}*/}
+                    {/*            onChange={(e) => setStartDate(e.target.value)}*/}
+                    {/*        />*/}
+                    {/*    </div>*/}
+                    {/*    <div className="flex items-center px-2">*/}
+                    {/*        <span className="text-gray-400  mr-2">to</span>*/}
+                    {/*        <input*/}
+                    {/*            type="date"*/}
+                    {/*            className="outline-none py-2 text-gray-700 bg-transparent cursor-pointer"*/}
+                    {/*            value={endDate}*/}
+                    {/*            onChange={(e) => setEndDate(e.target.value)}*/}
+                    {/*            min={startDate} // Prevents selecting end date before start date*/}
+                    {/*        />*/}
+                    {/*    </div>*/}
+                    {/*    {(startDate || endDate) && (*/}
+                    {/*        <button*/}
+                    {/*            onClick={() => { setStartDate(""); setEndDate(""); }}*/}
+                    {/*            className="ml-2 px-2 text-xs text-red-500 hover:font-bold border-l border-gray-100"*/}
+                    {/*        >*/}
+                    {/*            Clear*/}
+                    {/*        </button>*/}
+                    {/*    )}*/}
+                    {/*</div>*/}
 
                     {/* Export Excel Button */}
                     <button

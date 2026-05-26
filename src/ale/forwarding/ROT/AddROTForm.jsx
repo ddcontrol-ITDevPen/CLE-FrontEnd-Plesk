@@ -99,7 +99,7 @@ export function ALEAddROTForm() {
         const stateBooking = location.state?.bookingData || {};
         const isPreloaded = location.state?.isPreloadedRecord || false;
         const targetRotNumber = stateBooking.rotNumber || null;
-
+        
         if (targetRotNumber) {
             setRotNumber(targetRotNumber);
         }
@@ -282,9 +282,9 @@ export function ALEAddROTForm() {
 
 
         if (!formData.haulierChoice) {
-            newErrors.haulierChoice = "Haulier choice is required!";
+            newErrors.haulierChoice = "Trucker choice is required!";
         } else if (formData.haulierChoice === "Single" && !formData.haulier) {
-            newErrors.haulier = "Please select a Haulier!";
+            newErrors.haulier = "Please select a Trucker!";
         }
 
         // if (!formData.terminalChoice) {
@@ -495,20 +495,21 @@ export function ALEAddROTForm() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     {/* Haulier Choice */}
-                                    <div className="flex flex-col gap-2 p-4 bg-blue-50/30 rounded-xl border border-blue-100">
-                                        <label className="text-sm font-semibold text-gray-800">Trucker Assignment <span className="text-red-500">*</span></label>
-                                        <div className="flex items-center gap-4 h-12">
-                                            <label className="flex items-center gap-2 min-w-[120px] cursor-pointer">
-                                                <input type="checkbox" checked={formData.haulierChoice === "Multiple"} onChange={(e) => handleChange({ target: { name: 'haulierChoice', value: e.target.checked ? "Multiple" : "Single" }})} className="w-4 h-4 rounded text-system-color"/>
-                                                <span className="text-xs font-medium text-gray-600 italic">Multiple</span>
-                                            </label>
-                                            {formData.haulierChoice === "Single" && (
-                                                <div className="flex-1 -mt-5">
-                                                    <SelectField label="" name="haulier" value={formData.haulier} onChange={handleChange} error={errors.haulier} options={hauliers.map(h => ({label: h.companyName, value: h.companyCode}))} />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                                    {/*<div className="flex flex-col gap-2 p-4 bg-blue-50/30 rounded-xl border border-blue-100">*/}
+                                    {/*    <label className="text-sm font-semibold text-gray-800">Trucker Assignment <span className="text-red-500">*</span></label>*/}
+                                    {/*    <div className="flex items-center gap-4 h-12">*/}
+                                    {/*        <label className="flex items-center gap-2 min-w-[120px] cursor-pointer">*/}
+                                    {/*            <input type="checkbox" checked={formData.haulierChoice === "Multiple"} onChange={(e) => handleChange({ target: { name: 'haulierChoice', value: e.target.checked ? "Multiple" : "Single" }})} className="w-4 h-4 rounded text-system-color"/>*/}
+                                    {/*            <span className="text-xs font-medium text-gray-600 italic">Multiple</span>*/}
+                                    {/*        </label>*/}
+                                    {/*        {formData.haulierChoice === "Single" && (*/}
+                                    {/*            <div className="flex-1 -mt-5">*/}
+                                    {/*                <SelectField label="" name="haulier" value={formData.haulier} onChange={handleChange} error={errors.haulier} options={hauliers.map(h => ({label: h.companyName, value: h.companyCode}))} />*/}
+                                    {/*            </div>*/}
+                                    {/*        )}*/}
+                                    {/*    </div>*/}
+                                    {/*</div>*/}
+                                    <SelectField label="Trucker" name="haulier" value={formData.haulier} onChange={handleChange} error={errors.haulier} options={hauliers.map(h => ({label: h.companyName, value: h.companyCode}))} required />
 
                                     {/* Terminal Choice */}
                                     {/*<div className="flex flex-col gap-2 p-4 bg-blue-50/30 rounded-xl border border-blue-100">*/}
@@ -533,7 +534,7 @@ export function ALEAddROTForm() {
                                             <InputField label="Consignee/Shipper Contact Information" name="externalConsigneeContact" value={formData.externalConsigneeContact} onChange={handleChange} placeholder="012-3456789, john@example.com" error={errors.externalConsigneeContact} required />
                                         </>
                                     )}
-                                    <InputField label="SSM/ROC No." name="ssmNumber" value={formData.ssmNumber} onChange={handleChange} readOnly={formData.consignee && formData.consignee !== "Other"} />
+                                    <InputField label="Consignee SSM/ROC No." name="ssmNumber" value={formData.ssmNumber} onChange={handleChange} readOnly={formData.consignee && formData.consignee !== "Other"} />
                                     <InputField label="Carrier Reference No." name="carrierReferenceNumber" value={formData.carrierReferenceNumber} onChange={handleChange} />
                                     <InputField label="Forwarding Remarks" name="forwardingRemarks" value={formData.forwardingRemarks} onChange={handleChange} placeholder="* Commodity/Special Handling/Others *" />
                                 </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import {useParams, useNavigate, useLocation} from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import {
     ArrowLeft, Download, ExternalLink, FileText, X, FileImage, Eye, CircleChevronUp, Users, Package
@@ -9,25 +9,30 @@ import api from "../../../services/api.js";
 import { toast, Toaster } from "sonner";
 import {getAleBookingById} from "../../../services/aleBookingService.js";
 
-export function ALEViewSubmission() {
-    const { id } = useParams();
+export function ALEViewAssignedNewBooking() {
+    const location = useLocation();
+    const preloadedData = location.state?.bookingData;
     const navigate = useNavigate();
-    const [data, setData] = useState(null);
+    const [data, setData] = useState(preloadedData || null);
     const [companyDetails, setCompanyDetails] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const [documents, setDocuments] = useState([]);
     const [previewData, setPreviewData] = useState({ url: null, type: null, fileName: null });
-    
+
     useEffect(() => {
         const fetchDetails = async () => {
             try {
-                const result = await getAleBookingById(id);
-                console.log(result);
-                setData(result);
-                if (result.rotNumber) {
-                    const docs = await getAleBookingDocumentByBookingNumber(result.rotNumber);
-                    setDocuments(docs);
+                if(preloadedData) {
+                    setData(preloadedData);
+                    if (preloadedData.rotNumber) {
+                        const docs = await getAleBookingDocumentByBookingNumber(preloadedData.rotNumber);
+                        setDocuments(docs);
+                    }
+                    setIsLoading(false);
+                }
+                else {
+                    setIsLoading(true);
                 }
             } catch (error) {
                 console.error("Error fetching ROT details:", error);
@@ -36,7 +41,7 @@ export function ALEViewSubmission() {
             }
         };
         fetchDetails();
-    }, [id]);
+    }, [preloadedData]);
 
     const getFileIcon = (fileName) => {
         const ext = fileName.split('.').pop().toLowerCase();
@@ -145,8 +150,8 @@ export function ALEViewSubmission() {
                                 <h3 className="text-gray-800 font-bold text-xl tracking-tight">Package Configuration</h3>
                             </div>
                             <div className="flex-1 grid grid-cols-1 gap-y-4">
-                                <DataField label="Total Package Quantity Units" value={`${data.totalPackageQuantity} (Updated Value: ${data.updatedTotalPackageQuantity || "N/A"})`} />
-                                <DataField label="Weight Cargo Metric (Tonne)" value={`${data.weight} (Updated Value: ${data.updatedWeight || "N/A"})`} />
+                                <DataField label="Total Package Quantity Units" value={`First Value: ${data.totalPackageQuantity} (Updated Value: ${data.updatedTotalPackageQuantity || "N/A"})`} />
+                                <DataField label="Weight Cargo Metric (Tonne)" value={`First Value: ${data.weight} (Updated Value: ${data.updatedWeight || "N/A"})`} />
                                 <DataField label="Dimension Size" value={data?.size || "N/A"} />
                             </div>
                         </div>
@@ -285,7 +290,7 @@ export function ALEViewSubmission() {
             {/*                        <X size={20} />*/}
             {/*                    </button>*/}
             {/*                </div>*/}
-            
+
             {/*                <form onSubmit={handleUpdate} className="space-y-5">*/}
             {/*                    <div>*/}
             {/*                        <label className="block text-sm font-semibold text-gray-700 mb-2">Display File Name</label>*/}
@@ -314,7 +319,7 @@ export function ALEViewSubmission() {
             {/*                            <option value="Other Document">Other Document</option>*/}
             {/*                        </select>*/}
             {/*                    </div>*/}
-            
+
             {/*                    /!* File Re-upload (Optional) *!/*/}
             {/*                    <div>*/}
             {/*                        <label className="block text-sm font-semibold text-gray-700 mb-2">Replace File (Optional)</label>*/}
@@ -340,7 +345,7 @@ export function ALEViewSubmission() {
             {/*                            </p>*/}
             {/*                        )}*/}
             {/*                    </div>*/}
-            
+
             {/*                    <div className="pt-4 flex gap-3">*/}
             {/*                        <button*/}
             {/*                            type="button"*/}
@@ -361,7 +366,7 @@ export function ALEViewSubmission() {
             {/*        </div>*/}
             {/*    )}*/}
             {/*</AnimatePresence>*/}
-            
+
             {/*/!* Delete Confirmation Modal *!/*/}
             {/*<AnimatePresence>*/}
             {/*    {deleteModal.isOpen && (*/}

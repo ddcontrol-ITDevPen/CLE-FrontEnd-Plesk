@@ -192,7 +192,7 @@ export function ALECreateROT() {
                                         <InputField label="Consignee/Shipper Contact Information" name="externalConsigneeContact" value={formData.externalConsigneeContact} onChange={handleChange} placeholder="012-3456789, john@example.com" error={errors.externalConsigneeContact} required />
                                     </>
                                 )}
-                                <InputField label="SSM/ROC No." name="ssmNumber" value={formData.ssmNumber} onChange={handleChange} readOnly={formData.consignee && formData.consignee !== "Other"} error={errors.ssmNumber} required/>
+                                <InputField label="Consignee SSM/ROC No." name="ssmNumber" value={formData.ssmNumber} onChange={handleChange} readOnly={formData.consignee && formData.consignee !== "Other"} error={errors.ssmNumber} required/>
                                 <SelectField label="Forwarding Agent" name="forwardingId" value={formData.forwardingId} onChange={handleChange} options={forwardings.map(t => ({label: t.companyName, value: t.companyCode}))} />
                             </div>
                             </div>

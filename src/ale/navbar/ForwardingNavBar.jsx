@@ -1,18 +1,47 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     LucideArchive,
-    LucideArchiveX, LucideClipboardCheck, LucideClipboardClock, LucideFile,
+    LucideArchiveX, LucideClipboardCheck, LucideClipboardClock, LucideFile, LucideFileInput,
     LucideHistory,
     LucideHome,
     LucideLogOut,
-    LucideMapPinned,
+    LucideMapPinned, LucidePlaneLanding, LucidePlaneTakeoff,
     LucideTruck, LucideUserCheck
 } from "lucide-react";
 import {logout} from "../../services/authService.js";
+import {useEffect, useState} from "react";
+import {getAleBookings} from "../../services/aleBookingService.js";
+import {getUserById} from "../../services/userService.js";
 
 export default function ForwardingNavBar({ role = "forwarder" }) {
     const location = useLocation();
     const navigate = useNavigate();
+    const [assignedCount, setAssignedCount] = useState(0);
+
+    useEffect(() => {
+        const fetchAssignedCount = async () => {
+            try {
+                const userId = localStorage.getItem("userId");
+                if (!userId) return;
+
+                const user = await getUserById(userId);
+                const forwardingAgentId = user?.companyCode;
+
+                if (forwardingAgentId) {
+                    const data = await getAleBookings();
+                    const count = data.filter(b =>
+                        b.forwardingId === forwardingAgentId &&
+                        (b.billingParty === null || b.billingParty === "") &&
+                        b.airlineId === null
+                    ).length;
+                    setAssignedCount(count);
+                }
+            } catch (error) {
+                console.error("Failed to fetch assigned booking count for navbar badge", error);
+            }
+        };
+        fetchAssignedCount();
+        }, []);
 
     const handleLogout = async () => {
         await logout();
@@ -20,9 +49,10 @@ export default function ForwardingNavBar({ role = "forwarder" }) {
 
     const menuItems = [
         { icon: LucideHome, label: "Dashboard", path: "/ale/forwarding/dashboard" },
-        { icon: LucideTruck, label: "Create ROT", path: "/ale/forwarding/rot/search" },
+        { icon: LucidePlaneTakeoff, label: "Create ROT", path: "/ale/forwarding/rot/add/form1" },
+        { icon: LucideFileInput, label: "Assigned Booking", path: "/ale/forwarding/booking/new", badgeCount: assignedCount },
         { icon: LucideHistory, label: "Your ROTs", path: "/ale/forwarding/rot/history" },
-        { icon: LucideArchive, label: "Archived ROTs", path: "/ale/consignee/rot/archived" },
+        { icon: LucideArchive, label: "Archived ROTs", path: "/ale/forwarding/rot/archived" },
         { icon: LucideMapPinned, label: "Track & Trace", path: "/ale/rot/track" },
         // { icon: LucideFile, label: "View Document", path: "/ale/forwarding/rot/document/view" },
     ];
@@ -58,6 +88,11 @@ export default function ForwardingNavBar({ role = "forwarder" }) {
                                 >
                                     <Icon size={25} />
                                     <span>{item.label}</span>
+                                    {item.badgeCount > 0 && (
+                                        <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-accent-danger px-1.5 text-[14px] font-black text-red-100 shadow-sm ring-2 ring-system-color group-hover:scale-110 transition-transform">
+                                            {item.badgeCount}
+                                        </span>
+                                    )}
                                 </Link>
                             </li>
                         );

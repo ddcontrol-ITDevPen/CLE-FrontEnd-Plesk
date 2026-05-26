@@ -5,7 +5,7 @@ import {
     LucideHistory,
     LucideHome,
     LucideLogOut,
-    LucideMapPinned, LucideSend,
+    LucideMapPinned, LucidePlaneTakeoff, LucideSend,
     LucideTruck, LucideUserCheck
 } from "lucide-react";
 import {logout} from "../../services/authService.js";
@@ -20,7 +20,7 @@ export default function BookingAgentNavBar({ role = "forwarder" }) {
 
     const menuItems = [
         { icon: LucideHome, label: "Dashboard", path: "/ale/bookingAgent/dashboard" },
-        { icon: LucideTruck, label: "Create ROT", path: "/ale/bookingAgent/rot/add/form" },
+        { icon: LucidePlaneTakeoff, label: "Create ROT", path: "/ale/bookingAgent/rot/add/form" },
         { icon: LucideSend, label: "Your Submissions", path: "/ale/bookingAgent/submission/history" },
         { icon: LucideHistory, label: "Your ROTs", path: "/ale/bookingAgent/rot/history" },
         { icon: LucideArchive, label: "Archived ROTs", path: "/ale/bookingAgent/rot/archived" },
