@@ -88,12 +88,13 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(to_bottom_right,rgba(35,0,230,0.65),rgba(225,224,254,1),rgba(238,220,154,0.65))] p-4 font-sans">
             <motion.div
                 layout
-                className={`flex w-5/6 min-h-[650px] overflow-hidden bg-white shadow-cle rounded-xl transition-all duration-700 ${isSuccess ? 'flex-row-reverse' : 'flex-row'}`}
+                className={`flex flex-col lg:flex-row lg:w-5/6 overflow-hidden bg-white shadow-cle rounded-xl transition-all duration-700 
+                ${isSuccess ? 'min-h-0 lg:min-h-[650px] lg:flex-row-reverse' : 'min-h-[510px] lg:min-h-[650px] lg:flex-row'}`}
             >
                 <motion.div
                     layout
                     transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                    className="w-6/13 bg-system-color relative"
+                    className="hidden lg:block lg:w-6/13 bg-system-color relative"
                 >
                     <img
                         src={portImage1}
@@ -112,7 +113,7 @@ export default function LoginPage() {
                 </motion.div>
                 <motion.div
                     layout
-                    className="w-7/13 p-9 px-12 flex flex-col justify-center bg-white"
+                    className="w-full lg:w-7/13 p-6 sm:p-12 flex flex-col justify-center bg-white"
                 >
                     <AnimatePresence mode="wait">
                         {!isSuccess ? (
@@ -249,16 +250,16 @@ export default function LoginPage() {
 }
 
 const InputField = ({ icon: Icon, type, placeholder, value, onChange, isPassword, isDropdown, showPassword, setShowPassword, errorText, access, ...props }) => {
-    const inputBaseClasses = `w-full rounded-xl border ${errorText ? 'border-red-500' : 'border-gray-300'} py-3 pl-12 pr-10 text-black placeholder:text-gray-400 focus:border-system-color focus:ring-1 focus:ring-systemn-color transition-all`;
+    const inputBaseClasses = `w-full rounded-xl border ${errorText ? 'border-red-500' : 'border-gray-300'} py-3 pl-12 pr-10 text-black sm:text-base placeholder:text-gray-400 focus:border-system-color focus:ring-1 focus:ring-system-color transition-all bg-white`;
 
     return (
         <div className="flex flex-col gap-1">
         <div className="relative">
             {/* Left Icon */}
-            <Icon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
+            <Icon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 z-10" />
 
             {isDropdown ? (
-                <select value={value} onChange={onChange} className={`${inputBaseClasses} appearance-none`} {...props}>
+                <select value={value} onChange={onChange} className={`${inputBaseClasses} appearance-none cursor-pointer relative z-0`} {...props}>
                     <option value="" disabled>{placeholder}</option>
                     {ACCESS_OPTIONS[access]?.map((opt) => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -298,11 +299,11 @@ const EntityCard = ({ logo, name, isSelected, onClick }) => (
     <button
         type="button"
         onClick={onClick}
-        className={`flex flex-col h-[90px] items-center justify-center rounded-xl border p-2 transition-all w-1/3 hover:scale-105
+        className={`flex flex-col h-[75px] sm:h-[90px] items-center justify-center rounded-xl border p-2 transition-all w-1/3 hover:scale-105
             ${isSelected
-            ? 'border-system-color ring-1 ring-bg-system-color shadow-lg'
+            ? 'border-system-color ring-1 ring-bg-system-color shadow-lg bg-blue-50/10'
             : 'border-gray-200 bg-white hover:border-system-color hover:shadow-md'}`}
     >
-        <img src={logo} alt={name} className="min-h-[80px] object-contain" />
+        <img src={logo} alt={name} className="h-full w-full object-contain" />
     </button>
 );
