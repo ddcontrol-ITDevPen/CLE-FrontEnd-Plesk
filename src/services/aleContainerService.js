@@ -45,3 +45,18 @@ export const getAllAleContainersByConsignee = async (id) => {
     const res = await api.get(`${BASE_URL}/all/consignee/${id}`);
     return res.data;
 }
+
+export const getContainersForAKPSAction = async (id) => {
+    const res = await api.get(`${BASE_URL}/action/akps`);
+    return res.data;
+}
+
+export const getContainersForCustomAction = async (id) => {
+    const res = await api.get(`${BASE_URL}/action/custom`);
+    return res.data;
+}
+
+export const getContainersForTerminalAction = async (id) => {
+    const res = await api.get(`${BASE_URL}/action/terminal`);
+    return res.data;
+}
