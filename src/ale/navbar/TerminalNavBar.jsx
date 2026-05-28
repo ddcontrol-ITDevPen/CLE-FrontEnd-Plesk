@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     LucideArchive,
-    LucideArchiveX, LucideClipboardCheck, LucideClipboardClock, LucideFile,
+    LucideArchiveX, LucideClipboardCheck, LucideClipboardClock, LucideFile, LucideFileInput,
     LucideHistory,
     LucideHome,
     LucideLogOut,
@@ -9,10 +9,39 @@ import {
     LucideTruck, LucideUserCheck
 } from "lucide-react";
 import {logout} from "../../services/authService.js";
+import {useEffect, useState} from "react";
+import {getUserById} from "../../services/userService.js";
+import {getAleBookings} from "../../services/aleBookingService.js";
+import {getContainersForTerminalAction} from "../../services/aleContainerService.js";
 
 export default function TerminalNavBar({ role = "terminal" }) {
     const location = useLocation();
     const navigate = useNavigate();
+    const [actionNeededCount, setActionNeededCount] = useState(0);
+
+    useEffect(() => {
+        const fetchActionNeededCount = async () => {
+            try {
+                const userId = localStorage.getItem("userId");
+                if (!userId) return;
+
+                const user = await getUserById(userId);
+                const terminalId = user?.companyCode;
+
+                if (terminalId) {
+                    const data = await getContainersForTerminalAction();
+                    const count = data.filter(b =>
+                        b.terminalId === terminalId
+                    ).length;
+                    setActionNeededCount(count);
+                }
+            } catch (error) {
+                console.error("Failed to fetch action needed count for navbar badge", error);
+            }
+        };
+        fetchActionNeededCount();
+    }, []);
+
 
     const handleLogout = async () => {
         await logout();
@@ -20,6 +49,7 @@ export default function TerminalNavBar({ role = "terminal" }) {
 
     const menuItems = [
         { icon: LucideHome, label: "Dashboard", path: "/ale/terminal/dashboard" },
+        { icon: LucideFileInput, label: "New Booking", path: "/ale/terminal/booking/new", badgeCount: actionNeededCount },
         { icon: LucideFile, label: "Booking List", path: "/ale/terminal/terminalList" },
         { icon: LucideArchive, label: "Archived ROTs", path: "/ale/terminal/rot/archived" },
         { icon: LucideMapPinned, label: "Track & Trace", path: "/ale/rot/track" },
@@ -57,6 +87,12 @@ export default function TerminalNavBar({ role = "terminal" }) {
                                 >
                                     <Icon size={25} />
                                     <span>{item.label}</span>
+
+                                    {item.badgeCount > 0 && (
+                                        <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-accent-danger px-1.5 text-[14px] font-black text-red-100 shadow-sm ring-2 ring-system-color group-hover:scale-110 transition-transform">
+                                            {item.badgeCount}
+                                        </span>
+                                    )}
                                 </Link>
                             </li>
                         );

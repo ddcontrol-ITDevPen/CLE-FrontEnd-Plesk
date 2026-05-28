@@ -41,10 +41,17 @@ export function ALEYourBookings ()  {
     const [endDate, setEndDate] = useState("");
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const navigate = useNavigate();
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
+
     useEffect(() => {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterStatus, startDate, endDate]);
+    
     const exportToExcel = () => {
         if (filteredContainers.length === 0) {
             toast.error("No data to export");
@@ -282,6 +289,11 @@ export function ALEYourBookings ()  {
         return result;
     }, [containers, searchTerm, filterStatus, startDate, endDate, sortConfig]);
 
+    const paginatedContainers = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredContainers.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredContainers, currentPage]);
+
     const getLocationName = (cont, type) => {
         const { movementType, tripType } = cont.aleBooking || {};
 
@@ -517,12 +529,13 @@ export function ALEYourBookings ()  {
                                     </div>
                                 </td>
                             </tr>
-                        ) : filteredContainers.length > 0 ? (
-                                filteredContainers.map((cont, index) => {
+                        ) : paginatedContainers.length > 0 ? (
+                                paginatedContainers.map((cont, index) => {
+                                    const recordNumber = (currentPage - 1) * itemsPerPage + index + 1;
                                     const theme = STATUS_CONFIG[cont.status] || {bg: "bg-gray-100", text: "text-gray-700"};
                                     return (
                                         <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
-                                            <td className="p-4">{index + 1}</td>
+                                            <td className="p-4">{recordNumber}</td>
                                             <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/haulier/booking/view/${cont.containerId}`)}>{cont?.aleBooking?.awbNumber}</td>
                                             <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/haulier/booking/view/${cont.containerId}`)}>{cont?.aleBooking?.houseAWBNumber}</td>
                                             <td className="p-4">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
@@ -603,6 +616,67 @@ export function ALEYourBookings ()  {
                         </tbody>
                     </table>
                 </div>
+
+                {filteredContainers.length > 0 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 rounded-xl border border-gray-100 mt-4 shadow-sm">
+                        <div className="text-sm text-gray-500 font-medium">
+                            Showing{" "}
+                            <span className="font-semibold text-gray-800">
+                                {Math.min((currentPage - 1) * itemsPerPage + 1, filteredContainers.length)}
+                            </span>{" "}
+                            to{" "}
+                            <span className="font-semibold text-gray-800">
+                                {Math.min(currentPage * itemsPerPage, filteredContainers.length)}
+                            </span>{" "}
+                            of{" "}
+                            <span className="font-semibold text-gray-800">{filteredContainers.length}</span>{" "}
+                            records
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 text-sm font-bold bg-white text-gray-600 border border-gray-200 rounded-lg shadow-sm transition-all hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
+                            >
+                                Previous
+                            </button>
+
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: Math.ceil(filteredContainers.length / itemsPerPage) }).map((_, idx) => {
+                                    const pageNum = idx + 1;
+                                    if (Math.abs(currentPage - pageNum) <= 1 || pageNum === 1 || pageNum === Math.ceil(filteredContainers.length / itemsPerPage)) {
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => setCurrentPage(pageNum)}
+                                                className={`w-9 h-9 text-sm font-bold rounded-lg transition-all ${
+                                                    currentPage === pageNum
+                                                        ? "bg-blue-600 text-white shadow-md shadow-blue-100"
+                                                        : "bg-white text-gray-600 hover:bg-gray-50 border border-transparent"
+                                                }`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    }
+                                    if (pageNum === 2 || pageNum === Math.ceil(filteredContainers.length / itemsPerPage) - 1) {
+                                        return <span key={pageNum} className="text-gray-400 px-1">...</span>;
+                                    }
+                                    return null;
+                                })}
+                            </div>
+
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredContainers.length / itemsPerPage)))}
+                                disabled={currentPage === Math.ceil(filteredContainers.length / itemsPerPage)}
+                                className="px-4 py-2 text-sm font-bold bg-white text-gray-600 border border-gray-200 rounded-lg shadow-sm transition-all hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
                 
                 <div className="flex flex-wrap items-center gap-6 px-2 pt-2">
                     <div className="flex items-center gap-2">

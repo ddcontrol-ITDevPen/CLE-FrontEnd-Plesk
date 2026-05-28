@@ -21,11 +21,17 @@ export function ALEConsigneeYourBookings ()  {
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const navigate = useNavigate();
     const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
 
     useEffect(() => {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, startDate, endDate]);
+    
     const exportToExcel = () => {
         if (filteredBookings.length === 0) {
             toast.error("No data to export");
@@ -138,6 +144,11 @@ export function ALEConsigneeYourBookings ()  {
         }
         return result;
     }, [bookings, searchTerm, startDate, endDate, sortConfig]);
+
+    const paginatedContainers = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredBookings.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredBookings, currentPage]);
 
     // const handleEdit = async () => {
     //     if (!editModal.remarks || editModal.remarks.trim() === "") {
@@ -317,11 +328,12 @@ export function ALEConsigneeYourBookings ()  {
                                     </div>
                                 </td>
                             </tr>
-                        ) : filteredBookings.length > 0 ? (
-                                filteredBookings.map((aleBooking, index) => {
+                        ) : paginatedContainers.length > 0 ? (
+                                paginatedContainers.map((aleBooking, index) => {
+                                    const recordNumber = (currentPage - 1) * itemsPerPage + index + 1;
                                     return (
                                         <tr key={aleBooking.rotNumber} className="border-b hover:bg-gray-50 transition-colors">
-                                            <td className="p-4">{index + 1}</td>
+                                            <td className="p-4">{recordNumber}</td>
                                             <td className="p-4 whitespace-normal break-words leading-tight font-semibold text-blue-600  cursor-pointer hover:underline" onClick={() => navigate(`/ale/consignee/booking/view/${aleBooking.rotNumber}`)}>{aleBooking.rotNumber}</td>
                                             <td className="p-4 break-all leading-tight">{aleBooking.awbNumber}</td>
                                             <td className="p-4 break-all leading-tight">{aleBooking.houseAWBNumber}</td>
@@ -382,6 +394,67 @@ export function ALEConsigneeYourBookings ()  {
                         </tbody>
                     </table>
                 </div>
+
+                {filteredBookings.length > 0 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 rounded-xl border border-gray-100 mt-4 shadow-sm">
+                        <div className="text-sm text-gray-500 font-medium">
+                            Showing{" "}
+                            <span className="font-semibold text-gray-800">
+                                {Math.min((currentPage - 1) * itemsPerPage + 1, filteredBookings.length)}
+                            </span>{" "}
+                            to{" "}
+                            <span className="font-semibold text-gray-800">
+                                {Math.min(currentPage * itemsPerPage, filteredBookings.length)}
+                            </span>{" "}
+                            of{" "}
+                            <span className="font-semibold text-gray-800">{filteredBookings.length}</span>{" "}
+                            records
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 text-sm font-bold bg-white text-gray-600 border border-gray-200 rounded-lg shadow-sm transition-all hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
+                            >
+                                Previous
+                            </button>
+
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: Math.ceil(filteredBookings.length / itemsPerPage) }).map((_, idx) => {
+                                    const pageNum = idx + 1;
+                                    if (Math.abs(currentPage - pageNum) <= 1 || pageNum === 1 || pageNum === Math.ceil(filteredBookings.length / itemsPerPage)) {
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => setCurrentPage(pageNum)}
+                                                className={`w-9 h-9 text-sm font-bold rounded-lg transition-all ${
+                                                    currentPage === pageNum
+                                                        ? "bg-blue-600 text-white shadow-md shadow-blue-100"
+                                                        : "bg-white text-gray-600 hover:bg-gray-50 border border-transparent"
+                                                }`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    }
+                                    if (pageNum === 2 || pageNum === Math.ceil(filteredBookings.length / itemsPerPage) - 1) {
+                                        return <span key={pageNum} className="text-gray-400 px-1">...</span>;
+                                    }
+                                    return null;
+                                })}
+                            </div>
+
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredBookings.length / itemsPerPage)))}
+                                disabled={currentPage === Math.ceil(filteredBookings.length / itemsPerPage)}
+                                className="px-4 py-2 text-sm font-bold bg-white text-gray-600 border border-gray-200 rounded-lg shadow-sm transition-all hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 <div className="flex flex-wrap items-center gap-6 px-2 pt-2">
                     <div className="flex items-center gap-2">
