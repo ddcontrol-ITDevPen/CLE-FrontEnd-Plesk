@@ -26,10 +26,10 @@ const STATUS_CONFIG = {
     "Accepted":   { bg: "bg-accepted",  text: "text-green",  border: "border-green-200" },
     "Gate-In":   { bg: "bg-gate-in-out",   text: "text-blue-900",   border: "border-indigo-200" },
     "Gate-Out":  { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
-    // "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
-    // "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
+    "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
-    "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
+    // "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
 
 export function AkpsbookingList() {
@@ -288,7 +288,8 @@ export function AkpsbookingList() {
                 // ✅ Updated Logic starts here
                 if (filterStatus === "All") {
                     // Only show records that are strictly "Enroute"
-                    matchesStatus = true;
+                    matchesStatus = cont.status !== "Rejected" && !isExpiredGateOut;
+                    //matchesStatus = true;
                 } else {
                     // Show records that exactly match the clicked filter status
                     // (e.g., "Approved-Complete", "Approved-Custom", etc.)

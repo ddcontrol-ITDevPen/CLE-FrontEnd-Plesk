@@ -286,7 +286,8 @@ export function CustomsbookingList() {
                 // ✅ Updated Logic starts here
                 if (filterStatus === "All") {
                     // Only show records that are strictly "Enroute"
-                    matchesStatus = true;
+                    matchesStatus = cont.status !== "Rejected" && !isExpiredGateOut;
+                    // matchesStatus = true;
                 } else {
                     // Show records that exactly match the clicked filter status
                     // (e.g., "Approved-Complete", "Approved-Custom", etc.)

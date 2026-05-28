@@ -21,10 +21,10 @@ const STATUS_CONFIG = {
     "Accepted":   { bg: "bg-accepted",  text: "text-green",  border: "border-green-200" },
     "Gate-In":   { bg: "bg-gate-in-out",   text: "text-blue-900",   border: "border-indigo-200" },
     "Gate-Out":  { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
-    // "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
-    // "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
+    "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
-    "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
+    // "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
 
 export function TerminalList ()  {
@@ -234,15 +234,15 @@ export function TerminalList ()  {
                 const diffInDays = diffInTime / (1000 * 3600 * 24);
                 console.log(diffInDays);
 
-                if (diffInDays > 7) {
+                if (diffInDays > 1) {
                     isExpiredGateOut = true;
                 }
             }
 
             let matchesStatus = false;
             if(filterStatus === "All")
-                //matchesStatus = cont.status !== "Deleted" && !isExpiredGateOut;
-                matchesStatus = true;
+                matchesStatus = cont.status !== "Rejected" && !isExpiredGateOut;
+                //matchesStatus = true;
             else
                 matchesStatus = cont.status === filterStatus;
             const rotDate = cont.rotDate;
