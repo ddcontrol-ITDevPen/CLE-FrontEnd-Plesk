@@ -42,7 +42,6 @@ export default function TerminalNavBar({ role = "terminal" }) {
         fetchActionNeededCount();
     }, []);
 
-
     const handleLogout = async () => {
         await logout();
     };
