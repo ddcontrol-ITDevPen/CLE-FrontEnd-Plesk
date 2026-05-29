@@ -56,9 +56,9 @@ export function TerminalList ()  {
         }
 
         const exportData = filteredContainers.map(cont => ({
-            "Container ID": cont.containerId,
-            "Container Type": cont.containerType,
-            "Container Size": cont.containerSize,
+            "Trucker ID": cont.containerId,
+            "Trucker Type": cont.containerType,
+            "Trucker Size": cont.containerSize,
             "Package Quantity": cont.packageQuantity || "N/A",
             "VGM": cont.vgm || "N/A",
             "Volumetric Weight": cont.volumeMetricWeight || "N/A",
@@ -336,7 +336,7 @@ export function TerminalList ()  {
             const currentContainer = await getAleContainerById(statusModal.id);
 
             // --- ADD LOGS HERE ---
-            console.log("Full Container Data:", currentContainer);
+            console.log("Full Trucker Data:", currentContainer);
             console.log("To Address Value:", currentContainer.toAddress);
             console.log("Is it an array?:", Array.isArray(currentContainer.toAddress));
             // -------
@@ -361,7 +361,7 @@ export function TerminalList ()  {
             
             await updateAleContainer(statusModal.id, payload);
             // 1. Show success message
-            toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
+            toast.success(`Trucker ${statusModal.nextStatus} successfully`, { id: toastId });
 
             // 2. IMMEDIATELY close the modal state
             setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });

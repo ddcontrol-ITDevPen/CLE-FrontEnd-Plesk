@@ -59,9 +59,9 @@ export function ALEYourBookings ()  {
         }
 
         const exportData = filteredContainers.map(cont => ({
-            "Container ID": cont.containerId,
-            "Container Type": cont.containerType,
-            "Container Size": cont.containerSize,
+            "Trucker ID": cont.containerId,
+            "Trucker Type": cont.containerType,
+            "Trucker Size": cont.containerSize,
             "Package Quantity": cont.packageQuantity || "N/A",
             "VGM": cont.vgm || "N/A",
             "Volumetric Weight": cont.volumeMetricWeight || "N/A",
@@ -204,7 +204,7 @@ export function ALEYourBookings ()  {
                 UpdatedBy: updatedBy,
             };
             await updateAleContainer(statusModal.id, payload);
-            toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
+            toast.success(`Trucker ${statusModal.nextStatus} successfully`, { id: toastId });
             setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
             fetchData();
         } catch (error) {

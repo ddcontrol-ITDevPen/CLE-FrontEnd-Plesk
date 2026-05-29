@@ -61,9 +61,9 @@ export function ALEYourROTs ()  {
         }
 
         const exportData = filteredContainers.map(cont => ({
-            "Container ID": cont.containerId,
-            "Container Type": cont.containerType,
-            "Container Size": cont.containerSize,
+            "Trucker ID": cont.containerId,
+            "Trucker Type": cont.containerType,
+            "Trucker Size": cont.containerSize,
             "Package Quantity": cont.packageQuantity || "N/A",
             "VGM": cont.vgm || "N/A",
             "Volumetric Weight": cont.volumeMetricWeight || "N/A",
