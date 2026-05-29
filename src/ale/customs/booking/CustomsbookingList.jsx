@@ -636,13 +636,13 @@ export function CustomsbookingList() {
                                                     <Eye size={18}
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/customs/booking/bookingdetails/${cont.containerId}`)}/>
                                                     {/* 1. Show Approve/Reject buttons ONLY IF Custom is Approved and AKPS is still pending (null or empty) */}
-                                                    {["Enroute", "Approved-AKPS", "Accepted"].includes(cont.status) && (
+                                                    {cont.enrouteTime !== null && cont.approvedCustomTime === null && cont.approvedBothTime === null && cont.gatedInTime === null && (
                                                         <button onClick={() => navigate(`/ale/customs/booking/bookingaction/${cont.containerId}`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Reject / Examine ">
                                                             <Check size={18} />
                                                         </button>
 
                                                     )}
-                                                    {["Enroute", "Approved-AKPS", "Accepted"].includes(cont.status) && (
+                                                    {cont.enrouteTime !== null && cont.approvedCustomTime === null && cont.approvedBothTime === null && cont.gatedInTime === null && (
                                                         <button
                                                             onClick={() => setStatusModal({
                                                                 isOpen: true,
