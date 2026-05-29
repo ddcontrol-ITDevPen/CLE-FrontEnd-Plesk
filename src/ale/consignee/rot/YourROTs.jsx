@@ -3,7 +3,7 @@ import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search, Calendar, FileDown, Eye, Edit, Trash2,
-    FileText, AlertCircle, CheckCircle2, PencilRuler, CircleX, LucideShieldUser
+    FileText, AlertCircle, CheckCircle2, PencilRuler, CircleX, LucideShieldUser, PackageCheck
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import {getAleContainers, deleteAleContainer, updateAleContainer, getAleContainerById} from "../../../services/aleContainerService.js";
@@ -37,6 +37,8 @@ export function ALEConsigneeYourROTs ()  {
     const [rejectModal, setRejectModal] = useState({ isOpen: false, id: null, remarks: "" });
     const [editModal, setEditModal] = useState({ isOpen: false, id: null, remarks: "", newDate: "", showDateField: false });
     const [readjustmentModal, setReadjustmentModal] = useState({ isOpen: false, id: null, remarks: "", newDate: "", icNumber: "", isSecureEdit: false, showDateField: false});
+    const [deliveredModal, setDeliveredModal] = useState({isOpen: false, id: null});
+    const [rfcModal, setRFCModal] = useState({isOpen: false, id: null});
     const [filterStatus, setFilterStatus] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
@@ -61,9 +63,9 @@ export function ALEConsigneeYourROTs ()  {
         }
 
         const exportData = filteredContainers.map(cont => ({
-            "Container ID": cont.containerId,
-            "Container Type": cont.containerType,
-            "Container Size": cont.containerSize,
+            "Trucker ID": cont.containerId,
+            "Trucker Type": cont.containerType,
+            "Trucker Size": cont.containerSize,
             "Package Quantity": cont.packageQuantity || "N/A",
             "VGM": cont.vgm || "N/A",
             "Volumetric Weight": cont.volumeMetricWeight || "N/A",
@@ -304,7 +306,6 @@ export function ALEConsigneeYourROTs ()  {
         const toastId = toast.loading("Cancelling...");
         try {
             const currentContainer = await getAleContainerById(rejectModal.id);
-            console.log(currentContainer);
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName
             const payload = {
@@ -335,7 +336,6 @@ export function ALEConsigneeYourROTs ()  {
         const toastId = toast.loading("Updating...");
         try {
             const currentContainer = await getAleContainerById(editModal.id);
-            console.log(currentContainer);
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + editModal?.icNumber || user.companyName;
             const payload = {
@@ -356,6 +356,58 @@ export function ALEConsigneeYourROTs ()  {
             const serverMessage = error.response?.data?.message || error.response?.data || "Unknown Error";
             console.log("Deleted Error: ", serverMessage);
             toast.error("Deletion failed. Please try again.", { id: toastId });
+        }
+    };
+
+    const handleDeliver = async () => {
+        const toastId = toast.loading("Updating...");
+        try {
+            const currentContainer = await getAleContainerById(deliveredModal.id);
+            const userId = localStorage.getItem("userId")
+            const user = await getUserById(userId);
+            const updatedBy = user.fullName + " - " + user.companyName;
+            const payload = {
+                ...currentContainer,
+                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
+                status: "Delivered",
+                deliveredTime: new Date().toISOString(),
+                receivedBy: userId,
+                updatedBy: updatedBy,
+            };
+            await updateAleContainer(deliveredModal.id, payload);
+            toast.success("Record updated successfully", { id: toastId });
+            setDeliveredModal({ isOpen: false, id: null});
+            fetchData();
+            setError(false);
+        } catch (error) {
+            const serverMessage = error.response?.data?.message || error.response?.data || "Unknown Error";
+            console.log("Delivered Error: ", serverMessage);
+            toast.error("Status change to Delivered failed. Please try again.", { id: toastId });
+        }
+    };
+
+    const handleRFC = async () => {
+        const toastId = toast.loading("Updating...");
+        try {
+            const currentContainer = await getAleContainerById(rfcModal.id);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = user.fullName + " - " + user.companyName;
+            const payload = {
+                ...currentContainer,
+                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
+                status: "RFC",
+                rfcTime: new Date().toISOString(),
+                updatedBy: updatedBy,
+            };
+            await updateAleContainer(rfcModal.id, payload);
+            toast.success("Record updated successfully", { id: toastId });
+            setRFCModal({ isOpen: false, id: null});
+            fetchData();
+            setError(false);
+        } catch (error) {
+            const serverMessage = error.response?.data?.message || error.response?.data || "Unknown Error";
+            console.log("RFC Error: ", serverMessage);
+            toast.error("Status change to RFC failed. Please try again.", { id: toastId });
         }
     };
 
@@ -574,13 +626,14 @@ export function ALEConsigneeYourROTs ()  {
                                                         <PencilRuler size={18}
                                                                      className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => setEditModal({isOpen: true, id: cont.containerId, remarks: "", newDate: cont.rotDate, isSecureEdit: true, showDateField: false})}/>
                                                     )}
-                                                    {/*{cont.status !== "Deleted" &&*/}
-                                                    {/*    <Trash2*/}
-                                                    {/*        size={18}*/}
-                                                    {/*        className="text-red-500 cursor-pointer hover:text-red-700"*/}
-                                                    {/*        onClick={() => setDeleteModal({isOpen: true, id: cont.containerId, remarks: ""})}*/}
-                                                    {/*    />*/}
-                                                    {/*}*/}
+                                                    {cont.status === "Gate-Out" &&
+                                                        <CheckCircle2 size={18}
+                                                              className="text-[#709f90] cursor-pointer hover:text-[#446b60]" onClick={() => setDeliveredModal({isOpen: true, id: cont.containerId})}/>
+                                                    }
+                                                    {cont.status === "Delivered" &&
+                                                        <PackageCheck size={18}
+                                                                      className="text-[#709f90] cursor-pointer hover:text-[#446b60]" onClick={() => setRFCModal({isOpen: true, id: cont.containerId})}/>
+                                                    }
                                                     {["Assigned", "Enroute"].includes(cont.status) && (
                                                         <CircleX size={18} className="text-red-500 cursor-pointer hover:text-red-700" onClick={() => setRejectModal({isOpen: true, id: cont.containerId, remarks: ""})}/>
                                                     )}
@@ -706,6 +759,16 @@ export function ALEConsigneeYourROTs ()  {
                     <div className="flex items-center gap-2">
                         <div className="p-1.5 bg-green-50 rounded-md text-green-600"><PencilRuler size={14} /></div>
                         <span className="text-[14px] font-medium text-gray-500">Readjustment</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-[#709f90]"><CheckCircle2 size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Deliver</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-[#709f90]"><PackageCheck size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">RFC</span>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -862,7 +925,7 @@ export function ALEConsigneeYourROTs ()  {
                 )}
             </AnimatePresence>
 
-            {/* Deletion Confirmation Modal */}
+            {/* Rejection Confirmation Modal */}
             <AnimatePresence>
                 {rejectModal.isOpen && (
                     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -885,7 +948,7 @@ export function ALEConsigneeYourROTs ()  {
                             </h2>
                             <p className="text-gray-600 mb-8">
                                 {rejectModal.nextStatus === "Enroute"
-                                    ? "Confirming this will set the container status to Enroute."
+                                    ? "Confirming this will set the shipment status to Enroute."
                                     : "Are you sure you want to cancel this shipment or booking?"}
                             </p>
 
@@ -924,6 +987,92 @@ export function ALEConsigneeYourROTs ()  {
                                     className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
                                         rejectModal.nextStatus === "Enroute" ? "bg-green-600 hover:bg-green-700" : "bg-red-500 hover:bg-red-600"
                                     }`}
+                                >
+                                    Confirm
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Delivered Confirmation Modal */}
+            <AnimatePresence>
+                {deliveredModal.isOpen && (
+                    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center"
+                        >
+                            <div className="mb-6 flex justify-center">
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center bg-green-50 text-delivered-rfc`}>
+                                    <CheckCircle2 size={40} />
+                                </div>
+                            </div>
+
+                            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                                Deliver Shipment
+                            </h2>
+                            <p className="text-gray-600 mb-8">"Confirming this will set the shipment/package status to Delivered."</p>
+
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => {
+                                        setError(false);
+                                        setDeliveredModal({ isOpen: false, id: null});
+                                    }}
+                                    className="flex-1 py-3 border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDeliver}
+                                    className={`flex-1 py-3 text-black rounded-xl font-bold shadow-lg transition-all bg-delivered-rfc hover:bg-green-700 hover:text-white`}
+                                >
+                                    Confirm
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* RFC Confirmation Modal */}
+            <AnimatePresence>
+                {rfcModal.isOpen && (
+                    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center"
+                        >
+                            <div className="mb-6 flex justify-center">
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center bg-green-50 text-delivered-rfc`}>
+                                    <PackageCheck size={40} />
+                                </div>
+                            </div>
+
+                            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                                Shipment Ready For Collection
+                            </h2>
+                            <p className="text-gray-600 mb-8">"Confirming this will set the shipment/package status to RFC."</p>
+
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => {
+                                        setError(false);
+                                        setRFCModal({ isOpen: false, id: null});
+                                    }}
+                                    className="flex-1 py-3 border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleRFC}
+                                    className={`flex-1 py-3 text-black rounded-xl font-bold shadow-lg transition-all bg-delivered-rfc hover:bg-green-700 hover:text-white`}
                                 >
                                     Confirm
                                 </button>

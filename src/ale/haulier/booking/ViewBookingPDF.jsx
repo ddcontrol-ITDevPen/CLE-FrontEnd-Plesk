@@ -217,12 +217,13 @@ export function ALEViewECsnPDF() {
                                 <PDFRow label="Gate-In Time" value={data.gatedInTime ? new Date(data.gatedInTime).toLocaleString() : "N/A"} />
                                 <PDFRow label="Gate-Out Time" value={data.gatedOutTime ? new Date(data.gatedOutTime).toLocaleString() : "N/A"} />
                                 <PDFRow label="Turn Around Time (TAT)" value={data.turnAroundTime} />
-                                <PDFRow label="Depot Remarks" value={aleBooking.terminalRemarks} />
+                                {/*<PDFRow label="Terminal Remarks" value={aleBooking.terminalRemarks} />*/}
                             </div>
                         </div>
                         <div>
                             <PDFSectionHeader title="Consignee Details" />
                             <div className="grid grid-cols-1 gap-x-4 mb-5" style={{ display: 'grid', columnGap: '16px', marginBottom: '20px' }}>
+                                <PDFRow label="Delivered Time" value={data.deliveredTime ? new Date(data.deliveredTime).toLocaleString() : "N/A"} />
                                 <PDFRow label="Acknowledge By" value={receivedByUser?.fullName} />
                                 <PDFRow label="Email Address" value={receivedByUser?.emailAddress} />
                                 {/*<PDFRow label="Delivered" value={data.deliveredTime ? new Date(data.deliveredTime).toLocaleString() : "N/A"} />*/}
