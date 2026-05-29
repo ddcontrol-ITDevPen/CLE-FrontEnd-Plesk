@@ -140,21 +140,21 @@ export function ALEForwardingDashboard() {
                     />
                     <StatCard
                         title="Pending"
-                        value={containers.filter(c => c.status === "Assigned").length}
+                        value={containers.filter(c => c.assignedTime !== null).length}
                         icon={Clock}
                         colorClass="bg-amber-500"
                         borderClass="border-amber-500"
                     />
                     <StatCard
                         title="Enroute"
-                        value={containers.filter(c => c.status === "Enroute").length}
+                        value={containers.filter(c => c.enrouteTime !== null).length}
                         icon={Truck}
                         colorClass="bg-indigo-500"
                         borderClass="border-indigo-500"
                     />
                     <StatCard
                         title="Completed"
-                        value={containers.filter(c => c.status === "Completed").length}
+                        value={containers.filter(c => c.deliveredTime !== null).length}
                         icon={ClipboardCheck}
                         colorClass="bg-emerald-500"
                         borderClass="border-emerald-500"

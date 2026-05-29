@@ -156,28 +156,28 @@ export function CustomsDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <StatCard
                         title="Enroute"
-                        value={containers.filter(c => c.status === "Enroute").length}
+                        value={containers.filter(c => c.enrouteTime !== null).length}
                         icon={Truck}
                         colorClass="bg-orange-600"
                         borderClass="border-orange-600"
                     />
                     <StatCard
                         title="Approved-Custom"
-                        value={containers.filter(c => c.status === "Approved-Custom").length}
+                        value={containers.filter(c => c.approvedCustomTime !== null).length}
                         icon={UserCheck}
                         colorClass="bg-amber-500"
                         borderClass="border-amber-500"
                     />
                     <StatCard
                         title="Approved-Complete"
-                        value={containers.filter(c => c.status === "Approved-Complete").length}
+                        value={containers.filter(c => c.approvedBothTime !== null).length}
                         icon={CheckCircle2}
                         colorClass="bg-indigo-500"
                         borderClass="border-indigo-500"
                     />
                     <StatCard
                         title="Gate-Out"
-                        value={containers.filter(c => c.status === "Gate-Out").length}
+                        value={containers.filter(c => c.gatedOutTime !== null).length}
                         icon={LogOut}
                         colorClass="bg-emerald-500"
                         borderClass="border-emerald-500"

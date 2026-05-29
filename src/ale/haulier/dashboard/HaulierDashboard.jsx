@@ -64,8 +64,8 @@ export function ALEHaulierDashboard() {
             const statusLower = status.toLowerCase();
 
             if (["enroute", "accepted", "gate-in", "gate-out"].includes(statusLower)) activeCount++;
-            if (statusLower === "gated-in") inTerminalCount++;
-            if (status === "Accepted" && c.acceptedTime) acceptedCount++;
+            if (statusLower === "gate-in") inTerminalCount++;
+            if (c.acceptedTime !== null) acceptedCount++;
             if (c.turnAroundTime > 0) {
                 totalTurnAround += c.turnAroundTime;
                 tatCount++;
