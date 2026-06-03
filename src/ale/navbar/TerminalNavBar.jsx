@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     LucideArchive,
-    LucideArchiveX, LucideClipboardCheck, LucideClipboardClock, LucideFile, LucideFileInput,
+    LucideArchiveX, LucideClipboardCheck, LucideClipboardClock, LucideClock, LucideFile, LucideFileInput,
     LucideHistory,
     LucideHome,
     LucideLogOut,
@@ -52,6 +52,7 @@ export default function TerminalNavBar({ role = "terminal" }) {
         { icon: LucideFile, label: "Booking List", path: "/ale/terminal/terminalList" },
         { icon: LucideArchive, label: "Archived ROTs", path: "/ale/terminal/rot/archived" },
         { icon: LucideMapPinned, label: "Track & Trace", path: "/ale/rot/track" },
+        { icon: LucideClock, label: "Operational Time", path: "/ale/terminal/operations" },
         //{ icon: LucideFile, label: "View Document", path: "/ale/forwarding/rot/document/view" }
     ];
 

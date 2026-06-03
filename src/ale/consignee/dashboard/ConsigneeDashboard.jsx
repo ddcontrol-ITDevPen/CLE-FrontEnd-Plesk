@@ -76,7 +76,7 @@ export function ALEConsigneeDashboard() {
     
     const metrics = useMemo(() => {
         return {
-            enroute: containers.filter(c => c.enrouteTime !== null).length,
+            enroute: containers.filter(c => c.status === "Enroute").length,
             rfc: containers.filter(c => c.rfcTime !== null).length,
             delivered: containers.filter(c => c.deliveredTime !== null).length,
             actionRequired: bookings.filter(b => !b.size || b.totalPackageQuantity).length
