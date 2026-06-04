@@ -105,8 +105,9 @@ export function ALEAssignBooking() {
                 setPrimeMovers(pmData.filter(x => x.haulierId === haulierId) || []);
                 setTrailers(trailerData.filter(x => x.haulierId === haulierId) || []);
                 setTimeSlots(slotData || []);
-                
-                const uniqueDates = [...new Set(slotData.map(s => s.date))].sort();
+
+                const todayStr = new Date().toLocaleDateString('en-CA');
+                const uniqueDates = [...new Set(slotData.map(s => s.date))].filter(dateStr => dateStr >= todayStr).sort();
                 setAvailableDates(uniqueDates);
             } catch (error) {
                 toast.error("Failed to load assignment data");
@@ -442,7 +443,7 @@ export function ALEAssignBooking() {
 }
 
 // Reusable UI Components based on your Design System
-const InputField = ({ icon, label, name, value, onChange, error, required, readOnly, type }) => (
+const InputField = ({ icon, label, name, value, onChange, error, required, readOnly, type, min }) => (
     <div className="flex flex-col gap-1">
         <label className="text-sm font-bold text-gray-700 tracking-wider flex items-center gap-2"> {icon} {label} {required && !readOnly && <span className="text-red-500">*</span>}</label>
         <input
@@ -452,6 +453,7 @@ const InputField = ({ icon, label, name, value, onChange, error, required, readO
             onChange={onChange}
             readOnly={readOnly}
             className={`p-3 rounded-xl border border-gray-200 ${readOnly ? "bg-gray-100/50" : "bg-gray-50/50" } bg-gray-100/50 outline-none  ${error ? 'border-red-500' : 'border-gray-100 hover:border-indigo-300'}`}
+            min={min}
         />
         <AnimatePresence>
             {error && (
