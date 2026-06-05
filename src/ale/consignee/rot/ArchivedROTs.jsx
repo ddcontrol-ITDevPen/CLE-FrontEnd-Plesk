@@ -545,8 +545,8 @@ export function ALEConsigneeArchivedROTs ()  {
                                     return (
                                         <tr key={recordNumber} className="border-b hover:bg-gray-50 transition-colors">
                                             <td className="p-4">{index + 1}</td>
-                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}>{cont.aleBooking.awbNumber}</td>
-                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}>{cont.aleBooking.houseAWBNumber}</td>
+                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)}>{cont.aleBooking.awbNumber}</td>
+                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)}>{cont.aleBooking.houseAWBNumber}</td>
                                             <td className="p-4">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
                                             <td className="p-4 whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>
                                             <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
@@ -565,7 +565,7 @@ export function ALEConsigneeArchivedROTs ()  {
                                                 {/* Horizontal Action Icons */}
                                                 <div className="flex items-center gap-3">
                                                     <Eye size={18}
-                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}/>
+                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)}/>
                                                     <FileText
                                                         size={18}
                                                         className="text-blue-600 cursor-pointer hover:text-blue-800"

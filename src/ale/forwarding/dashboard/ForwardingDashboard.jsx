@@ -192,7 +192,7 @@ export function ALEForwardingDashboard() {
                                     recentContainers.map((cont) => (
                                         <div
                                             key={cont.containerId}
-                                            onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}
+                                            onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)}
                                             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group cursor-pointer hover:bg-gray-100 transition-colors"
                                         >
                                             <div className="overflow-hidden">

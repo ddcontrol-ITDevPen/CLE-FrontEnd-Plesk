@@ -81,6 +81,7 @@ import {ALEConsigneeYourROTs} from "../ale/consignee/rot/YourROTs.jsx";
 import {ALEConsigneeArchivedROTs} from "../ale/consignee/rot/ArchivedROTs.jsx";
 import {ALEAssignedNewBookings} from "../ale/forwarding/Booking/AssignedNewBookings.jsx";
 import {ALEViewAssignedNewBooking} from "../ale/forwarding/Booking/ViewAssignedNewBooking.jsx";
+import {TerminalOperationHours} from "../ale/terminal/operation/TerminalOperationHours.jsx";
 
 export default function AppRouter() {
     return (
@@ -375,7 +376,7 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/ale/forwarding/rot/view/:id"
+                    path="/ale/rot/view/:id"
                     element={
                         <ProtectedRoute>
                             <ALEViewROTDetails />
@@ -547,6 +548,14 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <TerminalDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/terminal/operations"
+                    element={
+                        <ProtectedRoute>
+                            <TerminalOperationHours />
                         </ProtectedRoute>
                     }
                 />

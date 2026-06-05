@@ -546,8 +546,8 @@ export function ALEROTHistory ()  {
                             return (
                                 <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
                                     <td className="p-4">{recordNumber}</td>
-                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}>{cont.aleBooking.awbNumber}</td>
-                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}>{cont.aleBooking.houseAWBNumber}</td>
+                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)}>{cont.aleBooking.awbNumber}</td>
+                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)}>{cont.aleBooking.houseAWBNumber}</td>
                                     <td className="p-4">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
                                     <td className="p-4 whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>
                                     <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
@@ -566,7 +566,7 @@ export function ALEROTHistory ()  {
                                         {/* Horizontal Action Icons */}
                                         <div className="flex items-center gap-3">
                                             <Eye size={18}
-                                                 className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/rot/view/${cont.containerId}`)}/>
+                                                 className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)}/>
                                             {cont.status === "Assigned" &&   
                                                 <Edit size={18}
                                                       className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => setEditModal({isOpen: true, id: cont.containerId, remarks: "", newDate: cont.rotDate, isSecureEdit: false, showDateField: false})}/>
