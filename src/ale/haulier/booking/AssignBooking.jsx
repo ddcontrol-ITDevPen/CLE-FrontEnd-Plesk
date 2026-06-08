@@ -383,7 +383,7 @@ export function ALEAssignBooking() {
                                 required
                                 disabled={!selectedDate}
                                 options={filteredSlots
-                                    .filter(s => s.pickUpTotalSlot > 0)
+                                    .filter(s => s.pickUpTotalSlot > 0 && !s.isCancelled)
                                     .map(s => ({
                                     label: `${s.time} (${s.pickUpTotalSlot} left)`,
                                     value: s.id

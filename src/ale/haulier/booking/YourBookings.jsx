@@ -133,14 +133,13 @@ export function ALEYourBookings ()  {
                 haulierContainers.map(async (cont) => {
                     try {
                         const assignment = await getAleAssignedHaulierByContainerId(cont.containerId);
-                        console.log(assignment);
+                        console.log(assignment)
                         return {
                             ...cont,
-                            date: assignment?.timeSlot?.date,
-                            timeSlot: assignment?.timeSlot?.time || "N/A"
+                            date: assignment?.aleTimeSlot?.date,
+                            timeSlot: assignment?.aleTimeSlot?.time || "N/A"
                         };
                     } catch (err) {
-                        console.error("No assignment found for", cont.containerId);
                         return { ...cont, timeSlot: "N/A" };
                     }
                 })
