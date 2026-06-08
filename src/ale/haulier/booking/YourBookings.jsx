@@ -169,6 +169,7 @@ export function ALEYourBookings ()  {
     const getStatusTimestamp = (container) => {
         if (container.status === "Assigned") return container.rtAssignedTime || container.assignedTime;
         if (container.status === "Enroute")  return container.rtEnrouteTime || container.enrouteTime;
+        if (container.status === "Accepted") return container.acceptedTime;
         if (container.status === "Gate-In")  return container.rtGatedInTime || container.gatedInTime;
         if (container.status === "Gate-Out") return container.rtGatedOutTime || container.gatedOutTime;
         if (container.status === "Delivered") return container.rtDeliveredTime || container.deliveredTime;
