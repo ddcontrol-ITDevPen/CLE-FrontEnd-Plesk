@@ -112,7 +112,7 @@ export function TerminalOperationHours() {
             maximumPickUpSlots: parseInt(schedule.maximumPickUpSlots || 0, 10),
             maximumDropOffSlots: parseInt(schedule.maximumDropOffSlots || 0, 10),
             autoAcceptMinutes: parseInt(schedule.autoAcceptMinutes || 0, 10),
-            autoRejectMinutes: parseInt(schedule.autoRejectMinutes || 0, 10),
+            autoRejectMinutes: parseInt(0),
             changeRemarks: changeRemarks
         };
 
@@ -273,15 +273,16 @@ export function TerminalOperationHours() {
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Auto Reject In:</label>
                                 <div className="relative flex items-center">
                                     <input
-                                        type="number"
+                                        type="text"
                                         placeholder="e.g. 60"
                                         className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 pr-12 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition shadow-sm"
-                                        value={schedule.autoRejectMinutes}
+                                        value="12:00 AM Next Morning"
                                         onChange={(e) => handleInputChange('autoRejectMinutes', e.target.value)}
                                         required
                                         min="1"
+                                        readOnly
                                     />
-                                    <span className="absolute right-4 text-xs font-bold text-slate-400 pointer-events-none">min</span>
+                                    <span className="absolute right-3 top-2.8 bg-red-100 text-red-700 text-xs font-bold px-2.5 py-1 rounded-lg">System Automated</span>
                                 </div>
                             </div>
                         </div>
@@ -291,7 +292,7 @@ export function TerminalOperationHours() {
                         <h2 className="text-lg font-bold text-slate-900 mb-4 border-b border-slate-100 pb-2">Schedule Update Remark</h2>
                         <div className="max-w-3xl flex flex-col gap-1.5">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                Reason for Midway Change (Notifies Affected Hauliers):
+                                Reason for Midway Change (Notifies Affected Truckers):
                                 {isUpdate && <span className="text-red-500 ml-1">*</span>}
                             </label>
                             <textarea

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, Bell, AlertTriangle } from 'lucide-react';
+import {X, Check, Bell, AlertTriangle, CheckCircle2} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getUnreadNotifications, markNotificationAsRead } from '../../services/notificationService.js';
 import {getUserById} from "../../services/userService.js";
@@ -64,8 +64,37 @@ export const NotificationOverlay = () => {
         <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-4 w-96">
             <AnimatePresence>
                 {notifications.map((notif) => {
-                    const isScheduleChange = notif.message?.toLowerCase().includes("terminal changed");
-                    const headingTitle = isScheduleChange ? "Terminal Schedule Shifted" : "Enroute Booking Rejected";
+                    const messageText = notif.message?.toLowerCase() || "";
+
+                    let headingTitle = "Booking Update";
+                    let barColor = "bg-system-color";
+                    let iconBg = "bg-blue-50 text-system-color";
+                    let icon = <Bell size={20} />;
+
+                    if (messageText.includes("terminal changed")) {
+                        headingTitle = "Terminal Schedule Shifted";
+                        barColor = "bg-amber-500";
+                        iconBg = "bg-amber-50 text-amber-600";
+                        icon = <Bell size={20} />;
+                    }
+                    else if (messageText.includes("automatically rejected")) {
+                        headingTitle = "Slot Auto-Accepted";
+                        barColor = "bg-green-500";
+                        iconBg = "bg-green-50 text-green-600";
+                        icon = <CheckCircle2 size={20} />;
+                    }
+                    else if (messageText.includes("automatically rejected")) {
+                        headingTitle = "Slot Auto-Rejected";
+                        barColor = "bg-slate-700";
+                        iconBg = "bg-slate-100 text-slate-700";
+                        icon = <Clock size={20} />;
+                    }
+                    else if (messageText.includes("rejected by the forwarding")) {
+                        headingTitle = "Enroute Booking Rejected";
+                        barColor = "bg-red-500";
+                        iconBg = "bg-red-50 text-red-600";
+                        icon = <AlertTriangle size={20} />;
+                    }
                     
                     return(
                     <motion.div
@@ -76,10 +105,10 @@ export const NotificationOverlay = () => {
                         className="bg-white shadow-[0_10px_40px_rgba(0,0,0,0.15)] rounded-2xl p-5 flex gap-4 items-start relative overflow-hidden"
                     >
                         {/* Subtle background decoration */}
-                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${isScheduleChange ? 'bg-amber-500' : 'bg-red-500'}`} />
+                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${barColor}`} />
 
-                        <div className={`p-3 rounded-xl h-fit ${isScheduleChange ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600'}`}>
-                            {isScheduleChange ? <Bell size={20} /> : <AlertTriangle size={20} />}
+                        <div className={`p-3 rounded-xl h-fit ${iconBg}`}>
+                            {icon}
                         </div>
 
                         <div className="flex-1">
