@@ -125,7 +125,6 @@ export function ALEYourBookings ()  {
             setIsLoading(true);
             const user = await getUserById(localStorage.getItem("userId"));
             const haulierId = user.companyCode;
-            console.log(haulierId);
             const data = await getAleContainers();
             const haulierContainers = data.filter(c => c.haulierId === haulierId);
 

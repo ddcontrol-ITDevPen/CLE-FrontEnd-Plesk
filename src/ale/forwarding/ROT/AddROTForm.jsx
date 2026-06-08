@@ -296,6 +296,18 @@ export function ALEAddROTForm() {
         if (!formData.terminalLocation) newErrors.terminalLocation = "Please select a Terminal!";
         if (!formData.rotDate) newErrors.rotDate = "ROT Date is required!";
 
+        const isDuplicate = bookings.some(booking =>
+            booking.awbNumber?.trim().toLowerCase() === formData.awbNumber?.trim().toLowerCase() &&
+            booking.houseAWBNumber?.trim().toLowerCase() === formData.houseAWBNumber?.trim().toLowerCase() &&
+            booking.rotNumber !== rotNumber
+        );
+
+        if (isDuplicate) {
+            newErrors.awbNumber = "This combination of AWB No. and House AWB No. already exists in a booking.";
+            newErrors.houseAWBNumber = "This combination of AWB No. and House AWB No. already exists in a booking.";
+            toast.error("Duplicate Entry! A booking with this AWB and House AWB combination already exists.");
+        }
+
         if (!formData.consignee) {
             newErrors.consignee = "Please select a Consignee!";
         } else if (formData.consignee === "Other") {
