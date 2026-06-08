@@ -318,7 +318,7 @@ export function ALEViewBookings() {
                         <InfoRow label="Driver Name" value={`${assignedHaulier?.driver?.name || "N/A"} (${assignedHaulier?.driver?.mobileNumber || "N/A"} / ${assignedHaulier?.driver?.emailAddress || "N/A"})`} />
                         <InfoRow label="PM No." value={assignedHaulier?.primeMover?.plateNumber || "N/A"} />
                         <InfoRow label="Trailer No." value={`${assignedHaulier?.trailer?.plateNumber || "N/A"} - ${assignedHaulier?.trailer?.type || "N/A"}`} />
-                        <InfoRow label="Time Slot" value={`${assignedHaulier?.timeSlot?.date || "N/A"} @ ${assignedHaulier?.timeSlot?.time || "N/A"}`} />
+                        <InfoRow label="Time Slot" value={`${assignedHaulier?.aleTimeSlot?.date || "N/A"} @ ${assignedHaulier?.aleTimeSlot?.time || "N/A"}`} />
                         <InfoRow label="Trucker Remarks" value={data?.aleBooking?.haulierRemarks || "N/A"} />
                     </Section>
                     )}

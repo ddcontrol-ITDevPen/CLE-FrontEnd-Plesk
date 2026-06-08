@@ -204,7 +204,7 @@ export function ALEViewECsnPDF() {
                         <PDFRow label="PM/Plate Number" value={assignedHaulier?.primeMover?.plateNumber} />
                         <PDFRow label="Trailer Number" value={`${assignedHaulier?.trailer?.plateNumber} - ${assignedHaulier?.trailer?.type}`} />
                         <PDFRow label="Driver" value={`${assignedHaulier?.driver?.name} (${assignedHaulier?.driver?.mobileNumber} / ${assignedHaulier?.driver?.emailAddress})`} />
-                        <PDFRow label="Time Slot" value={`${assignedHaulier?.timeSlot?.date} @ ${assignedHaulier?.timeSlot?.time}`} />
+                        <PDFRow label="Time Slot" value={`${assignedHaulier?.aleTimeSlot?.date} @ ${assignedHaulier?.aleTimeSlot?.time}`} />
                         <PDFRow label="BTM/BGK" value={`${assignedHaulier?.primeMover?.btm || 'N/A'} / ${assignedHaulier?.primeMover?.bgk || 'N/A'}`} />
                         <PDFRow label="Haulier Remarks" value={aleBooking.haulierRemarks} />
                     </div>
