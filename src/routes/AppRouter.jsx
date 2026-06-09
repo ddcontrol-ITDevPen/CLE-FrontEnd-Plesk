@@ -82,6 +82,8 @@ import {ALEConsigneeArchivedROTs} from "../ale/consignee/rot/ArchivedROTs.jsx";
 import {ALEAssignedNewBookings} from "../ale/forwarding/Booking/AssignedNewBookings.jsx";
 import {ALEViewAssignedNewBooking} from "../ale/forwarding/Booking/ViewAssignedNewBooking.jsx";
 import {TerminalOperationHours} from "../ale/terminal/operation/TerminalOperationHours.jsx";
+import RegisterPage from "../registration/RegisterAccount.jsx";
+import ForgotPasswordPage from "../forgotPassword/ForgotPassword.jsx";
 
 export default function AppRouter() {
     return (
@@ -89,6 +91,8 @@ export default function AppRouter() {
             <Routes>
                 {/* Auth Routes */}
                 <Route path="/login" element={<LoginPage />}/>
+                <Route path="/register" element={<LoginPage />}/>
+                <Route path="/forgot-password" element={<ForgotPasswordPage />}/>
 
                 {/* CLE */}
                 {/* Forwarding Routes */}

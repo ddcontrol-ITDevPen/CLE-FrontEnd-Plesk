@@ -21,3 +21,8 @@ export const logout = async () => {
         window.location.href = "/login";
     }
 };
+
+export const resetPassword = async (userId, emailAddress, password) => {
+    const response = await api.post(`${AUTH_URL}/reset-password`, {userId, emailAddress, password});
+    return response.data;
+}

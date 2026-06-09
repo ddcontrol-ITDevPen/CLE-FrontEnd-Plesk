@@ -209,9 +209,17 @@ export default function LoginPage() {
                                             {isLoading ? 'Authenticating...' : 'Login'}
                                         </button>
             
-                                        <a href="#" className="text-sm text-gray-700 hover:text-cle-blue hover:underline">
+                                        <a onClick={() => navigate("/forgot-password")} className="text-sm text-gray-700 hover:text-cle-blue hover:underline mb-5">
                                             Forgot Password?
                                         </a>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate("/register")}
+                                            className={`rounded-full bg-system-color px-10 py-3 text-sm font-semibold text-white transition-all shadow-xl hover:bg-system-color-dark hover:-translate-y-0.5`}
+                                        >
+                                            Want to be our member?
+                                        </button>
                                     </div>
             
                                 </form>
