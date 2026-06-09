@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {X, Check, Bell, AlertTriangle, CheckCircle2} from 'lucide-react';
+import {X, Check, Bell, AlertTriangle, CheckCircle2, Clock} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getUnreadNotifications, markNotificationAsRead } from '../../services/notificationService.js';
 import {getUserById} from "../../services/userService.js";
@@ -77,7 +77,7 @@ export const NotificationOverlay = () => {
                         iconBg = "bg-amber-50 text-amber-600";
                         icon = <Bell size={20} />;
                     }
-                    else if (messageText.includes("automatically rejected")) {
+                    else if (messageText.includes("automatically accepted")) {
                         headingTitle = "Slot Auto-Accepted";
                         barColor = "bg-green-500";
                         iconBg = "bg-green-50 text-green-600";
