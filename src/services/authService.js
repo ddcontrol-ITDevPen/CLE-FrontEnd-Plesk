@@ -23,6 +23,6 @@ export const logout = async () => {
 };
 
 export const resetPassword = async (userId, emailAddress, password) => {
-    const response = await api.post(`${AUTH_URL}/reset-password`, {userId, emailAddress, password});
+    const response = await api.post(`${AUTH_URL}/forgot-password`, {userId, emailAddress, password});
     return response.data;
 }
