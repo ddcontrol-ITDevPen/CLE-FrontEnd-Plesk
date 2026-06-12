@@ -175,7 +175,7 @@ export function ALECreateROT() {
         <Layout role="forwarder">
             <Toaster richColors position="top-right" />
             <div className="max-w-6xl">
-                <h1 className="text-3xl font-bold text-text-heading mb-8">Create New ROT - Forwarding</h1>
+                <h1 className="text-3xl font-bold text-text-heading mb-8">Create New ROT</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     <section>
