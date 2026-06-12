@@ -114,6 +114,18 @@ export function ALECreateROT() {
         if (!formData.weight) {newErrors.weight = "Weight is required!";}
         else if (isNaN(formData.weight)) {newErrors.weight = "Weight should be a number!";}
         else if (Number(formData.weight) <= 0) {newErrors.weight = "Weight must be greater than zero!";}
+
+        if(!formData.forwardingId) newErrors.forwardingId = "Forwarding Agent is required!";
+
+        const isDuplicate = bookings.some(booking =>
+            booking.awbNumber?.trim().toLowerCase() === formData.awbNumber?.trim().toLowerCase() &&
+            booking.houseAWBNumber?.trim().toLowerCase() === formData.houseAWBNumber?.trim().toLowerCase() 
+        )
+        if (isDuplicate) {
+            newErrors.awbNumber = "This combination of AWB No. and House AWB No. already exists in a booking.";
+            newErrors.houseAWBNumber = "This combination of AWB No. and House AWB No. already exists in a booking.";
+            toast.error("Duplicate Entry! A booking with this AWB and House AWB combination already exists.");
+        }
         
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -193,7 +205,7 @@ export function ALECreateROT() {
                                     </>
                                 )}
                                 <InputField label="Consignee SSM/ROC No." name="ssmNumber" value={formData.ssmNumber} onChange={handleChange} readOnly={formData.consignee && formData.consignee !== "Other"} error={errors.ssmNumber} required/>
-                                <SelectField label="Forwarding Agent" name="forwardingId" value={formData.forwardingId} onChange={handleChange} options={forwardings.map(t => ({label: t.companyName, value: t.companyCode}))} />
+                                <SelectField label="Forwarding Agent" name="forwardingId" value={formData.forwardingId} onChange={handleChange} options={forwardings.map(t => ({label: t.companyName, value: t.companyCode}))} error={errors.forwardingId} required />
                             </div>
                             </div>
                         </div>

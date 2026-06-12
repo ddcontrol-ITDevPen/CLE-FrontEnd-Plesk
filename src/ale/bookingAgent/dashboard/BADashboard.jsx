@@ -16,7 +16,9 @@ import {
 } from 'recharts';
 import {getAllAleBookingsByBookingAgent} from "../../../services/aleBookingService.js";
 import {
-    getAllAleContainersByConsignee} from "../../../services/aleContainerService.js";
+    getAllAleContainersByBookingAgent,
+    getAllAleContainersByConsignee
+} from "../../../services/aleContainerService.js";
 import {toast} from "sonner";
 import {getUserById} from "../../../services/userService.js";
 
@@ -89,7 +91,7 @@ export function BADashboard() {
 
                 const [bookingData, containerData] = await Promise.all([
                     getAllAleBookingsByBookingAgent(bookingAgentId),
-                    getAllAleContainersByConsignee(bookingAgentId),
+                    getAllAleContainersByBookingAgent(bookingAgentId),
                 ]);
                 setBookings(bookingData || []);
                 setContainers(containerData || []);
