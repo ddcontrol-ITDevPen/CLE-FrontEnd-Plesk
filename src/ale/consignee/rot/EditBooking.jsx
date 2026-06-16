@@ -340,7 +340,7 @@ export function ALEEditBooking() {
                             <div className="p-8">
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                                     <InputField label="Total Package Quantity" name="updatedTotalPackageQuantity" value={formData.updatedTotalPackageQuantity} onChange={handleChange} error={errors.updatedTotalPackageQuantity} required />
-                                    <InputField label="Weight" name="updatedWeight" value={formData.updatedWeight} onChange={handleChange} error={errors.updatedWeight} required />
+                                    <InputField label="Weight (kg)" name="updatedWeight" value={formData.updatedWeight} onChange={handleChange} error={errors.updatedWeight} required />
                                     <InputField label="Size" name="size" value={formData.size} onChange={handleChange} error={errors.size} required />
                                 </div>
                             </div>

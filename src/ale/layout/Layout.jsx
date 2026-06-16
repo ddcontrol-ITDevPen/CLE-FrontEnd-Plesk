@@ -84,9 +84,9 @@ export default function Layout({ children, role }) {
                         {/*    </button>*/}
                         {/*</div>*/}
                         <div className="flex justify-end items-center ml-5 gap-6 px-3 lg:justify-end">
-                            <button className="cursor-pointer" onClick={"/"}>
-                                <FaCartPlus className="text-system-color size-7"></FaCartPlus>
-                            </button>
+                            {/*<button className="cursor-pointer" onClick={"/"}>*/}
+                            {/*    <FaCartPlus className="text-system-color size-7"></FaCartPlus>*/}
+                            {/*</button>*/}
                             <button className="cursor-pointer" onClick={"/"}>
                                 <FaGear className="text-system-color size-7"></FaGear>
                             </button>

@@ -39,6 +39,7 @@ export function ALECreateROT() {
         externalConsigneeName: "",
         externalConsigneeAddress: "",
         externalConsigneeContact: "",
+        externalConsigneeEmail: "",
         carrierReferenceNumber: "",
         totalPackageQuantity: 1,
         weight: 1.0,
@@ -74,13 +75,17 @@ export function ALECreateROT() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => {
-            const newData = { ...prev, [name]: value };
+            let cleanValue = value;
+            if (name === "ssmNumber") {
+                cleanValue = value.replace(/[^a-zA-Z0-9]/g, "");
+            }
+            const newData = { ...prev, [name]: cleanValue };
             if (name === "consignee") {
                 if (value === "Other") {
                     newData.ssmNumber = "";
                 } else {
                     const selectedCompany = consignees.find(c => c.companyCode === value);
-                    newData.ssmNumber = selectedCompany?.ssmNo || selectedCompany?.ssmNumber || "";
+                    newData.ssmNumber = (selectedCompany?.ssmNo || selectedCompany?.ssmNumber || "").replace(/[^a-zA-Z0-9]/g, "");
                 }
             }
             return newData;
@@ -102,7 +107,8 @@ export function ALECreateROT() {
         } else if (formData.consignee === "Other") {
             if (!formData.externalConsigneeName) newErrors.externalConsigneeName = "Consignee Name is required!";
             if (!formData.externalConsigneeAddress) newErrors.externalConsigneeAddress = "Consignee Address is required!";
-            if (!formData.externalConsigneeContact) newErrors.externalConsigneeContact = "Consignee Contact Information is required!";
+            if (!formData.externalConsigneeContact) newErrors.externalConsigneeContact = "Consignee Contact Number is required!";
+            if (!formData.externalConsigneeEmail) newErrors.externalConsigneeEmail = "Consignee Email Address is required!";
         }
 
         if (!formData.ssmNumber) newErrors.ssmNumber = "SSM or ROC Number is required!";
@@ -155,6 +161,7 @@ export function ALECreateROT() {
                 bookingPayload.externalConsigneeName = formData.externalConsigneeName;
                 bookingPayload.externalConsigneeAddress = formData.externalConsigneeAddress;
                 bookingPayload.externalConsigneeContact = formData.externalConsigneeContact;
+                bookingPayload.externalConsigneeEmail = formData.externalConsigneeEmail;
                 bookingPayload.ssmNumber = formData.ssmNumber;
             }
             console.log("Registering new booking record:", bookingPayload);
@@ -201,7 +208,8 @@ export function ALECreateROT() {
                                     <>
                                         <InputField label="Consignee/Shipper Name" name="externalConsigneeName" value={formData.externalConsigneeName} onChange={handleChange} error={errors.externalConsigneeName} required />
                                         <InputField label="Consignee/Shipper Address" name="externalConsigneeAddress" value={formData.externalConsigneeAddress} onChange={handleChange} error={errors.externalConsigneeAddress} required />
-                                        <InputField label="Consignee/Shipper Contact Information" name="externalConsigneeContact" value={formData.externalConsigneeContact} onChange={handleChange} placeholder="012-3456789, john@example.com" error={errors.externalConsigneeContact} required />
+                                        <InputField label="Consignee/Shipper Contact Number" name="externalConsigneeContact" value={formData.externalConsigneeContact} onChange={handleChange} placeholder="012-3456789" error={errors.externalConsigneeContact} required />
+                                        <InputField label="Consignee/Shipper Email Address" name="externalConsigneeEmail" value={formData.externalConsigneeEmail} onChange={handleChange} placeholder="john@example.com" error={errors.externalConsigneeEmail} required />
                                     </>
                                 )}
                                 <InputField label="Consignee SSM/ROC No." name="ssmNumber" value={formData.ssmNumber} onChange={handleChange} readOnly={formData.consignee && formData.consignee !== "Other"} error={errors.ssmNumber} required/>
@@ -224,7 +232,7 @@ export function ALECreateROT() {
                             <div className="p-8">
                                 <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
                                     <InputField label="Total Package Quantity" name="totalPackageQuantity" value={formData.totalPackageQuantity} onChange={handleChange} error={errors.totalPackageQuantity} required />
-                                    <InputField label="Weight" name="weight" value={formData.weight} onChange={handleChange} error={errors.weight} required />
+                                    <InputField label="Weight (kg)" name="weight" value={formData.weight} onChange={handleChange} error={errors.weight} required />
                                 </div>
                             </div>
                         </div>

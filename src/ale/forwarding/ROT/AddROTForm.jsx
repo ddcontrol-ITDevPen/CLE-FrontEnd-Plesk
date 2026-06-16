@@ -71,6 +71,7 @@ export function ALEAddROTForm() {
         externalConsigneeName: "",
         externalConsigneeAddress: "",
         externalConsigneeContact: "",
+        externalConsigneeEmail: "",
         carrierReferenceNumber: "",
         totalPackageQuantity: 1,
         weight: 1.0,
@@ -130,11 +131,12 @@ export function ALEAddROTForm() {
             volumeMetricWeight: stateBooking.volumeMetricWeight || savedData.volumeMetricWeight || "",
             rotDate: stateBooking.rotDate ? stateBooking.rotDate.split('T')[0] : (savedData.rotDate || ""),
             haulier: stateBooking.haulierId || stateBooking.haulier || savedData.haulier || "",
-            consignee: stateBooking.consigneeId || stateBooking.consignee || savedData.consignee || "",
+            consignee: (location.state?.bookingData ? (stateBooking.consigneeId || stateBooking.consignee || "Other") : null) || savedData.consignee || "",
             haulierChoice: stateBooking.haulierChoice || savedData.haulierChoice || "Single",
             externalConsigneeName: stateBooking.externalConsigneeName || savedData.externalConsigneeName || "",
             externalConsigneeAddress: stateBooking.externalConsigneeAddress || savedData.externalConsigneeAddress || "",
             externalConsigneeContact: stateBooking.externalConsigneeContact || savedData.externalConsigneeContact || "",
+            externalConsigneeEmail: stateBooking.externalConsigneeEmail || savedData.externalConsigneeEmail || "",
             forwarding: savedData.forwarding || localStorage.getItem("companyName") || "",
             carrierReferenceNumber: stateBooking.carrierReferenceNumber || savedData.carrierReferenceNumber || "",
             totalPackageQuantity: stateBooking.totalPackageQuantity || savedData.totalPackageQuantity || 1,
@@ -205,14 +207,18 @@ export function ALEAddROTForm() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => {
-            const newData = { ...prev, [name]: value };
+            let cleanValue = value;
+            if (name === "ssmNumber") {
+                cleanValue = value.replace(/[^a-zA-Z0-9]/g, "");
+            }
+            const newData = { ...prev, [name]: cleanValue };
             if (name === "haulierChoice" && value === "Multiple") newData.haulier = "";
             if (name === "consignee") {
                 if (value === "Other") {
                     newData.ssmNumber = "";
                 } else {
                     const selectedCompany = consignees.find(c => c.companyCode === value);
-                    newData.ssmNumber = selectedCompany?.ssmNo || selectedCompany?.ssmNumber || "";
+                    newData.ssmNumber = (selectedCompany?.ssmNo || selectedCompany?.ssmNumber || "").replace(/[^a-zA-Z0-9]/g, "");
                 }
             }
             return newData;
@@ -273,7 +279,7 @@ export function ALEAddROTForm() {
         if (!formData.packageQuantity) {newErrors.packageQuantity = "Number of Packages is required!";}
         else if (isNaN(formData.packageQuantity)) {newErrors.packageQuantity = "Package Quantity should be a number!";}
         else if (Number(formData.packageQuantity) <= 0) {newErrors.packageQuantity = "Package Quantity must be greater than zero!";}
-        else if (Number(formData.packageQuantity) > Number(formData.totalPackageQuantity)) {newErrors.packageQuantity = "Package Quantity should not be more than Total Package Quantity!";}
+        // else if (Number(formData.packageQuantity) > Number(formData.totalPackageQuantity)) {newErrors.packageQuantity = "Package Quantity should not be more than Total Package Quantity!";}
         
         if (!formData.airline) newErrors.airline = "Shipping Agent is required!";
         if (!formData.billingParty) newErrors.billingParty = "Billing Party is required!";
@@ -313,13 +319,25 @@ export function ALEAddROTForm() {
         } else if (formData.consignee === "Other") {
             if (!formData.externalConsigneeName) newErrors.externalConsigneeName = "Consignee Name is required!";
             if (!formData.externalConsigneeAddress) newErrors.externalConsigneeAddress = "Consignee Address is required!";
-            if (!formData.externalConsigneeContact) newErrors.externalConsigneeContact = "Consignee Contact Information is required!";
+            if (!formData.externalConsigneeContact) newErrors.externalConsigneeContact = "Consignee Contact Number is required!";
+            if (!formData.externalConsigneeEmail) newErrors.externalConsigneeEmail = "Consignee Email Address is required!";
         }
 
+        const tq = Number(formData.truckQuantity);
+        const pq = Number(formData.packageQuantity);
+        const tpq = Number(formData.totalPackageQuantity);
+        
         if (isNaN(formData.totalPackageQuantity)) {newErrors.totalPackageQuantity = "Total Package Quantity should be a number!";}
-        else if (Number(formData.totalPackageQuantity) <= 0) {newErrors.totalPackageQuantity = "Total Package Quantity must be greater than zero!";}
-        else if (Number(formData.totalPackageQuantity) < Number(formData.packageQuantity)) {newErrors.totalPackageQuantity = "Total Package Quantity should not be less than Package Quantity!";}
-        else if (Number(formData.packageQuantity * formData.truckQuantity) !== Number(formData.totalPackageQuantity)) {newErrors.totalPackageQuantity = "Total Package Quantity should be a multiply of truck and package quantity!";}
+        else if (tpq <= 0) {newErrors.totalPackageQuantity = "Total Package Quantity must be greater than zero!";}
+        else if (tpq < pq) {newErrors.totalPackageQuantity = "Total Package Quantity should not be less than Package Quantity!";}
+        else {
+            const totalCapacity = tq * pq;
+            if (tpq > totalCapacity) {
+                newErrors.totalPackageQuantity = `Total packages (${tpq}) exceeds the combined capacity of your trucks (${totalCapacity}). Increase trucks or package quantity per truck!`;
+            } else if (tpq <= (tq - 1) * pq && tq > 1) {
+                newErrors.totalPackageQuantity = `You have configured too many trucks. Total packages (${tpq}) can fit into fewer trucks.`;
+            }
+        }
 
         if (isNaN(formData.weight)) {newErrors.weight = "Weight should be a number!";}
         else if (Number(formData.weight) <= 0) {newErrors.weight = "Weight must be greater than zero!";}
@@ -335,6 +353,10 @@ export function ALEAddROTForm() {
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             return;
+        }
+        
+        if (tq > 1 && tpq <= (tq - 1) * pq) {
+            toast.info(`Note: Your total packages (${tpq}) could mathematically fit into fewer trucks. Please ensure the extra truck space is intentional.`);
         }
         setIsSubmitting(true);
         console.log("Form ROT NUMBER: ", formData.rotNumber);
@@ -377,6 +399,7 @@ export function ALEAddROTForm() {
                 bookingPayload.externalConsigneeName = formData.externalConsigneeName;
                 bookingPayload.externalConsigneeAddress = formData.externalConsigneeAddress;
                 bookingPayload.externalConsigneeContact = formData.externalConsigneeContact;
+                bookingPayload.externalConsigneeEmail = formData.externalConsigneeEmail;
             }
 
             let rotNum = "";
@@ -543,7 +566,8 @@ export function ALEAddROTForm() {
                                         <>
                                             <InputField label="Consignee/Shipper Name" name="externalConsigneeName" value={formData.externalConsigneeName} onChange={handleChange} error={errors.externalConsigneeName} required />
                                             <InputField label="Consignee/Shipper Address" name="externalConsigneeAddress" value={formData.externalConsigneeAddress} onChange={handleChange} error={errors.externalConsigneeAddress} required />
-                                            <InputField label="Consignee/Shipper Contact Information" name="externalConsigneeContact" value={formData.externalConsigneeContact} onChange={handleChange} placeholder="012-3456789, john@example.com" error={errors.externalConsigneeContact} required />
+                                            <InputField label="Consignee/Shipper Contact Number" name="externalConsigneeContact" value={formData.externalConsigneeContact} onChange={handleChange} placeholder="012-3456789" error={errors.externalConsigneeContact} required />
+                                            <InputField label="Consignee/Shipper Email Address" name="externalConsigneeEmail" value={formData.externalConsigneeEmail} onChange={handleChange} placeholder="john@example.com" error={errors.externalConsigneeEmail} required />
                                         </>
                                     )}
                                     <InputField label="Consignee SSM/ROC No." name="ssmNumber" value={formData.ssmNumber} onChange={handleChange} readOnly={formData.consignee && formData.consignee !== "Other"} />
@@ -567,7 +591,7 @@ export function ALEAddROTForm() {
                             <div className="p-8">
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                                     <InputField label="Total Package Quantity" name="totalPackageQuantity" value={formData.totalPackageQuantity} onChange={handleChange} error={errors.totalPackageQuantity} />
-                                    <InputField label="Weight" name="weight" value={formData.weight} onChange={handleChange} error={errors.weight} />
+                                    <InputField label="Weight (kg)" name="weight" value={formData.weight} onChange={handleChange} error={errors.weight} />
                                     <InputField label="Size" name="size" value={formData.size} onChange={handleChange}/>
                                 </div>
                             </div>

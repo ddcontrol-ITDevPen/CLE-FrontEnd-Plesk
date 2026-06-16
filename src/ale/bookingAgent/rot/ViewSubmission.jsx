@@ -134,7 +134,7 @@ export function ALEViewSubmission() {
                             <DataField label="Consignee SSM/ROC No." value={data?.ssmNumber || "N/A"} />
                             <DataField label="Person In charge (PIC)" value={data.consigneeCompany?.picName || "N/A"} />
                             <DataField label="PIC Contact Handphone" value={data.consigneeCompany?.handphoneNumber || data.externalConsigneeContact} />
-                            <DataField label="Email Address" value={data.consigneeCompany?.emailAddress || "N/A"} />
+                            <DataField label="Email Address" value={data.consigneeCompany?.emailAddress || data.externalConsigneeEmail} />
                         </InfoSection>
                     </div>
 
@@ -146,7 +146,7 @@ export function ALEViewSubmission() {
                             </div>
                             <div className="flex-1 grid grid-cols-1 gap-y-4">
                                 <DataField label="Total Package Quantity Units" value={`${data.totalPackageQuantity} (Updated Value: ${data.updatedTotalPackageQuantity || "N/A"})`} />
-                                <DataField label="Weight Cargo Metric (Tonne)" value={`${data.weight} (Updated Value: ${data.updatedWeight || "N/A"})`} />
+                                <DataField label="Weight Cargo Metric (Kg)" value={`${data.weight} (Updated Value: ${data.updatedWeight || "N/A"})`} />
                                 <DataField label="Dimension Size" value={data?.size || "N/A"} />
                             </div>
                         </div>

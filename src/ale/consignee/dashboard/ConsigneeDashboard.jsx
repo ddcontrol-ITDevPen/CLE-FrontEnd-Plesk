@@ -97,7 +97,7 @@ export function ALEConsigneeDashboard() {
         });
 
         return months.map((m, i) => ({ name: m, value: counts[i] }));
-    }, [bookings]);
+    }, [containers]);
 
     const recentArrivals = useMemo(() => {
         return [...containers].slice(0, 3);
@@ -201,7 +201,8 @@ export function ALEConsigneeDashboard() {
                                     const theme = STATUS_CONFIG[b.status] || {bg: "bg-gray-100", text: "text-gray-700"};
 
                                     return (
-                                        <div key={idx} className="p-4 border border-gray-100 rounded-xl hover:border-gray-200 hover:shadow-sm transition-all bg-gray-50/40">
+                                        <div key={idx} className="p-4 border border-gray-100 rounded-xl hover:border-gray-200 hover:shadow-sm transition-all bg-gray-50/40 cursor-pointer"
+                                        onClick={() => navigate(`/ale/rot/view/${b.containerId}`)}>
                                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                                                 <div>
                                                     <span className="text-xs font-black tracking-wider text-indigo-600 uppercase bg-indigo-50 px-2.5 py-1 rounded-md">

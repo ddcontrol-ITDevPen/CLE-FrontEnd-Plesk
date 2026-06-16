@@ -10,6 +10,7 @@ const portImage2 = "../assets/portImage2.png";
 const portImage3 = "../assets/portImage3.png";
 const cleLogo = "../assets/CLE-Logo.png";
 const aleLogo = "../assets/ALE-Logo.png";
+const wleLogo = "../assets/WLE-Logo.png";
 const claLogo = "../assets/CLA-Logo.png";
 
 const ACCESS_OPTIONS = {
@@ -43,8 +44,8 @@ export default function LoginPage() {
         setIsLoading(true);
         setError('');
 
-        if (!location) {
-            setError('Please select a location');
+        if (!username || !password || !location) {
+            setError('Validation error');
             setIsLoading(false);
             return;
         }
@@ -88,12 +89,14 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(to_bottom_right,rgba(35,0,230,0.65),rgba(225,224,254,1),rgba(238,220,154,0.65))] p-4 font-sans">
             <motion.div
                 layout
-                className={`flex flex-col lg:flex-row lg:w-5/6 overflow-hidden bg-white shadow-cle rounded-xl transition-all duration-700 
+                transition={{type: "tween", ease: "easeOut", duration: 0.6}}
+                className={`flex flex-col lg:flex-row lg:w-5/6 overflow-hidden bg-white shadow-cle rounded-xl
                 ${isSuccess ? 'min-h-0 lg:min-h-[650px] lg:flex-row-reverse' : 'min-h-[510px] lg:min-h-[650px] lg:flex-row'}`}
             >
                 <motion.div
                     layout
-                    transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                    // transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                    transition={{type: "tween", ease: "easeOut", duration: 0.6}}
                     className="hidden lg:block lg:w-6/13 bg-system-color relative"
                 >
                     <img
@@ -113,6 +116,7 @@ export default function LoginPage() {
                 </motion.div>
                 <motion.div
                     layout
+                    transition={{type: "tween", ease: "easeOut", duration: 0.6}}
                     className="w-full lg:w-7/13 p-6 sm:p-12 flex flex-col justify-center bg-white"
                 >
                     <AnimatePresence mode="wait">
@@ -125,7 +129,7 @@ export default function LoginPage() {
                                 transition={{ duration: 0.5 }}
                             >
                                 <h1 className="mb-6 text-4xl font-bold text-gray-800">Log In</h1>
-                                <form onSubmit={handleLogin} className="space-y-6">
+                                <form onSubmit={handleLogin} className="space-y-6" noValidate>
             
                                     <div className="flex items-center gap-3">
                                         <EntityCard
@@ -141,12 +145,19 @@ export default function LoginPage() {
                                             onClick={() => {setAccess('ALE'); setLocation(''); setError(''); }}
                                         />
                                         <EntityCard
+                                            logo={wleLogo}
+                                            name="WLE"
+                                            isSelected={access === 'WLE'}
+                                            disabled
+                                            onClick={() => {setAccess('WLE'); setLocation(''); setError(''); }}
+                                        />
+                                        <EntityCard
                                             logo={claLogo}
                                             name="CLA"
                                             onClick={() => window.location.href = "https://www.clap.my"}
                                         />
                                         {/* Empty Placeholder Card from Figma */}
-                                        <div className="h-[60px] w-1/3 rounded-xl border border-gray-200 bg-white"></div>
+                                        {/*<div className="h-[60px] w-1/3 rounded-xl border border-gray-200 bg-white"></div>*/}
                                     </div>
             
                                     <div className="space-y-4 shadow-input">
@@ -303,10 +314,11 @@ const InputField = ({ icon: Icon, type, placeholder, value, onChange, isPassword
     );
 };
 
-const EntityCard = ({ logo, name, isSelected, onClick }) => (
+const EntityCard = ({ logo, name, isSelected, onClick, disabled }) => (
     <button
         type="button"
         onClick={onClick}
+        disabled={disabled}
         className={`flex flex-col h-[75px] sm:h-[90px] items-center justify-center rounded-xl border p-2 transition-all w-1/3 hover:scale-105
             ${isSelected
             ? 'border-system-color ring-1 ring-bg-system-color shadow-lg bg-blue-50/10'

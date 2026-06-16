@@ -158,7 +158,7 @@ export function ALEViewBooking() {
                             </div>
                             <div className="flex-1 grid grid-cols-1 gap-y-4">
                                 <DataField label="Total Package Quantity Units" value={`${data.updatedTotalPackageQuantity || "N/A"} (Original Value: ${data.totalPackageQuantity})`} />
-                                <DataField label="Weight Cargo Metric (Tonne)" value={`${data.updatedWeight || "N/A"} (Original Value: ${data.weight})`} />
+                                <DataField label="Weight Cargo Metric (Kg)" value={`${data.updatedWeight || "N/A"} (Original Value: ${data.weight})`} />
                                 <DataField label="Dimension Size" value={data?.size || "N/A"} />
                             </div>
                         </div>
