@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import * as XLSX from 'xlsx';
 import {getUserById} from "../../../services/userService.js";
 import {getAleAssignedHaulierByContainerId} from "../../../services/aleAssignedHaulierService.js";
+import {LuScanSearch} from "react-icons/lu";
 
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
@@ -593,6 +594,9 @@ export function AkpsbookingList() {
                                                         if (cont.approvedCustomTime) {
                                                             return <Check className="text-emerald-500" size={20} strokeWidth={3} />;
                                                         }
+                                                        if (cont.examineCustomTime) {
+                                                            return <LuScanSearch className="text-yellow-500" size={20} strokeWidth={3} />;
+                                                        }
                                                         if (cont.rejectedCustomTime) {
                                                             return <LucideX className="text-red-500" size={20} strokeWidth={3} />;
                                                         }
@@ -607,6 +611,9 @@ export function AkpsbookingList() {
                                                     {(() => {
                                                         if (cont.approvedAKPSTime) {
                                                             return <Check className="text-emerald-500" size={20} strokeWidth={3} />;
+                                                        }
+                                                        if (cont.examineAKPSTime) {
+                                                            return <LuScanSearch className="text-yellow-500" size={20} strokeWidth={3} />;
                                                         }
                                                         if (cont.rejectedAKPSTime) {
                                                             return <LucideX className="text-red-500" size={20} strokeWidth={3} />;

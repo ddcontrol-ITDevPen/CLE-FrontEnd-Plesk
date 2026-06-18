@@ -604,7 +604,7 @@ export function TerminalList ()  {
                                                 <div className="flex items-center justify-start gap-3">
                                                     <Eye size={18}
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)}/>
-                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) &&  cont.acceptedTime === null && (
+                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete", "Examine-AKPS", "Examine-Custom", "Examine-Complete"].includes(cont.status) &&  cont.acceptedTime === null && (
                                                         <button
                                                             onClick={() => setStatusModal({
                                                                 isOpen: true,
@@ -615,7 +615,7 @@ export function TerminalList ()  {
                                                             <Check size={18} />
                                                         </button>
                                                     )}
-                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) && (cont.rejectedTime === null && cont.acceptedTime === null) && (
+                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete", "Examine-AKPS", "Examine-Custom", "Examine-Complete"].includes(cont.status) && (cont.rejectedTime === null && cont.acceptedTime === null) && (
                                                         <button
                                                             onClick={() => setStatusModal({
                                                                 isOpen: true,
@@ -630,7 +630,7 @@ export function TerminalList ()  {
                                                         </button>
                                                     )}
 
-                                                    {cont.acceptedTime !== null && cont.approvedBothTime !== null && cont.rejectedTime === null &&(
+                                                    {cont.acceptedTime !== null && (cont.approvedBothTime !== null || cont.examineBothTime !== null) && cont.rejectedTime === null &&(
                                                         <>
                                                             {cont.status !== "Gate-In" && cont.status !== "Gate-Out" && cont.gatedInTime === null && (
                                                                 <button
