@@ -4,14 +4,24 @@ import { ChartNoAxesCombined, CircleChevronDown } from "lucide-react";
 
 const StatusInfographic = ({ containers }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const activeRole = (localStorage.getItem("role") || "").toLowerCase();
+    const isPrivilegedRole = activeRole === "akps" || activeRole === "customs";
+
+    const maskText = (text) => {
+        if (!text) return text;
+        if (!isPrivilegedRole) {
+            return text.replace(/examine/gi, "Approved")
+        }
+        return text;
+    }
 
     const stats = useMemo(() => {
         const counts = {
             Assigned: 0,
             Enroute: 0,
-            // "Examine-Custom": 0,
-            // "Examine-AKPS": 0,
-            // "Examine-Both": 0,
+            "Examine-Custom": 0,
+            "Examine-AKPS": 0,
+            "Examine-Both": 0,
             "Approved-Custom": 0,
             "Approved-AKPS": 0,
             "Approved-Complete": 0,
@@ -27,12 +37,13 @@ const StatusInfographic = ({ containers }) => {
             Deleted: 0,
         };
         containers.forEach(c => {
-            if (counts.hasOwnProperty(c.status)) {
-                counts[c.status]++;
+            const targetedStatus = maskText(c.status);
+            if (counts.hasOwnProperty(maskText(targetedStatus))) {
+                counts[targetedStatus]++;
             }
         });
         return counts;
-    }, [containers]);
+    }, [containers, isPrivilegedRole]);
 
     return (
         <div className="mb-6">
@@ -65,24 +76,28 @@ const StatusInfographic = ({ containers }) => {
                                 <tr className="bg-gray-100 text-gray-600 text-xs uppercase">
                                     <th className="p-3 border">Assigned</th>
                                     <th className="p-3 border">Enroute</th>
+                                    <th className="p-3 border">Approved-AKPS</th>
+                                    <th className="p-3 border">Approved-Custom</th>
+                                    <th className="p-3 border">Approved-Both</th>
                                     <th className="p-3 border">Gate In</th>
                                     <th className="p-3 border">Gate Out</th>
                                     <th className="p-3 border">Delivered</th>
                                     <th className="p-3 border">RFC</th>
                                     <th className="p-3 border">Rejected</th>
-                                    <th className="p-3 border">Deleted</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr className="text-center font-bold text-lg text-system-color">
                                     <td className="p-4 border bg-orange-50/30">{stats.Assigned}</td>
                                     <td className="p-4 border bg-amber-50/30">{stats.Enroute}</td>
+                                    <td className="p-4 border bg-amber-50/30">{stats["Approved-AKPS"]}</td>
+                                    <td className="p-4 border bg-amber-50/30">{stats["Approved-Custom"]}</td>
+                                    <td className="p-4 border bg-amber-50/30">{stats["Approved-Complete"]}</td>
                                     <td className="p-4 border bg-blue-50/30">{stats["Gate-In"]}</td>
                                     <td className="p-4 border bg-indigo-50/30">{stats["Gate-Out"]}</td>
                                     <td className="p-4 border bg-emerald-50/30">{stats.Delivered}</td>
                                     <td className="p-4 border bg-teal-50/30">{stats.RFC}</td>
                                     <td className="p-4 border bg-teal-50/30">{stats.Rejected}</td>
-                                    <td className="p-4 border bg-teal-50/30">{stats.Deleted}</td>
                                     
                                 </tr>
                                 </tbody>

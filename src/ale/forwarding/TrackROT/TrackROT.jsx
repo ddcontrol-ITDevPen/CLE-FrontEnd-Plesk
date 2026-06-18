@@ -9,9 +9,9 @@ import {getUserById} from "../../../services/userService.js";
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
     "Enroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
-    // "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
-    // "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
-    // "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
+    "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
     "Approved-AKPS": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
     "Approved-Custom": { bg: "bg-delivered-rfc",   text: "text-emerald-900",   border: "border-teal-200" },
     "Approved-Complete": { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
@@ -38,6 +38,17 @@ export function ALETrackROT () {
     const [hasSearched, setHasSearched] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    const activeRole = (localStorage.getItem("role") || "").toLowerCase();
+    const isPrivilegedRole = activeRole === "akps" || activeRole === "customs";
+
+    const maskStatus = (statusText) => {
+        if (!statusText) return statusText;
+        if (!isPrivilegedRole) {
+            return statusText.replace(/examine/gi, "Approved");
+        }
+        return statusText;
+    };
+
     const handleSearch = async (e) => {
         if (e) e.preventDefault();
         if (!searchQuery.trim()) return;
@@ -49,6 +60,7 @@ export function ALETrackROT () {
             const companyCode = user.companyCode;
             const allContainers = await getAleContainers();
             const containers = allContainers.filter(container => {
+                if (isPrivilegedRole) return true;
                 const isForwarder = container.aleBooking?.forwardingId === companyCode;
                 const isHaulier = container.haulierId === companyCode;
                 const isTerminal = container.terminalId === companyCode;
@@ -62,7 +74,11 @@ export function ALETrackROT () {
                 cont.aleBooking?.houseAWBNumber?.toLowerCase() === searchQuery.toLowerCase() ||
                 cont.rotNumber?.toLowerCase() === searchQuery.toLowerCase() ||
                 cont.containerId?.toString() === searchQuery
-            );
+            ).map(cont => ({
+                ...cont,
+                rawStatus: cont.status,
+                status: maskStatus(cont.status)
+            }));
 
             setResults(filtered);
             setHasSearched(true);

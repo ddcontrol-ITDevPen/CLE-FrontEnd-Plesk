@@ -46,6 +46,16 @@ export function ALEYourROTs ()  {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
 
+    const activeRole = (localStorage.getItem("role") || "").toLowerCase();
+    const isPrivilegedRole = activeRole === "akps" || activeRole === "customs";
+    const maskStatus = (statusText) => {
+        if (!statusText) return statusText;
+        if (!isPrivilegedRole) {
+            return statusText.replace(/examine/gi, "Approved");
+        }
+        return statusText;
+    };
+    
     useEffect(() => {
         fetchData();
     }, []);
@@ -156,26 +166,35 @@ export function ALEYourROTs ()  {
     };
 
     const getStatusTimestamp = (container) => {
-        if (container.status === "Assigned") return container.assignedTime;
-        if (container.status === "Enroute") return container.enrouteTime;
-        if (container.status === "Accepted") return container.acceptedTime;
-        if (container.status === "Gate-In") return container.gatedInTime;
-        if (container.status === "Gate-Out") return container.gatedOutTime;
-        if (container.status === "Delivered") return container.deliveredTime;
-        if (container.status === "RFC") return container.rfcTime;
-        if (container.status === "Rejected") return container.rejectedTime;
-        if (container.status === "Deleted") return container.deletedTime;
-        if (container.status === "Approved-AKPS") return container.approvedAKPSTime;
-        if (container.status === "Approved-Custom") return container.approvedCustomTime;
-        if (container.status === "Approved-Complete") return container.approvedBothTime;
-        if (container.status === "Rejected-AKPS") return container.rejectedAKPSTime;
-        if (container.status === "Rejected-Custom") return container.rejectedCustomTime;
-        if (container.status === "Rejected-Both") return container.rejectedBothTime;
+        const currentStatus = container.status;
+
+        if (currentStatus === "Assigned") return container.assignedTime;
+        if (currentStatus === "Enroute") return container.enrouteTime;
+        if (currentStatus === "Accepted") return container.acceptedTime;
+        if (currentStatus === "Gate-In") return container.gatedInTime;
+        if (currentStatus === "Gate-Out") return container.gatedOutTime;
+        if (currentStatus === "Delivered") return container.deliveredTime;
+        if (currentStatus === "RFC") return container.rfcTime;
+        if (currentStatus === "Rejected") return container.rejectedTime;
+        if (currentStatus === "Deleted") return container.deletedTime;
+        if (currentStatus === "Examine-AKPS" || currentStatus === "Approved-AKPS") return container.examineAKPSTime || container.approvedAKPSTime;
+        if (currentStatus === "Examine-Custom" || currentStatus === "Approved-Custom") return container.examineCustomTime || container.approvedCustomTime;
+        if (currentStatus === "Examine-Complete" || currentStatus === "Approved-Complete") return container.examineBothTime || container.approvedBothTime;
+        if (currentStatus === "Rejected-Both") return container.rejectedBothTime;
+        if (currentStatus === "Rejected-Custom") return container.rejectedCustomTime;
+        if (currentStatus === "Rejected-AKPS") return container.akpsRejectedTime;
+        
         return null;
     };
 
     const filteredContainers = useMemo(() => {
-        let result = containers.filter(cont => {
+        let mappedContainers = containers.map(cont => ({
+            ...cont,
+            rawStatus: cont.status,
+            status: maskStatus(cont.status)
+        }));
+        
+        let result = mappedContainers.filter(cont => {
             const matchesSearch =
                 cont.containerNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.rotNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||

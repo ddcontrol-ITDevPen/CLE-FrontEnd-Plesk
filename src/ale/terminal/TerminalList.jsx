@@ -15,6 +15,9 @@ import StatusInfographic from "../ROTComponents/ROTStatistics.jsx";
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
     "Enroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
+    // "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
+    // "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    // "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
     "Approved-AKPS": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
     "Approved-Custom": { bg: "bg-delivered-rfc",   text: "text-emerald-900",   border: "border-teal-200" },
     "Approved-Complete": { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
@@ -24,7 +27,7 @@ const STATUS_CONFIG = {
     "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
     "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
-    // "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
+    //"Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
 
 export function TerminalList ()  {
@@ -41,6 +44,16 @@ export function TerminalList ()  {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
 
+    const activeRole = (localStorage.getItem("role") || "").toLowerCase();
+    const isPrivilegedRole = activeRole === "akps" || activeRole === "customs";
+    const maskStatus = (statusText) => {
+        if (!statusText) return statusText;
+        if (!isPrivilegedRole) {
+            return statusText.replace(/examine/gi, "Approved");
+        }
+        return statusText;
+    };
+    
     useEffect(() => {
         fetchData();
     }, []);
@@ -121,10 +134,11 @@ export function TerminalList ()  {
         try {
             setIsLoading(true);
             const user = await getUserById(localStorage.getItem("userId"));
-            const forwardingId = user.companyCode;
+            const terminalId = user.companyCode;
             const data = await getAleContainers();
+            const filteredData = data.filter(c => c.terminalId === terminalId);
             
-            console.log(data);
+            console.log(filteredData);
             setContainers(data);
         } catch (error) {
             toast.error("Failed to fetch ROT history");
@@ -142,21 +156,22 @@ export function TerminalList ()  {
     };
 
     const getStatusTimestamp = (container) => {
-        if (container.status === "Assigned") return container.assignedTime;
-        if (container.status === "Enroute") return container.enrouteTime;
-        if (container.status === "Accepted") return container.acceptedTime;
-        if (container.status === "Gate-In") return container.gatedInTime;
-        if (container.status === "Gate-Out") return container.gatedOutTime;
-        if (container.status === "Delivered") return container.deliveredTime;
-        if (container.status === "RFC") return container.rfcTime;
-        if (container.status === "Rejected") return container.rejectedTime;
-        if (container.status === "Deleted") return container.deletedTime;
-        if (container.status === "Approved-AKPS") return container.approvedAKPSTime;
-        if (container.status === "Approved-Custom") return container.approvedCustomTime;
-        if (container.status === "Approved-Complete") return container.approvedBothTime;
-        if (container.status === "Rejected-Both") return container.rejectedBothTime;
-        if (container.status === "Rejected-Custom") return container.rejectedCustomTime;
-        if (container.status === "Rejected-AKPS") return container.akpsRejectedTime;
+        const currentStatus = container.status;
+        if (currentStatus === "Assigned") return container.assignedTime;
+        if (currentStatus === "Enroute") return container.enrouteTime;
+        if (currentStatus === "Accepted") return container.acceptedTime;
+        if (currentStatus === "Gate-In") return container.gatedInTime;
+        if (currentStatus === "Gate-Out") return container.gatedOutTime;
+        if (currentStatus === "Delivered") return container.deliveredTime;
+        if (currentStatus === "RFC") return container.rfcTime;
+        if (currentStatus === "Rejected") return container.rejectedTime;
+        if (currentStatus === "Deleted") return container.deletedTime;
+        if (currentStatus === "Examine-AKPS" || currentStatus === "Approved-AKPS") return container.examineAKPSTime || container.approvedAKPSTime;
+        if (currentStatus === "Examine-Custom" || currentStatus === "Approved-Custom") return container.examineCustomTime || container.approvedCustomTime;
+        if (currentStatus === "Examine-Complete" || currentStatus === "Approved-Complete") return container.examineBothTime || container.approvedBothTime;
+        if (currentStatus === "Rejected-Both") return container.rejectedBothTime;
+        if (currentStatus === "Rejected-Custom") return container.rejectedCustomTime;
+        if (currentStatus === "Rejected-AKPS") return container.akpsRejectedTime;
 
         return null;
     };
@@ -213,7 +228,13 @@ export function TerminalList ()  {
     };
     
     const filteredContainers = useMemo(() => {
-        let result = containers.filter(cont => {
+        let mappedContainers = containers.map(cont => ({
+            ...cont,
+            rawStatus: cont.status,
+            status: maskStatus(cont.status)
+        }));
+        
+        let result = mappedContainers.filter(cont => {
             const matchesSearch =
                 cont.containerNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.rotNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -608,20 +629,30 @@ export function TerminalList ()  {
                                                             <LucideX size={18} />
                                                         </button>
                                                     )}
-                                                   
-                                                    {cont.acceptedTime !== null && cont.approvedBothTime !== null && cont.gatedInTime === null &&
-                                                        <Clock
-                                                            size={18}
-                                                            className="text-green-600 cursor-pointer hover:text-green-800"
-                                                            onClick={() => handleGatedIn(cont.containerId)}
-                                                        />
-                                                    }
-                                                    {cont.gatedInTime !== null && cont.gatedOutTime === null &&
-                                                        <Clock size={18}
-                                                               className="text-red-600 cursor-pointer hover:text-red-800"
-                                                               onClick={() => handleGatedOut(cont.containerId)}
-                                                        />
-                                                    }
+
+                                                    {cont.acceptedTime !== null && cont.approvedBothTime !== null && cont.rejectedTime === null &&(
+                                                        <>
+                                                            {cont.status !== "Gate-In" && cont.status !== "Gate-Out" && cont.gatedInTime === null && (
+                                                                <button
+                                                                    onClick={() => handleGatedIn(cont.containerId)}
+                                                                    className="p-1.5 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors"
+                                                                    title="Manual Gate In"
+                                                                >
+                                                                    <Clock size={18} />
+                                                                </button>
+                                                            )}
+
+                                                            {cont.status === "Gate-In" && cont.gatedOutTime === null && (
+                                                                <button
+                                                                    onClick={() => handleGatedOut(cont.containerId)}
+                                                                    className="p-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors"
+                                                                    title="Manual Gate Out"
+                                                                >
+                                                                    <Clock size={18} />
+                                                                </button>
+                                                            )}
+                                                        </>
+                                                    )}
                                                     <FileText
                                                         size={18}
                                                         className="text-blue-600 cursor-pointer hover:text-blue-800"

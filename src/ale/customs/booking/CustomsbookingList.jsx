@@ -18,16 +18,19 @@ import {getAleAssignedHaulierByContainerId} from "../../../services/aleAssignedH
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
     "Enroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
+    "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
+    "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
     "Approved-AKPS": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
     "Approved-Custom": { bg: "bg-delivered-rfc",   text: "text-emerald-900",   border: "border-teal-200" },
     "Approved-Complete": { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Accepted":   { bg: "bg-accepted",  text: "text-green",  border: "border-green-200" },
     "Gate-In":   { bg: "bg-gate-in-out",   text: "text-blue-900",   border: "border-indigo-200" },
     "Gate-Out":  { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
-    // "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
-    // "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
+    "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
-    "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
+    //"Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
 
 export function CustomsbookingList() {
@@ -124,8 +127,6 @@ export function CustomsbookingList() {
         try {
             setIsLoading(true);
             const data = await getAleContainers();
-            console.log("Row Data (cont):", data);
-            // Terminal usually sees ALL or filtered by location later
             const enrichedData = await Promise.all(
                 data.map(async (cont) => {
                     try {
@@ -174,6 +175,9 @@ export function CustomsbookingList() {
         if (container.status === "Accepted") return container.acceptedTime;
         if (container.status === "Rejected") return container.rejectedTime;
         if (container.status === "Deleted") return container.deletedTime;
+        if (container.status === "Examine-AKPS") return container.examineAKPSTime;
+        if (container.status === "Examine-Custom") return container.examineCustomTime;
+        if (container.status === "Examine-Complete") return container.examineBothTime;
         if (container.status === "Approved-Custom") return container.approvedCustomTime;
         if (container.status === "Approved-AKPS") return container.approvedAKPSTime;
         if (container.status === "Approved-Complete") return container.approvedBothTime;
@@ -636,13 +640,13 @@ export function CustomsbookingList() {
                                                     <Eye size={18}
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/customs/booking/bookingdetails/${cont.containerId}`)}/>
                                                     {/* 1. Show Approve/Reject buttons ONLY IF Custom is Approved and AKPS is still pending (null or empty) */}
-                                                    {cont.enrouteTime !== null && cont.approvedCustomTime === null && cont.approvedBothTime === null && cont.gatedInTime === null && (
+                                                    {cont.enrouteTime !== null && cont.approvedCustomTime === null && cont.examineCustomTime === null && cont.approvedBothTime === null && cont.examineBothTime === null && cont.gatedInTime === null && cont.rejectedTime === null &&(
                                                         <button onClick={() => navigate(`/ale/customs/booking/bookingaction/${cont.containerId}`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Reject / Examine ">
                                                             <Check size={18} />
                                                         </button>
 
                                                     )}
-                                                    {cont.enrouteTime !== null && cont.approvedCustomTime === null && cont.approvedBothTime === null && cont.gatedInTime === null && (
+                                                    {cont.enrouteTime !== null && cont.approvedCustomTime === null && cont.approvedBothTime === null && cont.gatedInTime === null && cont.rejectedTime === null && cont.rejectedCustomTime === null && cont.rejectedBothTime === null &&(
                                                         <button
                                                             onClick={() => setStatusModal({
                                                                 isOpen: true,

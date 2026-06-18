@@ -187,12 +187,11 @@ export function AkpsbookingAction() {
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = `${user.fullName} - ${user.companyName}`;
 
-            // 2. Determine the actual next status based on your business logic
+            // Determine the actual next status based on your business logic
             let finalStatus = statusModal.nextStatus;
 
             if (statusModal.nextStatus === "Approved-AKPS") {
                 // Check if AKPS has already approved this container
-                // Note: Adjust the property name if it's 'approvedAKPSTime' or similar in your DB
                 if (currentContainer.approvedCustomTime) {
                     finalStatus = "Approved-Complete";
                 }
@@ -200,15 +199,12 @@ export function AkpsbookingAction() {
             
             const payload = {
                 ...currentContainer,
-                // Map addresses to prevent circular reference errors
-
-
                 status: finalStatus,
-
                 // Update the specific timestamps
                 ApprovedAKPSTime: statusModal.nextStatus === "Approved-AKPS" ? now : currentContainer.approvedAKPSTime,
                 // If it becomes Approved-Complete, we ensure the custom time is set
                 ApprovedBothTime: finalStatus === "Approved-Complete" ? now : null,
+                ExamineAKPSTime: statusModal.nextStatus === "Examine-AKPS" ? now : currentContainer.examineAKPSTime,
                 RejectedAKPSTime: statusModal.nextStatus === "Rejected-AKPS" ? now : currentContainer.rejectedAKPSTime,
                 AKPSRejectReason: statusModal.nextStatus === "Rejected-AKPS"
                     ? statusModal.remarks
@@ -448,15 +444,26 @@ export function AkpsbookingAction() {
             {/* Action Buttons & Rejection Field */}
             <div className="max-w-7xl mx-auto px-6 pb-10">
                 {!isRejecting ? (
-                    // DEFAULT VIEW: Approve and Reject Buttons
                     <div className="flex justify-end gap-4 pt-4">
-                        <button
-                            onClick={() => setStatusModal({ isOpen: true, id: data.containerId, nextStatus: "Approved-AKPS" })}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-green-600 text-white px-10 py-4 rounded-2xl font-bold shadow-lg hover:bg-green-700 transition-all active:scale-95"
-                        >
-                            <Check size={20} /> Approve
-                        </button>
+                        {data?.status !== "Examine-AKPS" && data?.status !== "Examine-Custom" && data?.status !== "Examine-Complete" && (
+                            <>
+                                <button
+                                    onClick={() => setStatusModal({ isOpen: true, id: data.containerId, nextStatus: "Approved-AKPS" })}
+                                    className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-green-600 text-white px-10 py-4 rounded-2xl font-bold shadow-lg hover:bg-green-700 transition-all active:scale-95"
+                                >
+                                    <Check size={20} /> Approve
+                                </button>
 
+                                <button
+                                    onClick={() => setStatusModal({ isOpen: true, id: data.containerId, nextStatus: "Examine-AKPS" })}
+                                    className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-yellow-600 text-white px-10 py-4 rounded-2xl font-bold shadow-lg hover:bg-yellow-700 transition-all active:scale-95"
+                                >
+                                    <Eye size={20} /> Examine
+                                </button>
+                            </>
+                        )}
+
+                        {data?.status !== "Rejected-AKPS" && data?.status !== "Rejected-Custom" && data?.status !== "Rejected-Both" && data?.status !== "Rejected" && (
                         <button
                             onClick={() => setStatusModal({
                                 isOpen: true,
@@ -468,6 +475,7 @@ export function AkpsbookingAction() {
                         >
                             <XCircle size={20} /> Reject
                         </button>
+                            )}
                     </div>
                 ) : (
                     // REJECTION VIEW: Textarea and Confirm/Cancel
@@ -522,16 +530,16 @@ export function AkpsbookingAction() {
                             <div className="mb-6 flex justify-center">
                                 <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
                                     statusModal.nextStatus === "Approved-AKPS" ? "bg-green-100 text-green-600" :
-                                            "bg-red-100 text-red-600"
+                                        statusModal.nextStatus === "Examine-AKPS" ? "bg-yellow-100 text-yellow-600" : "bg-red-100 text-red-600"
                                 }`}>
                                     {statusModal.nextStatus === "Approved-AKPS" ? <CheckCircle2 size={40} /> :
-                                            <AlertCircle size={40} />}
+                                        statusModal.nextStatus === "Examine-AKPS" ? <Eye size={40} /> : <AlertCircle size={40} />}
                                 </div>
                             </div>
 
                             <h2 className="text-2xl font-bold text-gray-800 mb-2">
                                 {statusModal.nextStatus === "Approved-AKPS" ? "Approve?" :
-                                        "Confirm Rejection?"}
+                                    statusModal.nextStatus === "Examine-AKPS" ? "Mark for Examination?" : "Confirm Rejection?"}
                             </h2>
 
                             <p className="text-gray-500 mb-6">
@@ -569,6 +577,7 @@ export function AkpsbookingAction() {
                                     disabled={statusModal.nextStatus === "Rejected-AKPS" && !statusModal.remarks?.trim()}
                                     className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
                                         statusModal.nextStatus === "Approved-AKPS" ? "bg-green-600 hover:bg-green-700" :
+                                            statusModal.nextStatus === "Examine-AKPS" ? "bg-yellow-600 hover:bg-yellow-700" :
                                                 "bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:shadow-none"
                                     }`}
                                 >

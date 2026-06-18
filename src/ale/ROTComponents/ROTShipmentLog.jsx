@@ -13,8 +13,20 @@ import {
     History,
     User
 } from "lucide-react";
+import {LuScanSearch} from "react-icons/lu";
 
 const ShipmentLog = (data) => {
+    const activeRole = (localStorage.getItem("role") || "").toLowerCase();
+    const isPrivilegedRole = activeRole === "akps" || activeRole === "customs";
+    
+    const maskText = (text) => {
+        if (!text) return text;
+        if (!isPrivilegedRole) {
+            return text.replace(/examine/gi, "Approved")
+        }
+        return text;
+    }
+    
     // Timeline statuses in reverse order
     const timeline = [
         {label: "Drop-off RFC", time: data.rtRFCTime},
@@ -37,18 +49,25 @@ const ShipmentLog = (data) => {
         {label: "Approved-Complete", time: data.approvedBothTime},
         {label: "Approved-AKPS", time: data.approvedAKPSTime},
         {label: "Approved-Custom", time: data.approvedCustomTime},
-        // {label: "Examine-Both", time: data.examineBothTime},
-        // {label: "Examine-AKPS", time: data.examineAKPSTime},
-        // {label: "Examine-Custom", time: data.examineCustomTime},
+        {label: "Examine-Both", time: data.examineBothTime},
+        {label: "Examine-AKPS", time: data.examineAKPSTime},
+        {label: "Examine-Custom", time: data.examineCustomTime},
         {label: "Enroute", time: data.enrouteTime},
         {label: "Assigned", time: data.assignedTime},
     ].filter(t => t.time)
+        .map(t => ({
+            ...t, label: maskText(t.label)
+        }))
         .sort((a, b) => { 
             return new Date(b.time).getTime() - new Date(a.time).getTime();
         });
 
-    const auditLogs = [...(data.updateHistory || [])].sort((a, b) =>
-        new Date(b.updatedTime) - new Date(a.updatedTime)
+    const auditLogs = [...(data.updateHistory || [])]
+        .map(log => ({
+            ...log,
+            action: maskText(log.action)
+        }))
+        .sort((a, b) => new Date(b.updatedTime) - new Date(a.updatedTime)
     );
     
     const getStatusStyles = (label) => {
@@ -60,6 +79,8 @@ const ShipmentLog = (data) => {
             return { icon: <Truck size={16} />, color: "bg-enroute", text: "text-enroute" };
         if (lowerLabel.includes("accepted"))
             return { icon: <Check size={16} />, color: "bg-accepted", text: "text-enroute" };
+        if (lowerLabel.includes("examine"))
+            return { icon: <LuScanSearch size={16} />, color: "bg-examine", text: "text-examine" };
         if (lowerLabel.includes("approved"))
             return { icon: <Check size={16} />, color: "bg-delivered-rfc", text: "text-delivered-rfc" };
         if (lowerLabel.includes("gate-in"))
