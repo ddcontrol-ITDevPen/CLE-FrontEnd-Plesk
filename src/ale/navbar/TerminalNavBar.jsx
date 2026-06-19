@@ -44,7 +44,7 @@ export default function TerminalNavBar({ role = "terminal" }) {
 
     const handleLogout = async () => {
         await logout();
-        navigate("/login");
+        //navigate("/login");
     };
 
     const menuItems = [

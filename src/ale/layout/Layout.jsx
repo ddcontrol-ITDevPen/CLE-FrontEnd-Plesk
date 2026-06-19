@@ -45,7 +45,7 @@ export default function Layout({ children, role }) {
 
     const handleLogout = async() => {
         await logout();
-        navigate("/login");
+        //navigate("/login");
     };
 
     const userInitial = (user?.FullName || "U")[0].toUpperCase();

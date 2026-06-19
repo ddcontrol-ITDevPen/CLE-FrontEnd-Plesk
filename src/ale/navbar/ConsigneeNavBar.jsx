@@ -16,7 +16,7 @@ export default function ConsigneeNavBar({ role = "forwarder" }) {
 
     const handleLogout = async () => {
         await logout();
-        navigate("/login");
+        //navigate("/login");
     };
 
     const menuItems = [

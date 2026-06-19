@@ -32,9 +32,8 @@ export const logout = async () => {
         localStorage.removeItem("userName");
         localStorage.removeItem("role");
         localStorage.removeItem("companyName");
-
-        // or simply:
-        // localStorage.clear();
+        localStorage.clear();
+        window.location.href = "/login";
     }
 };
 

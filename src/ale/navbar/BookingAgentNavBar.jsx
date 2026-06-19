@@ -16,7 +16,7 @@ export default function BookingAgentNavBar({ role = "forwarder" }) {
 
     const handleLogout = async () => {
         await logout();
-        navigate("/login");
+        //navigate("/login");
     };
 
     const menuItems = [
