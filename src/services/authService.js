@@ -1,5 +1,4 @@
 import api from "./api";
-import {useNavigate} from "react-router-dom";
 
 const AUTH_URL = "/auth";
 
@@ -18,23 +17,17 @@ export const login = async (userId, password, region, access) => {
     return response.data;
 };
 
-const navigate = useNavigate();
-
 export const logout = async () => {
     try {
         await api.post(`${AUTH_URL}/logout`);
     } catch (err) {
         console.error("Logout request failed", err);
     } finally {
-        localStorage.removeItem("userId");
-        localStorage.removeItem("userName");
-        localStorage.removeItem("role");
-        localStorage.removeItem("companyName");
+        // 🔥 Clean up everything on logout
         localStorage.clear();
-        navigate("/login");
+        window.location.href = "/login";
     }
 };
-
 
 export const resetPassword = async (userId, emailAddress, password) => {
     const response = await api.post(`${AUTH_URL}/forgot-password`, { userId, emailAddress, password });
