@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo} from "react";
+﻿import React, {useState, useEffect, useMemo} from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import {
@@ -18,12 +18,12 @@ import {
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
-import {getAleContainers, getAllAleContainersByForwarding} from "../../../services/aleContainerService.js";
+import {getContainers} from "../../../services/containerService.js";
 import {toast} from "sonner";
 import {getUserById} from "../../../services/userService.js";
-import {getAleContainerAudits} from "../../../services/aleContainerAuditService.js";
+import {getContainerAudits} from "../../../services/containerAuditService.js";
 
-export function CustomsDashboard() {
+export function CLECustomsDashboard() {
     const navigate = useNavigate();
     const userName = localStorage.getItem("userName");
     const userId = localStorage.getItem("userId");
@@ -86,8 +86,8 @@ export function CustomsDashboard() {
 
                 // 2. Fetch data sets
                 const [allContainers, allAudits] = await Promise.all([
-                    getAleContainers(),
-                    getAleContainerAudits()
+                    getContainers(),
+                    getContainerAudits()
                 ]);
 
                 // 3. Filter audits matching this user
@@ -193,7 +193,7 @@ export function CustomsDashboard() {
                                 <PlusCircle size={20} className="text-blue-600" /> Quick Actions
                             </h3>
                             <button
-                                onClick={() => navigate("/ale/customs/bookinglist")}
+                                onClick={() => navigate("/customs/bookinglist")}
                                 className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02]"
                             >
                                 <List size={22} />

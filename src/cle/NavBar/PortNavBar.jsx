@@ -1,0 +1,115 @@
+﻿import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+    LucideArchive,
+    LucideArchiveX, LucideClipboardCheck, LucideClipboardClock, LucideClock, LucideFile, LucideFileInput,
+    LucideHistory,
+    LucideHome,
+    LucideLogOut,
+    LucideMapPinned,
+    LucideTruck, LucideUserCheck
+} from "lucide-react";
+import {logout} from "../../services/authService.js";
+import {useEffect, useState} from "react";
+import {getUserById} from "../../services/userService.js";
+import {getBookings} from "../../services/bookingService.js";
+import {getContainersForTerminalAction} from "../../services/ContainerService.js";
+
+export default function PortNavBar({ role = "port" }) {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [actionNeededCount, setActionNeededCount] = useState(0);
+
+    useEffect(() => {
+        const fetchActionNeededCount = async () => {
+            try {
+                const userId = localStorage.getItem("userId");
+                if (!userId) return;
+
+                const user = await getUserById(userId);
+                const terminalId = user?.companyCode;
+
+                if (terminalId) {
+                    const data = await getContainersForTerminalAction();
+                    const count = data.filter(b =>
+                        b.terminalId === terminalId
+                    ).length;
+                    setActionNeededCount(count);
+                }
+            } catch (error) {
+                console.error("Failed to fetch action needed count for navbar badge", error);
+            }
+        };
+        fetchActionNeededCount();
+    }, []);
+
+    const handleLogout = async () => {
+        await logout();
+    };
+
+    const menuItems = [
+        { icon: LucideHome, label: "Dashboard", path: "/port/dashboard" },
+        { icon: LucideFile, label: "Booking List", path: "/port/booking/list" },
+        { icon: LucideArchive, label: "Archived ROTs", path: "/port/rot/archived" },
+        { icon: LucideMapPinned, label: "Track & Trace", path: "/port/rot/track" },
+        { icon: LucideClock, label: "Operational Time", path: "/port/operations" },
+        //{ icon: LucideFile, label: "View Document", path: "/cle/forwarding/rot/document/view" }
+    ];
+
+    return (
+        <aside className="bg-system-color w-64 min-h-screen flex flex-col shadow-xl">
+            {/* Logo/Brand */}
+            <div className="p-1 border-system-color-hover flex justify-center items-center mt-3">
+                <Link to={`/${role === "forwarder" ? "forwarding" : role}/dashboard`} className="flex items-center gap-3">
+                    {<img src="/assets/CLE-Logo-White.png" alt="CLE Logo" className="w-45 h-auto content-center" />}
+                </Link>
+            </div>
+
+            {/* Navigation Menu */}
+            <nav className="flex-1 px-4 py-6">
+                <ul className="space-y-2">
+                    {menuItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = location.pathname === item.path;
+
+                        return (
+                            <li key={item.path}>
+                                <Link
+                                    to={item.path}
+                                    className={`
+                                        flex items-center gap-3 px-4 py-3 rounded-lg
+                                        transition-all duration-200 font-semibold text-lg
+                                        ${isActive
+                                        ? 'bg-white bg-opacity-10 text-system-color'
+                                        : 'text-white text-opacity-80 bg-system-color hover:bg-system-color-dark hover:text-white hover:text-xl'
+                                    }
+                  `                 }
+                                >
+                                    <Icon size={25} />
+                                    <span>{item.label}</span>
+
+                                    {item.badgeCount > 0 && (
+                                        <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-accent-danger px-1.5 text-[14px] font-black text-red-100 shadow-sm ring-2 ring-system-color group-hover:scale-110 transition-transform">
+                                            {item.badgeCount}
+                                        </span>
+                                    )}
+                                </Link>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </nav>
+
+            {/* Logout Section */}
+            <div className="p-4 mt-auto">
+                <button
+                    onClick={handleLogout}
+                    className="flex w-full mb-35 items-center gap-3 px-4 py-3 rounded-xl bg-white text-system-color font-semibold text-lg hover:text-accent-danger transition-all cursor-pointer"
+                >
+                    <LucideLogOut size={20} />
+                    <span>Logout</span>
+                </button>
+            </div>
+
+        </aside>
+    );
+}

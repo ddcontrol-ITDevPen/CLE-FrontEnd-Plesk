@@ -82,8 +82,17 @@ import {ALEConsigneeArchivedROTs} from "../ale/consignee/rot/ArchivedROTs.jsx";
 import {ALEAssignedNewBookings} from "../ale/forwarding/Booking/AssignedNewBookings.jsx";
 import {ALEViewAssignedNewBooking} from "../ale/forwarding/Booking/ViewAssignedNewBooking.jsx";
 import {TerminalOperationHours} from "../ale/terminal/operation/TerminalOperationHours.jsx";
-import RegisterPage from "../registration/RegisterAccount.jsx";
+/*import RegisterPage from "../registration/RegisterAccount.jsx";*/
 import ForgotPasswordPage from "../forgotPassword/ForgotPassword.jsx";
+import {PortDashboard} from "../cle/port/dashboard/PortDashboard.jsx";
+import {PortBookingList} from "../cle/port/booking/PortBookingList.jsx"
+import {PortViewBooking} from "../cle/port/booking/PortViewBooking.jsx";
+import {PortEditBooking} from "../cle/port/booking/PortEditBooking.jsx";
+import {CLECustomsDashboard} from "../cle/customs/dashboard/CLECustomsDashboard.jsx";
+import {CLECustomsbookingList} from "../cle/customs/booking/CLECustomsbookingList.jsx";
+import {CLECustomsbookingDetails} from "../cle/customs/booking/CLECustomsbookingDetails.jsx";
+import {CLECustomsbookingAction} from "../cle/customs/booking/CLECustomsbookingAction.jsx";
+
 
 export default function AppRouter() {
     return (
@@ -364,7 +373,7 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/customs/bookinglist"
+                    path="/ale/customs/bookinglist"
                     element={
                         <ProtectedRoute>
                             <CustomsbookingList />
@@ -755,7 +764,70 @@ export default function AppRouter() {
                         </ProtectedRoute>
                     }
                 />
-              
+                <Route
+                    path="/port/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <PortDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/port/booking/list"
+                    element={
+                        <ProtectedRoute>
+                            <PortBookingList />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/port/booking/view/:id"
+                    element={
+                        <ProtectedRoute>
+                            <PortViewBooking />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/port/booking/edit/:id"
+                    element={
+                        <ProtectedRoute>
+                            <PortEditBooking/>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/customs/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <CLECustomsDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/customs/bookinglist"
+                    element={
+                        <ProtectedRoute>
+                            <CLECustomsbookingList />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/customs/booking/bookingdetails/:id"
+                    element={
+                        <ProtectedRoute>
+                            <CLECustomsbookingDetails />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/customs/booking/bookingaction/:id"
+                    element={
+                        <ProtectedRoute>
+                            <CLECustomsbookingAction />
+                        </ProtectedRoute>
+                    }
+                />
                 {/* Fallback */}
                 <Route path="*" element={<LoginPage />} />
             </Routes>

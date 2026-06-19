@@ -8,7 +8,9 @@ import {FaCartPlus} from "react-icons/fa";
 import {logout} from "../../services/authService.js";
 import HaulierNavBar from "../NavBar/HaulierNavbar.jsx";
 import DepotNavBar from "../NavBar/DepotNavBar.jsx";
-
+import PortNavBar from "../NavBar/PortNavBar.jsx";
+import CustomsNavBar from "../NavBar/CustomsNavBar.jsx";
+import AKPSNavBar from "../NavBar/AKPSNavBar.jsx";
 export default function Layout({ children, role }) {
 
     const navigate = useNavigate();
@@ -51,6 +53,9 @@ export default function Layout({ children, role }) {
                 {user?.Role === "forwarding" && <ForwarderNavBar />}
                 {user?.Role === "haulier" && <HaulierNavBar />}
                 {user?.Role === "depot" && <DepotNavBar />}
+                {user?.Role === "port" && <PortNavBar />}
+                {user?.Role === "customs" && <CustomsNavBar />}
+                {user?.Role === "akps" && <AKPSNavBar />}
                 {/*other roles*/}
             </div>
 
