@@ -445,7 +445,7 @@ export function AkpsbookingAction() {
             <div className="max-w-7xl mx-auto px-6 pb-10">
                 {!isRejecting ? (
                     <div className="flex justify-end gap-4 pt-4">
-                        {data?.status !== "Examine-AKPS" && data?.status !== "Examine-Custom" && data?.status !== "Examine-Complete" && (
+                        {data?.status !== "Examine-AKPS" && data?.status !== "Examine-Complete" && (
                             <>
                                 <button
                                     onClick={() => setStatusModal({ isOpen: true, id: data.containerId, nextStatus: "Approved-AKPS" })}
