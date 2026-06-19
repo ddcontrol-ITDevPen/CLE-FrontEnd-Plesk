@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import LoginPage from "../cle/auth/LoginPage.jsx";
 import {ForwarderDashboard} from "../cle/forwarding/dashboard/ForwarderDashboard.jsx";
@@ -96,7 +96,7 @@ import {CLECustomsbookingAction} from "../cle/customs/booking/CLECustomsbookingA
 
 export default function AppRouter() {
     return (
-        <HashRouter>
+        <BrowserRouter>
             <Routes>
                 {/* Auth Routes */}
                 <Route path="/login" element={<LoginPage />}/>
@@ -831,6 +831,6 @@ export default function AppRouter() {
                 {/* Fallback */}
                 <Route path="*" element={<LoginPage />} />
             </Routes>
-        </HashRouter>
+        </BrowserRouter>
     )
 }
