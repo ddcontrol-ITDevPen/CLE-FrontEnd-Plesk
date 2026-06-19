@@ -34,6 +34,7 @@ export default function AKPSNavBar({ role = "akps" }) {
 
     const handleLogout = async () => {
         await logout();
+        navigate("/login");
     };
 
     const menuItems = [

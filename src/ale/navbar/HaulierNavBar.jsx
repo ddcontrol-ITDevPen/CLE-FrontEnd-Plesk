@@ -16,6 +16,7 @@ export default function HaulierNavBar({ role = "haulier" }) {
 
     const handleLogout = async () => {
         await logout();
+        navigate("/login");
     };
 
     const menuItems = [

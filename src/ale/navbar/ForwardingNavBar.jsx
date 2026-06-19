@@ -45,6 +45,7 @@ export default function ForwardingNavBar({ role = "forwarder" }) {
 
     const handleLogout = async () => {
         await logout();
+        navigate("/login");
     };
 
     const menuItems = [

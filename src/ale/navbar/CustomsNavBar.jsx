@@ -35,6 +35,7 @@ export default function CustomsNavBar({ role = "customs" }) {
 
     const handleLogout = async () => {
         await logout();
+        navigate("/login");
     };
 
     const menuItems = [
