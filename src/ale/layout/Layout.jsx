@@ -2,18 +2,18 @@ import { useNavigate } from "react-router-dom";
 import {FaArrowRightFromBracket, FaArrowsRotate, FaCircleUser, FaGear, FaRightFromBracket} from "react-icons/fa6";
 import {useContext, useEffect, useRef, useState} from "react";
 import cle_logo from "../../../public/assets/CLE-Logo.png";
-import ForwarderNavBar from "../navBar/ForwardingNavBar.jsx";
+import ForwarderNavBar from "../../cle/NavBar/ForwarderNavBar.jsx";
 import {Icon, LucideCircleUser, LucideLogOut, LucideRotateCcw, LucideShoppingCart, LucideUsers} from "lucide-react";
 import {FaCartPlus} from "react-icons/fa";
 import {logout} from "../../services/authService.js";
-import ForwardingNavBar from "../navbar/ForwardingNavBar.jsx";
-import HaulierNavBar from "../navbar/HaulierNavBar.jsx";
-import TerminalNavBar from "../navBar/TerminalNavBar.jsx";
-import CustomsNavBar from "../navBar/CustomsNavBar.jsx";
-import AKPSNavBar from "../navBar/AKPSNavBar.jsx";
+import ForwardingNavBar from "../../ale/navbar/ForwardingNavBar.jsx";
+import HaulierNavBar from "../../ale/navbar/HaulierNavBar.jsx";
+import TerminalNavBar from "../../ale/navbar/TerminalNavBar.jsx";
+import CustomsNavBar from "../../ale/navbar/CustomsNavBar.jsx";
+import AKPSNavBar from "../../ale/navbar/AKPSNavBar.jsx";
 import {NotificationOverlay} from "../Notification/NotificationOverlay.jsx";
-import BookingAgentNavBar from "../navbar/BookingAgentNavBar.jsx";
-import ConsigneeNavBar from "../navbar/ConsigneeNavBar.jsx";
+import BookingAgentNavBar from "../../ale/navbar/BookingAgentNavBar.jsx";
+import ConsigneeNavBar from "../../ale/navbar/ConsigneeNavBar.jsx";
 
 export default function Layout({ children, role }) {
 

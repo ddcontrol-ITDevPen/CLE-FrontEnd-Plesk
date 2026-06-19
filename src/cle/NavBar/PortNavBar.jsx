@@ -12,7 +12,7 @@ import {logout} from "../../services/authService.js";
 import {useEffect, useState} from "react";
 import {getUserById} from "../../services/userService.js";
 import {getBookings} from "../../services/bookingService.js";
-import {getContainersForTerminalAction} from "../../services/ContainerService.js";
+import {getContainersForTerminalAction} from "../../services/containerService.js";
 
 export default function PortNavBar({ role = "port" }) {
     const location = useLocation();

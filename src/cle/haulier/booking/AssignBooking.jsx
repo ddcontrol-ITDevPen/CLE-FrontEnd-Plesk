@@ -16,7 +16,7 @@ import { toast, Toaster } from "sonner";
 import { getDrivers } from "../../../services/driverService.js";
 import { getPrimeMovers } from "../../../services/primeMoverService.js";
 import { getTrailers } from "../../../services/trailerService.js";
-import {getTimeSlots, updateTimeSlot} from "../../../services/timeSLotService.js";
+import {getTimeSlots, updateTimeSlot} from "../../../services/timeSlotService.js";
 import { registerAssignedHaulier } from "../../../services/assignedHaulier.js";
 import {getUserById} from "../../../services/userService.js";
 
