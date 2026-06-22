@@ -126,8 +126,8 @@ export function ALEPrimeMoverManagement() {
                             <th className="px-6 py-4 text-xs font-bold text-gray-700 uppercase tracking-wider">PM Code</th>
                             <th className="px-6 py-4 text-xs font-bold text-gray-700 uppercase tracking-wider">BTM</th>
                             <th className="px-6 py-4 text-xs font-bold text-gray-700 uppercase tracking-wider">BGK</th>
-                            <th className="px-6 py-4 text-xs font-bold text-gray-700 uppercase tracking-wider">BGK</th>
                             <th className="px-6 py-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Default Driver</th>
+                            <th className="px-6 py-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Updated At</th>
                             <th className="px-6 py-4 text-xs font-bold text-gray-700 uppercase tracking-wider text-center">Actions</th>
                         </tr>
                         </thead>
