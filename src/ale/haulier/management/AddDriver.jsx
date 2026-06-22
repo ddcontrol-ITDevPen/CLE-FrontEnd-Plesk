@@ -72,7 +72,7 @@ export function ALEAddDriver() {
                 const user = await getUserById(localStorage.getItem("userId"));
 
                 const uploadPromises = formattedData.map(driver => {
-                    const updatedData = { ...driver, haulierId: user.companyCode };
+                    const updatedData = { ...driver, haulierId: user.companyCode, updatedAt: new Date().toISOString() };
                     return registerDriver(updatedData);
                 });
                 await Promise.all(uploadPromises);
@@ -139,7 +139,7 @@ export function ALEAddDriver() {
         setIsSubmitting(true);
         try {
             const user = await getUserById(localStorage.getItem("userId"));
-            const updatedData = { ...formData, haulierId: user.companyCode };
+            const updatedData = { ...formData, haulierId: user.companyCode, updatedAt: new Date().toISOString() };
             await registerDriver(updatedData);
             toast.success("Driver registered successfully!");
             setTimeout(() => navigate("/ale/haulier/manage/drivers"), 1500);

@@ -86,7 +86,7 @@ export function ALEAddPrimeMover() {
                 const user = await getUserById(localStorage.getItem("userId"));
 
                 const uploadPromises = formattedData.map(primeMover => {
-                    const updatedData = { ...primeMover, haulierId: user.companyCode };
+                    const updatedData = { ...primeMover, haulierId: user.companyCode, updatedAt: new Date().toISOString() };
                     return registerPrimeMover(updatedData);
                 });
                 await Promise.all(uploadPromises);
@@ -134,7 +134,7 @@ export function ALEAddPrimeMover() {
         setIsSubmitting(true);
         try {
             const user = await getUserById(localStorage.getItem("userId"));
-            const updatedData = { ...formData, haulierId: user.companyCode };
+            const updatedData = { ...formData, haulierId: user.companyCode, updatedAt: new Date().toISOString() };
             await registerPrimeMover(updatedData);
             toast.success("Prime Mover registered successfully!");
             setTimeout(() => navigate("/ale/haulier/manage/prime-movers"), 1500);

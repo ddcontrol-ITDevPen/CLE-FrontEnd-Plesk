@@ -29,7 +29,6 @@ export function ALEAddTrailer() {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // 1. Excel Template Configuration based on Trailer Model[cite: 5]
     const downloadTemplate = () => {
         const templateData = [
             {
@@ -46,7 +45,6 @@ export function ALEAddTrailer() {
         toast.info("Template downloaded. Please fill in the details.");
     };
 
-    // 2. Bulk Upload Logic for Trailers
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -81,7 +79,7 @@ export function ALEAddTrailer() {
                 const user = await getUserById(localStorage.getItem("userId"));
 
                 const uploadPromises = formattedData.map(trailer => {
-                    const updatedData = { ...trailer, haulierId: user.companyCode };
+                    const updatedData = { ...trailer, haulierId: user.companyCode, updatedAt: new Date().toISOString() };
                     return registerTrailer(updatedData);
                 });
                 await Promise.all(uploadPromises);
@@ -130,7 +128,7 @@ export function ALEAddTrailer() {
         setIsSubmitting(true);
         try {
             const user = await getUserById(localStorage.getItem("userId"));
-            const updatedData = { ...formData, haulierId: user.companyCode };
+            const updatedData = { ...formData, haulierId: user.companyCode, updatedAt: new Date().toISOString() };
             await registerTrailer(updatedData);
             toast.success("Trailer registered successfully!");
             setTimeout(() => navigate("/ale/haulier/manage/trailers"), 1500);
