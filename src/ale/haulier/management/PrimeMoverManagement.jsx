@@ -72,16 +72,15 @@ export function ALEPrimeMoverManagement() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this prime mover?")) {
-            try {
-                await deletePrimeMover(id);
-                toast.success("Prime Mover removed successfully");
-                setDeleteModal({ isOpen: false, id: null });
-                loadPrimeMovers();
-            } catch (error) {
-                toast.error("Error deleting primeMover");
-            }
+    const handleDelete = async () => {
+        if (!deleteModal.id) return;
+        try {
+            await deletePrimeMover(deleteModal.id);
+            toast.success("Prime Mover removed successfully");
+            setDeleteModal({ isOpen: false, id: null });
+            loadPrimeMovers();
+        } catch (error) {
+            toast.error("Error deleting prime mover");
         }
     };
     
