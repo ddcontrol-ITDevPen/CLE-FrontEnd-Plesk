@@ -82,9 +82,13 @@ export function ALEAddPrimeMover() {
                 }
 
                 setIsSubmitting(true);
-                for (const pm of formattedData) {
-                    await registerPrimeMover(pm);
-                }
+                const user = await getUserById(localStorage.getItem("userId"));
+
+                const uploadPromises = formattedData.map(primeMover => {
+                    const updatedData = { ...primeMover, haulierId: user.companyCode };
+                    return registerPrimeMover(updatedData);
+                });
+                await Promise.all(uploadPromises);
                 toast.success(`Successfully imported ${data.length} prime movers!`);
                 setTimeout(() => navigate("/ale/haulier/manage/prime-movers"), 1500);
             } catch (error) {

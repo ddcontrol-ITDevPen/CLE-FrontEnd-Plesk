@@ -68,9 +68,13 @@ export function ALEAddDriver() {
                 }
 
                 setIsSubmitting(true);
-                for (const driver of formattedData) {
-                    await registerDriver(driver);
-                }
+                const user = await getUserById(localStorage.getItem("userId"));
+
+                const uploadPromises = formattedData.map(driver => {
+                    const updatedData = { ...driver, haulierId: user.companyCode };
+                    return registerDriver(updatedData);
+                });
+                await Promise.all(uploadPromises);
                 toast.success(`Successfully imported ${data.length} drivers!`);
                 setTimeout(() => navigate("/ale/haulier/manage/drivers"), 1500);
             } catch (error) {

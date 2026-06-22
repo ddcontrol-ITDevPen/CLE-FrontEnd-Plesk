@@ -77,9 +77,13 @@ export function ALEAddTrailer() {
                 }
 
                 setIsSubmitting(true);
-                for (const trailer of formattedData) {
-                    await registerTrailer(trailer);
-                }
+                const user = await getUserById(localStorage.getItem("userId"));
+
+                const uploadPromises = formattedData.map(trailer => {
+                    const updatedData = { ...trailer, haulierId: user.companyCode };
+                    return registerTrailer(updatedData);
+                });
+                await Promise.all(uploadPromises);
                 toast.success(`Successfully imported ${formattedData.length} trailers!`);
                 setTimeout(() => navigate("/ale/haulier/manage/trailers"), 1500);
             } catch (error) {
