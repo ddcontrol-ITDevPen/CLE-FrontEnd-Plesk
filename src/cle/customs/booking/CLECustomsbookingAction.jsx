@@ -226,7 +226,7 @@ export function CLECustomsbookingAction() {
 
             // 3. Redirect back to the List page after a short delay so the user sees the success toast
             setTimeout(() => {
-                navigate("/customs/bookinglist"); // Ensure this path matches your App.js route
+                navigate("ale/customs/bookinglist");
             }, 1500);
         } catch (error) {
             console.error(error);
