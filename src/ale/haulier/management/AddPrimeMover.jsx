@@ -128,7 +128,9 @@ export function ALEAddPrimeMover() {
 
         setIsSubmitting(true);
         try {
-            await registerPrimeMover(formData);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedData = { ...formData, haulierId: user.companyCode };
+            await registerPrimeMover(updatedData);
             toast.success("Prime Mover registered successfully!");
             setTimeout(() => navigate("/ale/haulier/manage/prime-movers"), 1500);
         } catch (error) {

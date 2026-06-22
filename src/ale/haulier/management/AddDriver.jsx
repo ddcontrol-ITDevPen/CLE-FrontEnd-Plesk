@@ -133,7 +133,9 @@ export function ALEAddDriver() {
     
         setIsSubmitting(true);
         try {
-            await registerDriver(formData);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedData = { ...formData, haulierId: user.companyCode };
+            await registerDriver(updatedData);
             toast.success("Driver registered successfully!");
             setTimeout(() => navigate("/ale/haulier/manage/drivers"), 1500);
         } catch (error) {

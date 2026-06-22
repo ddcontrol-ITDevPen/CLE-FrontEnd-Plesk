@@ -124,7 +124,9 @@ export function ALEAddTrailer() {
 
         setIsSubmitting(true);
         try {
-            await registerTrailer(formData);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedData = { ...formData, haulierId: user.companyCode };
+            await registerTrailer(updatedData);
             toast.success("Trailer registered successfully!");
             setTimeout(() => navigate("/ale/haulier/manage/trailers"), 1500);
         } catch (error) {
