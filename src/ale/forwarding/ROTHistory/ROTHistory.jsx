@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo} from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -6,37 +6,37 @@ import {
     FileText, AlertCircle, CheckCircle2, PencilRuler, CircleX, LucideShieldUser
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import {getAleContainers, deleteAleContainer, updateAleContainer, getAleContainerById} from "../../../services/aleContainerService.js";
-import {getUserById} from "../../../services/userService.js";
+import { getAleContainers, deleteAleContainer, updateAleContainer, getAleContainerById } from "../../../services/aleContainerService.js";
+import { getUserById } from "../../../services/userService.js";
 import * as XLSX from 'xlsx';
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import StatusInfographic from "../../ROTComponents/ROTStatistics.jsx";
 
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
-    "Enroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
+    "Enroute": { bg: "bg-enroute", text: "text-amber-900", border: "border-amber-200" },
     // "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
     // "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
     // "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
-    "Approved-AKPS": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
-    "Approved-Custom": { bg: "bg-delivered-rfc",   text: "text-emerald-900",   border: "border-teal-200" },
-    "Approved-Complete": { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
-    "Accepted":   { bg: "bg-accepted",  text: "text-green",  border: "border-green-200" },
-    "Gate-In":   { bg: "bg-gate-in-out",   text: "text-blue-900",   border: "border-indigo-200" },
-    "Gate-Out":  { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
-    "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
-    "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
-    "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
+    "Approved-AKPS": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
+    "Approved-Custom": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
+    "Approved-Complete": { bg: "bg-delivered-rfc", text: "text-teal-900", border: "border-teal-200" },
+    "Accepted": { bg: "bg-accepted", text: "text-green", border: "border-green-200" },
+    "Gate-In": { bg: "bg-gate-in-out", text: "text-blue-900", border: "border-indigo-200" },
+    "Gate-Out": { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
+    "Delivered": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
+    "RFC": { bg: "bg-delivered-rfc", text: "text-teal-900", border: "border-teal-200" },
+    "Rejected": { bg: "bg-red-100", text: "text-red-900", border: "border-red-200" },
     //"Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
 
-export function ALEROTHistory ()  {
+export function ALEROTHistory() {
     const [containers, setContainers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [rejectModal, setRejectModal] = useState({ isOpen: false, id: null, remarks: "" });
     const [editModal, setEditModal] = useState({ isOpen: false, id: null, remarks: "", newDate: "", showDateField: false });
-    const [readjustmentModal, setReadjustmentModal] = useState({ isOpen: false, id: null, remarks: "", newDate: "", icNumber: "", isSecureEdit: false, showDateField: false});
+    const [readjustmentModal, setReadjustmentModal] = useState({ isOpen: false, id: null, remarks: "", newDate: "", icNumber: "", isSecureEdit: false, showDateField: false });
     const [filterStatus, setFilterStatus] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
@@ -55,7 +55,7 @@ export function ALEROTHistory ()  {
         }
         return statusText;
     };
-    
+
     useEffect(() => {
         fetchData();
     }, []);
@@ -81,8 +81,8 @@ export function ALEROTHistory ()  {
             "PickUpAssignedTime": cont.assignedTime ? new Date(cont.assignedTime).toLocaleString() : "N/A",
             "PickUpEnrouteTime": cont.enrouteTime ? new Date(cont.enrouteTime).toLocaleString() : "N/A",
             "PickUpAcceptedTime": cont.acceptedTime ? new Date(cont.acceptedTime).toLocaleString() : "N/A",
-            "PickUpGated In": cont.gatedInTime  ? new Date(cont.gatedInTime).toLocaleString() : "N/A",
-            "PickUpGated Out": cont.gatedOutTime  ? new Date(cont.gatedOutTime).toLocaleString() : "N/A",
+            "PickUpGated In": cont.gatedInTime ? new Date(cont.gatedInTime).toLocaleString() : "N/A",
+            "PickUpGated Out": cont.gatedOutTime ? new Date(cont.gatedOutTime).toLocaleString() : "N/A",
             "ApprovedAKPSTime": cont.approvedAKPSTime ? new Date(cont.approvedAKPSTime).toLocaleString() : "N/A",
             "ApprovedCustomTime": cont.approvedCustomTime ? new Date(cont.approvedCustomTime).toLocaleString() : "N/A",
             "ApprovedByBothTime": cont.approvedBothTime ? new Date(cont.approvedBothTime).toLocaleString() : "N/A",
@@ -93,7 +93,7 @@ export function ALEROTHistory ()  {
             "DropOffAssignedTime": cont.rtAssignedTime ? new Date(cont.rtAssignedTime).toLocaleString() : "N/A",
             "DropOffEnrouteTime": cont.rtEnrouteTime ? new Date(cont.rtEnrouteTime).toLocaleString() : "N/A",
             "DropOffAcceptedTime": cont.rtAcceptedTime ? new Date(cont.rtAcceptedTime).toLocaleString() : "N/A",
-            "DropOffGated In": cont.rtGatedInTime ? new Date(cont.rtGatedInTime).toLocaleString() :"N/A",
+            "DropOffGated In": cont.rtGatedInTime ? new Date(cont.rtGatedInTime).toLocaleString() : "N/A",
             "DropOffGated Out": cont.rtGatedOutTime ? new Date(cont.rtGatedOutTime).toLocaleString() : "N/A",
             // "DropOffDeliveredTime": cont.rtDeliveredTime ? new Date(cont.rtDeliveredTime).toLocaleString() : "N/A",
             // "DropOffRFCTime": cont.rtRFCTime ? new Date(cont.rtRFCTime).toLocaleString() : "N/A",
@@ -114,7 +114,7 @@ export function ALEROTHistory ()  {
                 : "N/A",
             "SSM Number": cont.aleBooking?.ssmNumber || "N/A",
             "Flight Number": cont.aleBooking?.flightNumber || "N/A",
-            "Carrier Reference Number" : cont.aleBooking?.carrierReferenceNumber || "N/A",
+            "Carrier Reference Number": cont.aleBooking?.carrierReferenceNumber || "N/A",
             "Total Package Quantity": cont.aleBooking?.updatedTotalPackageQuantity || cont.aleBooking?.totalPackageQuantity || "N/A",
             "Weight": cont.aleBooking?.updatedWeight || cont.aleBooking?.weight || "N/A",
             "Size": cont.aleBooking?.size || "N/A",
@@ -134,7 +134,7 @@ export function ALEROTHistory ()  {
         XLSX.writeFile(workbook, `ROT_History_${new Date().toISOString().split('T')[0]}.xlsx`);
         toast.success("Excel file downloaded");
     };
-    
+
     const fetchData = async () => {
         try {
             setIsLoading(true);
@@ -183,17 +183,17 @@ export function ALEROTHistory ()  {
         if (currentStatus === "Rejected-Both") return container.rejectedBothTime;
         if (currentStatus === "Rejected-Custom") return container.rejectedCustomTime;
         if (currentStatus === "Rejected-AKPS") return container.akpsRejectedTime;
-        
+
         return null;
     };
-    
+
     const filteredContainers = useMemo(() => {
         let mappedContainers = containers.map(cont => ({
             ...cont,
             rawStatus: cont.status,
             status: maskStatus(cont.status)
         }));
-        
+
         let result = mappedContainers.filter(cont => {
             const matchesSearch =
                 cont.containerNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -203,8 +203,8 @@ export function ALEROTHistory ()  {
                 cont.haulierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.aleBooking.movementType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.consigneeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                cont.terminalName?.toLowerCase().includes(searchTerm.toLowerCase()) 
-            
+                cont.terminalName?.toLowerCase().includes(searchTerm.toLowerCase())
+
             let isExpiredGateOut = false;
             if (cont.status === "Gate-Out" && cont.gatedOutTime) {
                 const gatedOutDate = new Date(cont.gatedOutTime);
@@ -217,14 +217,20 @@ export function ALEROTHistory ()  {
                     isExpiredGateOut = true;
                 }
             }
-            
+
             const latestTimestamp = getStatusTimestamp(cont);
-            
+
             let matchesStatus = false;
-                if(filterStatus === "All")
-                    matchesStatus = cont.status !== "Rejected" && !isExpiredGateOut;
-                else
-                    matchesStatus = cont.status === filterStatus;
+            if (filterStatus === "All")
+                matchesStatus = cont.status !== "Rejected" && !isExpiredGateOut;
+            else if (filterStatus === "Approved") {
+                matchesStatus =
+                    cont.status === "Approved-AKPS" ||
+                    cont.status === "Approved-Custom" ||
+                    cont.status === "Approved-Complete";
+            }
+            else
+                matchesStatus = cont.status === filterStatus;
             const rotDate = cont.rotDate;
             let matchesDate = true;
 
@@ -233,7 +239,7 @@ export function ALEROTHistory ()  {
             } else if (startDate) {
                 matchesDate = rotDate === startDate;
             }
-            
+
             return matchesSearch && matchesStatus && matchesDate;
         });
         if (sortConfig.key !== null) {
@@ -314,7 +320,7 @@ export function ALEROTHistory ()  {
             return cont?.toName || "N/A";
         }
     };
-    
+
     const handleReject = async () => {
         if (!rejectModal.remarks || rejectModal.remarks.trim() === "") {
             setError(true);
@@ -331,7 +337,7 @@ export function ALEROTHistory ()  {
                 toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
                 status: "Rejected",
                 rejectedTime: new Date().toISOString(),
-                rejectedRemarks: rejectModal.remarks, 
+                rejectedRemarks: rejectModal.remarks,
                 updatedBy: updatedBy,
             };
             await updateAleContainer(rejectModal.id, payload);
@@ -402,7 +408,7 @@ export function ALEROTHistory ()  {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <button className="p-2 border rounded-lg bg-blue-600 text-white"><Search size={20}/></button>
+                    <button className="p-2 border rounded-lg bg-blue-600 text-white"><Search size={20} /></button>
                     {/* Date Range Filter Group */}
                     <div className="flex items-center bg-white border border-gray-200 rounded-lg p-1 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 transition-all">
                         <div className="flex items-center px-2 border-r border-gray-100">
@@ -451,199 +457,228 @@ export function ALEROTHistory ()  {
                     >
                         All
                     </button>
-                    {Object.keys(STATUS_CONFIG).map((status) => (
-                        <button
-                            key={status}
-                            onClick={() => setFilterStatus(status)}
-                            className={`px-4 py-2 rounded-lg font-bold border transition-all
+                    {Object.keys(STATUS_CONFIG)
+                        .filter((status) => status === "Assigned" || status === "Enroute")
+                        .map((status) => (
+                            <button
+                                key={status}
+                                onClick={() => setFilterStatus(status)}
+                                className={`px-4 py-2 rounded-lg font-bold border transition-all
                                 ${filterStatus === status
-                                ? `${STATUS_CONFIG[status].bg} ${STATUS_CONFIG[status].text} ${STATUS_CONFIG[status].border} shadow-md ring-2 ring-offset-1 ring-opacity-50`
+                                        ? `${STATUS_CONFIG[status].bg} ${STATUS_CONFIG[status].text} ${STATUS_CONFIG[status].border} shadow-md ring-2 ring-offset-1 ring-opacity-50`
+                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                    }`}
+                            >
+                                {status}
+                            </button>
+                        ))}
+
+                    <button
+                        onClick={() => setFilterStatus("Approved")}
+                        className={`px-4 py-2 rounded-lg font-bold border transition-all
+                        ${filterStatus === "Approved"
+                                ? `bg-delivered-rfc text-emerald-900 border-teal-200 shadow-md ring-2 ring-offset-1 ring-opacity-50`
                                 : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
                             }`}
-                        >
-                            {status}
-                        </button>
-                    ))}
+                    >
+                        Approved
+                    </button>
+
+                    {Object.keys(STATUS_CONFIG)
+                        .filter((status) => !status.startsWith("Approved-") && status !== "Assigned" && status !== "Enroute")
+                        .map((status) => (
+                            <button
+                                key={status}
+                                onClick={() => setFilterStatus(status)}
+                                className={`px-4 py-2 rounded-lg font-bold border transition-all
+                                ${filterStatus === status
+                                        ? `${STATUS_CONFIG[status].bg} ${STATUS_CONFIG[status].text} ${STATUS_CONFIG[status].border} shadow-md ring-2 ring-offset-1 ring-opacity-50`
+                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                    }`}
+                            >
+                                {status}
+                            </button>
+                        ))}
                 </div>
 
                 {/* Table */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
                     <table className="w-full text-left border-collapse lg:table-auto">
                         <thead className="bg-[#E3DEEB] text-gray-800 font-bold text-sm">
-                        <tr>
-                            <th className="p-4 border-b w-10 text-center">No.</th>
-                            <th className="p-4 border-b w-32">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.awbNumber')}>
-                                    AWB Number
-                                    {sortConfig.key === 'aleBooking.awbNumber' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b w-32">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.houseAWBNumber')}>
-                                    House AWB Number
-                                    {sortConfig.key === 'aleBooking.houseAWBNumber' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b w-36">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.movementType')}>
-                                    Movement Type
-                                    {sortConfig.key === 'aleBooking.movementType' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('haulierId')}>
-                                    Transporter
-                                    {sortConfig.key === 'haulierId' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b w-24">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('rotDate')}>
-                                    ROT Date
-                                    {sortConfig.key === 'rotDate' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b w-30 text-center">
-                                <div className="flex items-center justify-center gap-1" onClick={() => handleSort('status')}>
-                                    Status
-                                    {sortConfig.key === 'status' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b w-36">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('timeStamp')}>
-                                    Timestamp
-                                    {sortConfig.key === 'timeStamp' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.from')}>
-                                    From
-                                    {sortConfig.key === 'aleBooking.from' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('to')}>
-                                    To
-                                    {sortConfig.key === 'to' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b w-28 text-center">Actions</th>
-                        </tr>
+                            <tr>
+                                <th className="p-4 border-b w-10 text-center">No.</th>
+                                <th className="p-4 border-b w-32">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.awbNumber')}>
+                                        AWB Number
+                                        {sortConfig.key === 'aleBooking.awbNumber' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b w-32">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.houseAWBNumber')}>
+                                        House AWB Number
+                                        {sortConfig.key === 'aleBooking.houseAWBNumber' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b w-36">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.movementType')}>
+                                        Movement Type
+                                        {sortConfig.key === 'aleBooking.movementType' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('haulierId')}>
+                                        Transporter
+                                        {sortConfig.key === 'haulierId' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b w-24">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('rotDate')}>
+                                        ROT Date
+                                        {sortConfig.key === 'rotDate' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b w-30 text-center">
+                                    <div className="flex items-center justify-center gap-1" onClick={() => handleSort('status')}>
+                                        Status
+                                        {sortConfig.key === 'status' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b w-36">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('timeStamp')}>
+                                        Timestamp
+                                        {sortConfig.key === 'timeStamp' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('aleBooking.from')}>
+                                        From
+                                        {sortConfig.key === 'aleBooking.from' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('to')}>
+                                        To
+                                        {sortConfig.key === 'to' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b w-28 text-center">Actions</th>
+                            </tr>
                         </thead>
                         <tbody className="text-[13px] xl:text-sm">
-                        {isLoading ? (
-                            <tr>
-                                <td colSpan="11" className="p-10 text-center text-gray-400">
-                                    <div className="flex flex-col items-center gap-2">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                                        <p>Loading records...</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        ) : paginatedContainers.length > 0 ? (
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan="11" className="p-10 text-center text-gray-400">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                            <p>Loading records...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : paginatedContainers.length > 0 ? (
                                 paginatedContainers.map((cont, index) => {
                                     const recordNumber = (currentPage - 1) * itemsPerPage + index + 1;
-                            const theme = STATUS_CONFIG[cont.status] || {bg: "bg-gray-100", text: "text-gray-700"};
-                            return (
-                                <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
-                                    <td className="p-4">{recordNumber}</td>
-                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)}>{cont.aleBooking.awbNumber}</td>
-                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)}>{cont.aleBooking.houseAWBNumber}</td>
-                                    <td className="p-4">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
-                                    <td className="p-4 whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>
-                                    <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
-                                    <td className="p-4 text-center">
-                                        {/* Status Badge using Theme Colors */}
-                                        <span className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase tracking-wider whitespace-nowrap ${theme.bg} ${theme.text}`}>
-                                            {cont.status}
-                                        </span>
-                                    </td>
-                                    <td className="p-4 text-[12px] whitespace-normal break-words leading-tight text-gray-600">
-                                        {getStatusTimestamp(cont) ? new Date(getStatusTimestamp(cont)).toLocaleString() : "-"}
-                                    </td>
-                                    <td className="p-4">{getLocationName(cont, 'from')}</td>
-                                    <td className="p-4">{getLocationName(cont, 'to')}</td>
-                                    <td className="p-4">
-                                        {/* Horizontal Action Icons */}
-                                        <div className="flex items-center gap-3">
-                                            <Eye size={18}
-                                                 className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)}/>
-                                            {cont.status === "Assigned" &&   
-                                                <Edit size={18}
-                                                      className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => setEditModal({isOpen: true, id: cont.containerId, remarks: "", newDate: cont.rotDate, isSecureEdit: false, showDateField: false})}/>
-                                            }
-                                            {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) && (
-                                                <PencilRuler size={18}
-                                                      className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => setEditModal({isOpen: true, id: cont.containerId, remarks: "", newDate: cont.rotDate, isSecureEdit: true, showDateField: false})}/>
-                                            )}
-                                            {/*{cont.status !== "Deleted" &&*/}
-                                            {/*    <Trash2*/}
-                                            {/*        size={18}*/}
-                                            {/*        className="text-red-500 cursor-pointer hover:text-red-700"*/}
-                                            {/*        onClick={() => setDeleteModal({isOpen: true, id: cont.containerId, remarks: ""})}*/}
-                                            {/*    />*/}
-                                            {/*}*/}
-                                            {["Assigned", "Enroute"].includes(cont.status) && (
-                                                <CircleX size={18} className="text-red-500 cursor-pointer hover:text-red-700" onClick={() => setRejectModal({isOpen: true, id: cont.containerId, remarks: ""})}/>
-                                            )}
-                                            <FileText 
-                                                size={18} 
-                                                className="text-blue-600 cursor-pointer hover:text-blue-800"
-                                                onClick={() => navigate(`/ale/rot/view/pdf/${cont.containerId}`)}/>
-                                        </div>
-                                    </td>
-                                </tr>
-                            );
-                        }))
-                            : (
-                                <tr>
-                                    <td colSpan="11" className="p-12 text-center">
-                                        <div className="flex flex-col items-center justify-center gap-3">
-                                            <div className="bg-gray-50 p-4 rounded-full">
-                                                <Search size={40} className="text-gray-300" />
+                                    const theme = STATUS_CONFIG[cont.status] || { bg: "bg-gray-100", text: "text-gray-700" };
+                                    return (
+                                        <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
+                                            <td className="p-4">{recordNumber}</td>
+                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)}>{cont.aleBooking.awbNumber}</td>
+                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)}>{cont.aleBooking.houseAWBNumber}</td>
+                                            <td className="p-4">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
+                                            <td className="p-4 whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>
+                                            <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
+                                            <td className="p-4 text-center">
+                                                {/* Status Badge using Theme Colors */}
+                                                <span className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase tracking-wider whitespace-nowrap ${theme.bg} ${theme.text}`}>
+                                                    {cont.status}
+                                                </span>
+                                            </td>
+                                            <td className="p-4 text-[12px] whitespace-normal break-words leading-tight text-gray-600">
+                                                {getStatusTimestamp(cont) ? new Date(getStatusTimestamp(cont)).toLocaleString() : "-"}
+                                            </td>
+                                            <td className="p-4">{getLocationName(cont, 'from')}</td>
+                                            <td className="p-4">{getLocationName(cont, 'to')}</td>
+                                            <td className="p-4">
+                                                {/* Horizontal Action Icons */}
+                                                <div className="flex items-center gap-3">
+                                                    <Eye size={18}
+                                                        className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)} />
+                                                    {cont.status === "Assigned" &&
+                                                        <Edit size={18}
+                                                            className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => setEditModal({ isOpen: true, id: cont.containerId, remarks: "", newDate: cont.rotDate, isSecureEdit: false, showDateField: false })} />
+                                                    }
+                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete"].includes(cont.status) && (
+                                                        <PencilRuler size={18}
+                                                            className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => setEditModal({ isOpen: true, id: cont.containerId, remarks: "", newDate: cont.rotDate, isSecureEdit: true, showDateField: false })} />
+                                                    )}
+                                                    {/*{cont.status !== "Deleted" &&*/}
+                                                    {/*    <Trash2*/}
+                                                    {/*        size={18}*/}
+                                                    {/*        className="text-red-500 cursor-pointer hover:text-red-700"*/}
+                                                    {/*        onClick={() => setDeleteModal({isOpen: true, id: cont.containerId, remarks: ""})}*/}
+                                                    {/*    />*/}
+                                                    {/*}*/}
+                                                    {["Assigned", "Enroute"].includes(cont.status) && (
+                                                        <CircleX size={18} className="text-red-500 cursor-pointer hover:text-red-700" onClick={() => setRejectModal({ isOpen: true, id: cont.containerId, remarks: "" })} />
+                                                    )}
+                                                    <FileText
+                                                        size={18}
+                                                        className="text-blue-600 cursor-pointer hover:text-blue-800"
+                                                        onClick={() => navigate(`/ale/rot/view/pdf/${cont.containerId}`)} />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                }))
+                                : (
+                                    <tr>
+                                        <td colSpan="11" className="p-12 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-3">
+                                                <div className="bg-gray-50 p-4 rounded-full">
+                                                    <Search size={40} className="text-gray-300" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-lg font-bold text-gray-800">No records found</p>
+                                                    <p className="text-sm text-gray-500">
+                                                        {searchTerm || startDate || filterStatus !== "All"
+                                                            ? "Try adjusting your filters or search terms to find what you're looking for."
+                                                            : "There is currently no data available in the system."}
+                                                    </p>
+                                                </div>
+                                                {(searchTerm || startDate || filterStatus !== "All") && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setSearchTerm("");
+                                                            setFilterStatus("All");
+                                                            setStartDate("");
+                                                            setEndDate("");
+                                                        }}
+                                                        className="mt-2 text-sm text-blue-600 font-semibold hover:underline"
+                                                    >
+                                                        Clear all filters
+                                                    </button>
+                                                )}
                                             </div>
-                                            <div className="space-y-1">
-                                                <p className="text-lg font-bold text-gray-800">No records found</p>
-                                                <p className="text-sm text-gray-500">
-                                                    {searchTerm || startDate || filterStatus !== "All"
-                                                        ? "Try adjusting your filters or search terms to find what you're looking for."
-                                                        : "There is currently no data available in the system."}
-                                                </p>
-                                            </div>
-                                            {(searchTerm || startDate || filterStatus !== "All") && (
-                                                <button
-                                                    onClick={() => {
-                                                        setSearchTerm("");
-                                                        setFilterStatus("All");
-                                                        setStartDate("");
-                                                        setEndDate("");
-                                                    }}
-                                                    className="mt-2 text-sm text-blue-600 font-semibold hover:underline"
-                                                >
-                                                    Clear all filters
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            )}
+                                        </td>
+                                    </tr>
+                                )}
                         </tbody>
                     </table>
                 </div>
@@ -681,11 +716,10 @@ export function ALEROTHistory ()  {
                                             <button
                                                 key={pageNum}
                                                 onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-9 h-9 text-sm font-bold rounded-lg transition-all ${
-                                                    currentPage === pageNum
+                                                className={`w-9 h-9 text-sm font-bold rounded-lg transition-all ${currentPage === pageNum
                                                         ? "bg-blue-600 text-white shadow-md shadow-blue-100"
                                                         : "bg-white text-gray-600 hover:bg-gray-50 border border-transparent"
-                                                }`}
+                                                    }`}
                                             >
                                                 {pageNum}
                                             </button>
@@ -782,9 +816,8 @@ export function ALEROTHistory ()  {
                                         <label className="text-xs font-bold text-gray-500 uppercase ml-1">IC / Passport Number *</label>
                                         <input
                                             type="text"
-                                            className={`w-full mt-1 p-3 border rounded-xl outline-none text-sm ${
-                                                error === "ic" ? "border-red-500" : "border-gray-200"
-                                            }`}
+                                            className={`w-full mt-1 p-3 border rounded-xl outline-none text-sm ${error === "ic" ? "border-red-500" : "border-gray-200"
+                                                }`}
                                             placeholder="Enter IC for security audit"
                                             value={editModal.icNumber || ""}
                                             onChange={(e) => {
@@ -802,9 +835,8 @@ export function ALEROTHistory ()  {
                                     <div className="flex gap-2 mt-1">
                                         <input
                                             type="text"
-                                            className={`flex-1 p-3 border rounded-xl outline-none text-sm ${
-                                                error === "remarks" ? "border-red-500" : "border-gray-200"
-                                            }`}
+                                            className={`flex-1 p-3 border rounded-xl outline-none text-sm ${error === "remarks" ? "border-red-500" : "border-gray-200"
+                                                }`}
                                             placeholder="e.g., Typo in original entry"
                                             value={editModal.remarks}
                                             onChange={(e) => {
@@ -867,9 +899,8 @@ export function ALEROTHistory ()  {
                                 <button
                                     onClick={handleEdit}
                                     disabled={!editModal.showDateField}
-                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
-                                        editModal.showDateField ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-300 cursor-not-allowed"
-                                    }`}
+                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${editModal.showDateField ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-300 cursor-not-allowed"
+                                        }`}
                                 >
                                     Save Changes
                                 </button>
@@ -878,7 +909,7 @@ export function ALEROTHistory ()  {
                     </div>
                 )}
             </AnimatePresence>
-            
+
             {/* Deletion Confirmation Modal */}
             <AnimatePresence>
                 {rejectModal.isOpen && (
@@ -890,9 +921,8 @@ export function ALEROTHistory ()  {
                             className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center"
                         >
                             <div className="mb-6 flex justify-center">
-                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                                    rejectModal.nextStatus === "Enroute" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-                                }`}>
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${rejectModal.nextStatus === "Enroute" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                                    }`}>
                                     {rejectModal.nextStatus === "Enroute" ? <CheckCircle2 size={40} /> : <AlertCircle size={40} />}
                                 </div>
                             </div>
@@ -909,9 +939,8 @@ export function ALEROTHistory ()  {
                             <div className="text-left mb-6">
                                 <label className="text-xs font-bold text-gray-500 uppercase ml-1">Reason for Rejection *</label>
                                 <textarea
-                                    className={`w-full mt-1 p-3 border rounded-xl outline-none transition-all text-sm min-h-[100px] ${
-                                        error ? "border-red-500 ring-1 ring-red-500" : "border-gray-200 focus:ring-2 focus:ring-red-500"
-                                    }`}
+                                    className={`w-full mt-1 p-3 border rounded-xl outline-none transition-all text-sm min-h-[100px] ${error ? "border-red-500 ring-1 ring-red-500" : "border-gray-200 focus:ring-2 focus:ring-red-500"
+                                        }`}
                                     placeholder="e.g., Incorrect Booking Number provided by client..."
                                     value={rejectModal.remarks}
                                     onChange={(e) => {
@@ -938,9 +967,8 @@ export function ALEROTHistory ()  {
                                 </button>
                                 <button
                                     onClick={handleReject}
-                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
-                                        rejectModal.nextStatus === "Enroute" ? "bg-green-600 hover:bg-green-700" : "bg-red-500 hover:bg-red-600"
-                                    }`}
+                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${rejectModal.nextStatus === "Enroute" ? "bg-green-600 hover:bg-green-700" : "bg-red-500 hover:bg-red-600"
+                                        }`}
                                 >
                                     Confirm
                                 </button>

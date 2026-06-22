@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Layout from "../../../ale/layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,25 +14,25 @@ import {
 } from "../../../services/aleContainerService.js";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from 'xlsx';
-import {getUserById} from "../../../services/userService.js";
-import {getAleAssignedHaulierByContainerId} from "../../../services/aleAssignedHaulierService.js";
-import {LuScanSearch} from "react-icons/lu";
+import { getUserById } from "../../../services/userService.js";
+import { getAleAssignedHaulierByContainerId } from "../../../services/aleAssignedHaulierService.js";
+import { LuScanSearch } from "react-icons/lu";
 
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
-    "Enroute":   { bg: "bg-enroute",  text: "text-amber-900",  border: "border-amber-200" },
-    "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
-    "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
-    "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
-    "Approved-AKPS": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
-    "Approved-Custom": { bg: "bg-delivered-rfc",   text: "text-emerald-900",   border: "border-teal-200" },
-    "Approved-Complete": { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
-    "Accepted":   { bg: "bg-accepted",  text: "text-green",  border: "border-green-200" },
-    "Gate-In":   { bg: "bg-gate-in-out",   text: "text-blue-900",   border: "border-indigo-200" },
-    "Gate-Out":  { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
-    "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
-    "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
-    "Rejected":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
+    "Enroute": { bg: "bg-enroute", text: "text-amber-900", border: "border-amber-200" },
+    "Examine-AKPS": { bg: "bg-examine", text: "text-purple-900", border: "border-purple-200" },
+    "Examine-Custom": { bg: "bg-examine", text: "text-purple-900", border: "border-purple-200" },
+    "Examine-Complete": { bg: "bg-examine", text: "text-purple-900", border: "border-purple-200" },
+    "Approved-AKPS": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
+    "Approved-Custom": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
+    "Approved-Complete": { bg: "bg-delivered-rfc", text: "text-teal-900", border: "border-teal-200" },
+    "Accepted": { bg: "bg-accepted", text: "text-green", border: "border-green-200" },
+    "Gate-In": { bg: "bg-gate-in-out", text: "text-blue-900", border: "border-indigo-200" },
+    "Gate-Out": { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
+    "Delivered": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
+    "RFC": { bg: "bg-delivered-rfc", text: "text-teal-900", border: "border-teal-200" },
+    "Rejected": { bg: "bg-red-100", text: "text-red-900", border: "border-red-200" },
     //"Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
 
@@ -56,7 +56,7 @@ export function AkpsbookingList() {
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, startDate, endDate]);
-    
+
 
     const exportToExcel = () => {
         if (filteredContainers.length === 0) {
@@ -74,17 +74,17 @@ export function AkpsbookingList() {
             "Status": cont.status,
             "PickUpAssignedTime": cont.assignedTime ? new Date(cont.assignedTime).toLocaleString() : "N/A",
             "PickUpEnrouteTime": cont.enrouteTime ? new Date(cont.enrouteTime).toLocaleString() : "N/A",
-            "PickUpAcceptedTime": cont.acceptedTime  ? new Date(cont.acceptedTime).toLocaleString() : "N/A",
-            "PickUpGated In": cont.gatedInTime  ? new Date(cont.gatedInTime).toLocaleString() : "N/A",
-            "PickUpGated Out": cont.gatedOutTime  ? new Date(cont.gatedOutTime).toLocaleString() : "N/A",
+            "PickUpAcceptedTime": cont.acceptedTime ? new Date(cont.acceptedTime).toLocaleString() : "N/A",
+            "PickUpGated In": cont.gatedInTime ? new Date(cont.gatedInTime).toLocaleString() : "N/A",
+            "PickUpGated Out": cont.gatedOutTime ? new Date(cont.gatedOutTime).toLocaleString() : "N/A",
             "PickUpDeliveredTime": cont.deliveredTime ? new Date(cont.deliveredTime).toLocaleString() : "N/A",
             "PickUpRFCTime": cont.rfcTime ? new Date(cont.rfcTime).toLocaleString() : "N/A",
             "RejectedTime": cont.rejectedTime ? new Date(cont.rejectedTime).toLocaleString() : "N/A",
             "DeletedTime": cont.deletedTime ? new Date(cont.deletedTime).toLocaleString() : "N/A",
             "DropOffAssignedTime": cont.rtAssignedTime ? new Date(cont.rtAssignedTime).toLocaleString() : "N/A",
             "DropOffEnrouteTime": cont.rtEnrouteTime ? new Date(cont.rtEnrouteTime).toLocaleString() : "N/A",
-            "DropOffAcceptedTime": cont.rtAcceptedTime  ? new Date(cont.rtAcceptedTime).toLocaleString() : "N/A",
-            "DropOffGated In": cont.rtGatedInTime ? new Date(cont.rtGatedInTime).toLocaleString() :"N/A",
+            "DropOffAcceptedTime": cont.rtAcceptedTime ? new Date(cont.rtAcceptedTime).toLocaleString() : "N/A",
+            "DropOffGated In": cont.rtGatedInTime ? new Date(cont.rtGatedInTime).toLocaleString() : "N/A",
             "DropOffGated Out": cont.rtGatedOutTime ? new Date(cont.rtGatedOutTime).toLocaleString() : "N/A",
             "DropOffDeliveredTime": cont.rtDeliveredTime ? new Date(cont.rtDeliveredTime).toLocaleString() : "N/A",
             "DropOffRFCTime": cont.rtRFCTime ? new Date(cont.rtRFCTime).toLocaleString() : "N/A",
@@ -105,7 +105,7 @@ export function AkpsbookingList() {
                 : "N/A",
             "SSM Number": cont.aleBooking?.ssmNumber || "N/A",
             "Flight Number": cont.aleBooking?.flightNumber || "N/A",
-            "Carrier Reference Number" : cont.aleBooking?.carrierReferenceNumber || "N/A",
+            "Carrier Reference Number": cont.aleBooking?.carrierReferenceNumber || "N/A",
             "Total Package Quantity": cont.aleBooking?.updatedTotalPackageQuantity || cont.aleBooking?.totalPackageQuantity || "N/A",
             "Weight": cont.aleBooking?.updatedWeight || cont.aleBooking?.weight || "N/A",
             "Size": cont.aleBooking?.size || "N/A",
@@ -152,7 +152,7 @@ export function AkpsbookingList() {
                 const dateB = new Date(getStatusTimestamp(b) || 0);
                 return dateB - dateA;
             });
-            
+
             setContainers(sortedData || []);
         } catch (error) {
             console.error("Failed to fetch terminal data:", error); // Logs the actual error object
@@ -172,8 +172,8 @@ export function AkpsbookingList() {
 
     const getStatusTimestamp = (container) => {
         if (container.status === "Assigned") return container.rtAssignedTime || container.assignedTime;
-        if (container.status === "Enroute")  return container.rtEnrouteTime || container.enrouteTime;
-        if (container.status === "Gate-In")  return container.rtGatedInTime || container.gatedInTime;
+        if (container.status === "Enroute") return container.rtEnrouteTime || container.enrouteTime;
+        if (container.status === "Gate-In") return container.rtGatedInTime || container.gatedInTime;
         if (container.status === "Gate-Out") return container.rtGatedOutTime || container.gatedOutTime;
         if (container.status === "Delivered") return container.rtDeliveredTime || container.deliveredTime;
         if (container.status === "RFC") return container.rtRFCTime || container.rfcTime;
@@ -189,7 +189,7 @@ export function AkpsbookingList() {
         if (container.status === "Rejected-Both") return container.rejectedBothTime;
         if (container.status === "Rejected-Custom") return container.rejectedCustomTime;
         if (container.status === "Rejected-AKPS") return container.akpsRejectedTime;
-       
+
         return null;
     };
 
@@ -233,7 +233,7 @@ export function AkpsbookingList() {
                 status: statusModal.nextStatus,
 
                 RejectedAKPSTime: statusModal.nextStatus === "Rejected-AKPS" ? now : currentContainer.rejectedAKPSTime,
-                RejectedBothTime : statusModal.nextStatus === "Rejected-AKPS" ? now : currentContainer.rejectedBothTime,
+                RejectedBothTime: statusModal.nextStatus === "Rejected-AKPS" ? now : currentContainer.rejectedBothTime,
                 AKPSRejectReason: statusModal.nextStatus === "Rejected-AKPS"
                     ? statusModal.remarks
                     : currentContainer.akpsRejectReason,
@@ -261,94 +261,101 @@ export function AkpsbookingList() {
     };
     // ✅ Simple search (safe)
     const filteredContainers = useMemo(() => {
-            let result = containers.filter(cont => {
-                const matchesSearch =
-                    cont.containerNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    cont.rotNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    cont.aleBooking?.awbNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    cont.aleBooking?.haulierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    cont.aleBooking?.movementType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    cont.consigneeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    cont.portName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    cont.depotName?.toLowerCase().includes(searchTerm.toLowerCase());
-                cont.customStatus?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        let result = containers.filter(cont => {
+            const matchesSearch =
+                cont.containerNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                cont.rotNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                cont.aleBooking?.awbNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                cont.aleBooking?.haulierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                cont.aleBooking?.movementType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                cont.consigneeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                cont.portName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                cont.depotName?.toLowerCase().includes(searchTerm.toLowerCase());
+            cont.customStatus?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.akpsStatus?.toLowerCase().includes(searchTerm.toLowerCase());
 
 
-                let isExpiredGateOut = false;
-                if (cont.status === "Gate-Out" && cont.gatedOutTime) {
-                    const gatedOutDate = new Date(cont.gatedOutTime);
-                    console.log(gatedOutDate.toISOString());
-                    const today = new Date();
-                    const diffInTime = today.getTime() - gatedOutDate.getTime();
-                    console.log(diffInTime);
-                    const diffInDays = diffInTime / (1000 * 3600 * 24);
-                    console.log(diffInDays);
+            let isExpiredGateOut = false;
+            if (cont.status === "Gate-Out" && cont.gatedOutTime) {
+                const gatedOutDate = new Date(cont.gatedOutTime);
+                console.log(gatedOutDate.toISOString());
+                const today = new Date();
+                const diffInTime = today.getTime() - gatedOutDate.getTime();
+                console.log(diffInTime);
+                const diffInDays = diffInTime / (1000 * 3600 * 24);
+                console.log(diffInDays);
 
-                    if (diffInDays > 1) {
-                        isExpiredGateOut = true;
-                    }
+                if (diffInDays > 1) {
+                    isExpiredGateOut = true;
                 }
-
-                let matchesStatus = false;
-
-                // ✅ Updated Logic starts here
-                if (filterStatus === "All") {
-                    // Only show records that are strictly "Enroute"
-                    matchesStatus = cont.status !== "Rejected" && !isExpiredGateOut;
-                    //matchesStatus = true;
-                } else {
-                    // Show records that exactly match the clicked filter status
-                    // (e.g., "Approved-Complete", "Approved-Custom", etc.)
-                    matchesStatus = cont.status === filterStatus;
-                }
-                
-                const rotDate = cont.rotDate;
-                let matchesDate = true;
-
-                if (startDate && endDate) {
-                    matchesDate = rotDate >= startDate && rotDate <= endDate;
-                } else if (startDate) {
-                    matchesDate = rotDate === startDate;
-                }
-
-                return matchesSearch && matchesStatus && matchesDate;
-            });
-            if (sortConfig.key !== null) {
-                result.sort((a, b) => {
-                    if (sortConfig.key === 'timeStamp') {
-                        const timeA = getStatusTimestamp(a);
-                        const timeB = getStatusTimestamp(b);
-
-                        const dateA = timeA ? new Date(timeA).getTime() : 0;
-                        const dateB = timeB ? new Date(timeB).getTime() : 0;
-
-                        return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
-                    }
-
-                    if (sortConfig.key === 'rotDate') {
-                        // Treat null/undefined as very old dates so they move to the bottom
-                        const dateA = a.rotDate ? new Date(a.rotDate).getTime() : 0;
-                        const dateB = b.rotDate ? new Date(b.rotDate).getTime() : 0;
-
-                        return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
-                    }
-
-                    const getVal = (obj, path) => path.split('.').reduce((o, i) => o?.[i], obj);
-                    let aValue = getVal(a, sortConfig.key) || "";
-                    let bValue = getVal(b, sortConfig.key) || "";
-
-                    if (typeof aValue === 'string') aValue = aValue.toLowerCase();
-                    if (typeof bValue === 'string') bValue = bValue.toLowerCase();
-
-                    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-                    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-                    return 0;
-                });
             }
 
-            return result;
-        }, [containers, searchTerm, filterStatus, startDate, endDate, sortConfig]);
+            let matchesStatus = false;
+
+            // ✅ Updated Logic starts here
+            if (filterStatus === "All") {
+                matchesStatus = cont.status !== "Rejected" && !isExpiredGateOut;
+                //matchesStatus = true;
+            } else if (filterStatus === "Examine") {
+                matchesStatus =
+                    cont.status === "Examine-AKPS" ||
+                    cont.status === "Examine-Custom" ||
+                    cont.status === "Examine-Complete";
+            } else if (filterStatus === "Approved") {
+                matchesStatus =
+                    cont.status === "Approved-AKPS" ||
+                    cont.status === "Approved-Custom" ||
+                    cont.status === "Approved-Complete";
+            } else {
+                matchesStatus = cont.status === filterStatus;
+            }
+
+            const rotDate = cont.rotDate;
+            let matchesDate = true;
+
+            if (startDate && endDate) {
+                matchesDate = rotDate >= startDate && rotDate <= endDate;
+            } else if (startDate) {
+                matchesDate = rotDate === startDate;
+            }
+
+            return matchesSearch && matchesStatus && matchesDate;
+        });
+        if (sortConfig.key !== null) {
+            result.sort((a, b) => {
+                if (sortConfig.key === 'timeStamp') {
+                    const timeA = getStatusTimestamp(a);
+                    const timeB = getStatusTimestamp(b);
+
+                    const dateA = timeA ? new Date(timeA).getTime() : 0;
+                    const dateB = timeB ? new Date(timeB).getTime() : 0;
+
+                    return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+                }
+
+                if (sortConfig.key === 'rotDate') {
+                    // Treat null/undefined as very old dates so they move to the bottom
+                    const dateA = a.rotDate ? new Date(a.rotDate).getTime() : 0;
+                    const dateB = b.rotDate ? new Date(b.rotDate).getTime() : 0;
+
+                    return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+                }
+
+                const getVal = (obj, path) => path.split('.').reduce((o, i) => o?.[i], obj);
+                let aValue = getVal(a, sortConfig.key) || "";
+                let bValue = getVal(b, sortConfig.key) || "";
+
+                if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+                if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+                if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        return result;
+    }, [containers, searchTerm, filterStatus, startDate, endDate, sortConfig]);
 
     const paginatedContainers = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
@@ -409,7 +416,7 @@ export function AkpsbookingList() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <button className="p-2 border rounded-lg bg-blue-600 text-white"><Search size={20}/></button>
+                    <button className="p-2 border rounded-lg bg-blue-600 text-white"><Search size={20} /></button>
                     {/* Date Range Filter Group */}
                     <div className="flex items-center bg-white border border-gray-200 rounded-lg p-1 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 transition-all">
                         <div className="flex items-center px-2 border-r border-gray-100">
@@ -458,84 +465,124 @@ export function AkpsbookingList() {
                     >
                         All
                     </button>
-                    {Object.keys(STATUS_CONFIG).map((status) => (
-                        <button
-                            key={status}
-                            onClick={() => setFilterStatus(status)}
-                            className={`px-4 py-2 rounded-lg font-bold border transition-all
+                    {Object.keys(STATUS_CONFIG)
+                        .filter((status) => status === "Assigned" || status === "Enroute")
+                        .map((status) => (
+                            <button
+                                key={status}
+                                onClick={() => setFilterStatus(status)}
+                                className={`px-4 py-2 rounded-lg font-bold border transition-all
                                 ${filterStatus === status
-                                ? `${STATUS_CONFIG[status].bg} ${STATUS_CONFIG[status].text} ${STATUS_CONFIG[status].border} shadow-md ring-2 ring-offset-1 ring-opacity-50`
+                                        ? `${STATUS_CONFIG[status].bg} ${STATUS_CONFIG[status].text} ${STATUS_CONFIG[status].border} shadow-md ring-2 ring-offset-1 ring-opacity-50`
+                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                    }`}
+                            >
+                                {status}
+                            </button>
+                        ))}
+
+                    <button
+                        onClick={() => setFilterStatus("Examine")}
+                        className={`px-4 py-2 rounded-lg font-bold border transition-all
+                        ${filterStatus === "Examine"
+                                ? `bg-examine text-purple-900 border-purple-200 shadow-md ring-2 ring-offset-1 ring-opacity-50`
                                 : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
                             }`}
-                        >
-                            {status}
-                        </button>
-                    ))}
+                    >
+                        Examine
+                    </button>
+
+                    <button
+                        onClick={() => setFilterStatus("Approved")}
+                        className={`px-4 py-2 rounded-lg font-bold border transition-all
+                        ${filterStatus === "Approved"
+                                ? `bg-delivered-rfc text-emerald-900 border-teal-200 shadow-md ring-2 ring-offset-1 ring-opacity-50`
+                                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                            }`}
+                    >
+                        Approved
+                    </button>
+
+                    {Object.keys(STATUS_CONFIG)
+                        .filter((status) => !status.startsWith("Examine-") && !status.startsWith("Approved-") && status !== "Assigned" && status !== "Enroute" && status !== "Examine-AKPS" && status !== "Examine-Custom" && status !== "Examine-Complete")
+                        .map((status) => (
+                            <button
+                                key={status}
+                                onClick={() => setFilterStatus(status)}
+                                className={`px-4 py-2 rounded-lg font-bold border transition-all
+                                ${filterStatus === status
+                                        ? `${STATUS_CONFIG[status].bg} ${STATUS_CONFIG[status].text} ${STATUS_CONFIG[status].border} shadow-md ring-2 ring-offset-1 ring-opacity-50`
+                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                                    }`}
+                            >
+                                {status}
+                            </button>
+                        ))}
                 </div>
 
                 {/* Table */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
                     <table className="w-full text-left border-collapse lg:table-auto">
                         <thead className="bg-[#E3DEEB] text-gray-800 font-bold text-sm">
-                        <tr>
-                            <th className="p-4 border-b w-10 text-center">No.</th>
-                            <th className="p-4 border-b">
-                                <div className="flex items-center gap-1 cursor-pointer text-center" onClick={() => handleSort('booking.customFormNo')}>
-                                    Custom Form No.
-                                    {sortConfig.key === 'booking.customFormNo' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b">
-                                <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('booking.awbNumber')}>
-                                    AWB / House No.
-                                    {sortConfig.key === 'booking.awbNumber' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b">
-                                <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('booking.movementType')}>
-                                    Movement
-                                    {sortConfig.key === 'booking.movementType' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b">
-                                <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('haulierName')}>
-                                    Transporter
-                                    {sortConfig.key === 'haulierName' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b">
-                                <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('containerNumber')}>
-                                    Prime Mover No.
-                                    {sortConfig.key === 'containerNumber' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b">
-                                <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('timeStamp')}>
-                                    Date Time
-                                    {sortConfig.key === 'timeStamp' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b text-center">Status</th>
-                            <th className="p-4 border-b text-center">Customs</th>
-                            <th className="p-4 border-b text-center">AKPS</th>
-                            <th className="p-4 border-b text-center">MAHSB</th>
-                            <th className="p-4 border-b text-center">Actions</th>
-                        </tr>
+                            <tr>
+                                <th className="p-4 border-b w-10 text-center">No.</th>
+                                <th className="p-4 border-b">
+                                    <div className="flex items-center gap-1 cursor-pointer text-center" onClick={() => handleSort('booking.customFormNo')}>
+                                        Custom Form No.
+                                        {sortConfig.key === 'booking.customFormNo' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b">
+                                    <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('booking.awbNumber')}>
+                                        AWB / House No.
+                                        {sortConfig.key === 'booking.awbNumber' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b">
+                                    <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('booking.movementType')}>
+                                        Movement
+                                        {sortConfig.key === 'booking.movementType' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b">
+                                    <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('haulierName')}>
+                                        Transporter
+                                        {sortConfig.key === 'haulierName' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b">
+                                    <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('containerNumber')}>
+                                        Prime Mover No.
+                                        {sortConfig.key === 'containerNumber' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b">
+                                    <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('timeStamp')}>
+                                        Date Time
+                                        {sortConfig.key === 'timeStamp' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b text-center">Status</th>
+                                <th className="p-4 border-b text-center">Customs</th>
+                                <th className="p-4 border-b text-center">AKPS</th>
+                                <th className="p-4 border-b text-center">MAHSB</th>
+                                <th className="p-4 border-b text-center">Actions</th>
+                            </tr>
                         </thead>
                         <tbody className="text-[13px] xl:text-sm">
-                        {isLoading ? (
-                            <tr>
-                                <td colSpan="11" className="p-10 text-center text-gray-400">
-                                    <div className="flex flex-col items-center gap-2">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                                        <p>Loading records...</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        ) : paginatedContainers.length > 0 ? (
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan="11" className="p-10 text-center text-gray-400">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                            <p>Loading records...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : paginatedContainers.length > 0 ? (
                                 paginatedContainers.map((cont, index) => {
                                     console.log("Row Data (cont):", cont);
-                                    const theme = STATUS_CONFIG[cont.status] || {bg: "bg-gray-100", text: "text-gray-700"};
+                                    const theme = STATUS_CONFIG[cont.status] || { bg: "bg-gray-100", text: "text-gray-700" };
                                     const displayTime = cont.approvedAKPSTime || cont.rejectedAKPSTime || getStatusTimestamp(cont);
                                     const recordNumber = (currentPage - 1) * itemsPerPage + index + 1;
                                     return (
@@ -584,8 +631,8 @@ export function AkpsbookingList() {
                                                 {/* Status Badge using Theme Colors */}
                                                 <span
                                                     className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase tracking-wider whitespace-nowrap ${theme.bg} ${theme.text}`}>
-                                                {cont.status}
-                                            </span>
+                                                    {cont.status}
+                                                </span>
                                             </td>
                                             {/* Customs Status Column */}
                                             <td className="p-4 text-center">
@@ -643,9 +690,9 @@ export function AkpsbookingList() {
                                                 {/* Horizontal Action Icons */}
                                                 <div className="flex items-center justify-start gap-3">
                                                     <Eye size={18}
-                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/akps/booking/bookingdetails/${cont.containerId}`)}/>
+                                                        className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/akps/booking/bookingdetails/${cont.containerId}`)} />
                                                     {/* 1. Show Approve/Reject buttons ONLY IF Custom is Approved and AKPS is still pending (null or empty) */}
-                                                    {cont.enrouteTime !== null && cont.approvedAKPSTime === null && cont.examineAKPSTime === null && cont.approvedBothTime === null && cont.examineBothTime === null && cont.gatedInTime === null && cont.rejectedTime === null &&(
+                                                    {cont.enrouteTime !== null && cont.approvedAKPSTime === null && cont.examineAKPSTime === null && cont.approvedBothTime === null && cont.examineBothTime === null && cont.gatedInTime === null && cont.rejectedTime === null && (
                                                         <button onClick={() => navigate(`/ale/akps/booking/bookingaction/${cont.containerId}`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Reject  ">
                                                             <Check size={18} />
                                                         </button>
@@ -669,38 +716,38 @@ export function AkpsbookingList() {
                                         </tr>
                                     );
                                 }))
-                            : (
-                                <tr>
-                                    <td colSpan="11" className="p-12 text-center">
-                                        <div className="flex flex-col items-center justify-center gap-3">
-                                            <div className="bg-gray-50 p-4 rounded-full">
-                                                <Search size={40} className="text-gray-300" />
+                                : (
+                                    <tr>
+                                        <td colSpan="11" className="p-12 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-3">
+                                                <div className="bg-gray-50 p-4 rounded-full">
+                                                    <Search size={40} className="text-gray-300" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-lg font-bold text-gray-800">No records found</p>
+                                                    <p className="text-sm text-gray-500">
+                                                        {searchTerm || startDate || filterStatus !== "All"
+                                                            ? "Try adjusting your filters or search terms to find what you're looking for."
+                                                            : "There is currently no data available in the system."}
+                                                    </p>
+                                                </div>
+                                                {(searchTerm || startDate || filterStatus !== "All") && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setSearchTerm("");
+                                                            setFilterStatus("All");
+                                                            setStartDate("");
+                                                            setEndDate("");
+                                                        }}
+                                                        className="mt-2 text-sm text-blue-600 font-semibold hover:underline"
+                                                    >
+                                                        Clear all filters
+                                                    </button>
+                                                )}
                                             </div>
-                                            <div className="space-y-1">
-                                                <p className="text-lg font-bold text-gray-800">No records found</p>
-                                                <p className="text-sm text-gray-500">
-                                                    {searchTerm || startDate || filterStatus !== "All"
-                                                        ? "Try adjusting your filters or search terms to find what you're looking for."
-                                                        : "There is currently no data available in the system."}
-                                                </p>
-                                            </div>
-                                            {(searchTerm || startDate || filterStatus !== "All") && (
-                                                <button
-                                                    onClick={() => {
-                                                        setSearchTerm("");
-                                                        setFilterStatus("All");
-                                                        setStartDate("");
-                                                        setEndDate("");
-                                                    }}
-                                                    className="mt-2 text-sm text-blue-600 font-semibold hover:underline"
-                                                >
-                                                    Clear all filters
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            )}
+                                        </td>
+                                    </tr>
+                                )}
                         </tbody>
                     </table>
                 </div>
@@ -738,11 +785,10 @@ export function AkpsbookingList() {
                                             <button
                                                 key={pageNum}
                                                 onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-9 h-9 text-sm font-bold rounded-lg transition-all ${
-                                                    currentPage === pageNum
+                                                className={`w-9 h-9 text-sm font-bold rounded-lg transition-all ${currentPage === pageNum
                                                         ? "bg-blue-600 text-white shadow-md shadow-blue-100"
                                                         : "bg-white text-gray-600 hover:bg-gray-50 border border-transparent"
-                                                }`}
+                                                    }`}
                                             >
                                                 {pageNum}
                                             </button>
@@ -793,11 +839,10 @@ export function AkpsbookingList() {
                             className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center"
                         >
                             <div className="mb-6 flex justify-center">
-                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                                    statusModal.nextStatus === "Approved-AKPS" ? "bg-green-100 text-green-600" :
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${statusModal.nextStatus === "Approved-AKPS" ? "bg-green-100 text-green-600" :
                                         statusModal.nextStatus === "Examine-AKPS" ? "bg-blue-100 text-blue-600" :
                                             "bg-red-100 text-red-600"
-                                }`}>
+                                    }`}>
                                     {statusModal.nextStatus === "Approved-AKPS" ? <CheckCircle2 size={40} /> :
                                         statusModal.nextStatus === "Examine-AKPS" ? <Eye size={40} /> :
                                             <AlertCircle size={40} />}
@@ -843,11 +888,10 @@ export function AkpsbookingList() {
                                     onClick={handleStatusUpdate}
                                     // Disable confirm if rejecting but no reason is provided
                                     disabled={statusModal.nextStatus === "Rejected-AKPS" && !statusModal.remarks?.trim()}
-                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
-                                        statusModal.nextStatus === "Approved-AKPS" ? "bg-green-600 hover:bg-green-700" :
+                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${statusModal.nextStatus === "Approved-AKPS" ? "bg-green-600 hover:bg-green-700" :
                                             statusModal.nextStatus === "Examine-AKPS" ? "bg-blue-600 hover:bg-blue-700" :
                                                 "bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:shadow-none"
-                                    }`}
+                                        }`}
                                 >
                                     Confirm
                                 </button>

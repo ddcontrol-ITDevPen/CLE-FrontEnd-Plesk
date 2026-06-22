@@ -41,7 +41,7 @@ export default function CustomsNavBar({ role = "customs" }) {
     const menuItems = [
         { icon: LucideHome, label: "Dashboard", path: "/ale/customs/dashboard" },
         { icon: LucideFileInput, label: "New Booking", path: "/ale/terminal/booking/new", badgeCount: actionNeededCount },
-        { icon: LucideFile, label: "Booking List", path: "/customs/bookinglist" },
+        { icon: LucideFile, label: "Booking List", path: "/ale/customs/bookinglist" },
         { icon: LucideArchive, label: "Archived ROTs", path: "/ale/customs/rot/archived" },
         { icon: LucideMapPinned, label: "Track & Trace", path: "/ale/rot/track" },
         //{ icon: LucideFile, label: "View Document", path: "/ale/forwarding/rot/document/view" }
