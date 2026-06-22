@@ -144,6 +144,7 @@ export function ALEAddDriver() {
             setTimeout(() => navigate("/ale/haulier/manage/drivers"), 1500);
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to add driver");
+            console.log("Failed to add: ", error);
         } finally {
             setIsSubmitting(false);
         }

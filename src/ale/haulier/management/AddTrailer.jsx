@@ -135,6 +135,7 @@ export function ALEAddTrailer() {
             setTimeout(() => navigate("/ale/haulier/manage/trailers"), 1500);
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to add trailer");
+            console.log("Failed to add: ", error);
         } finally {
             setIsSubmitting(false);
         }

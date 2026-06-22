@@ -139,6 +139,7 @@ export function ALEAddPrimeMover() {
             setTimeout(() => navigate("/ale/haulier/manage/prime-movers"), 1500);
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to add prime mover");
+            console.log("Failed to add: ", error);
         } finally {
             setIsSubmitting(false);
         }
