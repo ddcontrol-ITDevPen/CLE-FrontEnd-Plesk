@@ -13,9 +13,10 @@ import {
     Upload,
     FileSpreadsheet
 } from "lucide-react";
-import { registerTrailer } from "../../../services/trailerService.js"; // Ensure this service exists
+import { registerTrailer } from "../../../services/trailerService.js";
 import { toast, Toaster } from "sonner";
 import * as XLSX from "xlsx";
+import { getUserById } from "../../../services/userService.js";
 
 export function ALEAddTrailer() {
     const navigate = useNavigate();

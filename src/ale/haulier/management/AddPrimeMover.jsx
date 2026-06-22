@@ -17,6 +17,7 @@ import {
 import { registerPrimeMover } from "../../../services/primeMoverService.js"; 
 import { toast, Toaster } from "sonner";
 import * as XLSX from "xlsx";
+import { getUserById } from "../../../services/userService.js";
 
 export function ALEAddPrimeMover() {
     const navigate = useNavigate();

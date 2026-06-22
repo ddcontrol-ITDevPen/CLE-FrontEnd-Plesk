@@ -6,6 +6,7 @@ import { User, IdCard, Mail, Phone, ArrowLeft, UserPlus, CheckCircle2, FileDown,
 import { registerDriver } from "../../../services/driverService.js";
 import { toast, Toaster } from "sonner";
 import * as XLSX from "xlsx";
+import { getUserById } from "../../../services/userService.js";
 
 export function ALEAddDriver() {
     const navigate = useNavigate();
