@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../../ale/layout/Layout.jsx";
-import {getAleContainerById, updateAleContainer} from "../../../services/aleContainerService.js";
-import {AnimatePresence, motion} from "framer-motion";
+import { getAleContainerById, updateAleContainer } from "../../../services/aleContainerService.js";
+import { AnimatePresence, motion } from "framer-motion";
 import {
     ArrowLeft,
     Clock,
@@ -15,10 +15,10 @@ import {
     FileImage,
     FileText, File, Download, ExternalLink, X
 } from "lucide-react";
-import {getCompanyById} from "../../../services/companyService.js";
-import {toast} from "sonner";
-import {getUserById} from "../../../services/userService.js";
-import {getAleBookingDocumentByBookingNumber} from "../../../services/aleBookingDocumentService.js";
+import { getCompanyById } from "../../../services/companyService.js";
+import { toast } from "sonner";
+import { getUserById } from "../../../services/userService.js";
+import { getAleBookingDocumentByBookingNumber } from "../../../services/aleBookingDocumentService.js";
 import api from "../../../services/api.js";
 
 export function CustomsbookingAction() {
@@ -30,7 +30,7 @@ export function CustomsbookingAction() {
     const [isLoading, setIsLoading] = useState(true);
     const [billingPartyName, setBillingPartyName] = useState(null);
     const [statusModal, setStatusModal] = useState({ isOpen: false, id: null, nextStatus: "", remarks: "" });
-// Add these inside your AkpsbookingAction function
+    // Add these inside your AkpsbookingAction function
     const [isRejecting, setIsRejecting] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
     const [previewData, setPreviewData] = useState({ url: null, type: null, fileName: null });
@@ -40,32 +40,32 @@ export function CustomsbookingAction() {
     const [isDocsLoading, setIsDocsLoading] = useState(false);
 
     const fetchDetails = async () => {
-            try {
-                const result = await getAleContainerById(id);
-                console.log(result);
-                setData(result);
-                const forwardingId = result.aleBooking?.forwardingId;
-                console.log(forwardingId);
-                const forwardingInfo = await getCompanyById(forwardingId);
-                setForwarding(forwardingInfo);
-                if (result.aleBooking?.billingParty) {
-                    try {
-                        const company = await getCompanyById(result.aleBooking.billingParty);
-                        setBillingPartyName(company?.companyName || "N/A");
-                    } catch {
-                        setBillingPartyName("N/A");
-                    }
+        try {
+            const result = await getAleContainerById(id);
+            console.log(result);
+            setData(result);
+            const forwardingId = result.aleBooking?.forwardingId;
+            console.log(forwardingId);
+            const forwardingInfo = await getCompanyById(forwardingId);
+            setForwarding(forwardingInfo);
+            if (result.aleBooking?.billingParty) {
+                try {
+                    const company = await getCompanyById(result.aleBooking.billingParty);
+                    setBillingPartyName(company?.companyName || "N/A");
+                } catch {
+                    setBillingPartyName("N/A");
                 }
-            } catch (error) {
-                console.error("Error fetching ROT details:", error);
-            } finally {
-                setIsLoading(false);
             }
-        };
-        
-        useEffect(() => {
-            fetchDetails();
-        }, [id]);
+        } catch (error) {
+            console.error("Error fetching ROT details:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchDetails();
+    }, [id]);
 
     // 2. NEW EFFECT: Automatically fetch documents when data.rotNumber is ready
     useEffect(() => {
@@ -87,7 +87,7 @@ export function CustomsbookingAction() {
         fetchDocuments();
     }, [data?.rotNumber]); // Runs as soon as data.rotNumber is set
 
-    
+
     const getLocationName = (cont, type) => {
         const { movementType, tripType } = cont.booking || {};
 
@@ -184,7 +184,7 @@ export function CustomsbookingAction() {
             console.log("To Address Value:", currentContainer.toAddress);
             console.log("Is it an array?:", Array.isArray(currentContainer.toAddress));
             // -------
-            
+
             const now = new Date().toISOString();
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = `${user.fullName} - ${user.companyName}`;
@@ -198,7 +198,7 @@ export function CustomsbookingAction() {
                     finalStatus = "Approved-Complete";
                 }
             }
-            
+
             const payload = {
                 ...currentContainer,
                 status: finalStatus,
@@ -223,14 +223,14 @@ export function CustomsbookingAction() {
 
             // 3. Redirect back to the List page after a short delay so the user sees the success toast
             setTimeout(() => {
-                navigate("/customs/bookinglist"); // Ensure this path matches your App.js route
+                navigate("ale/customs/bookinglist");
             }, 1500);
         } catch (error) {
             console.error(error);
             toast.error("Database sync error. Please contact admin.", { id: toastId });
         }
     };
-    
+
     return (
         <Layout role="customs">
             <div className="space-y-6 max-w-7xl mx-auto pb-10">
@@ -518,7 +518,7 @@ export function CustomsbookingAction() {
                             >
                                 <Save size={18} /> Confirm Rejection
                             </button>
-                            
+
                         </div>
                     </motion.div>
                 )}
@@ -533,10 +533,9 @@ export function CustomsbookingAction() {
                             className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center"
                         >
                             <div className="mb-6 flex justify-center">
-                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                                    statusModal.nextStatus === "Approved-Custom" ? "bg-green-100 text-green-600" :
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${statusModal.nextStatus === "Approved-Custom" ? "bg-green-100 text-green-600" :
                                         statusModal.nextStatus === "Examine-Custom" ? "bg-yellow-100 text-yellow-600" : "bg-red-100 text-red-600"
-                                }`}>
+                                    }`}>
                                     {statusModal.nextStatus === "Approved-Custom" ? <CheckCircle2 size={40} /> :
                                         statusModal.nextStatus === "Examine-Custom" ? <Eye size={40} /> : <AlertCircle size={40} />}
                                 </div>
@@ -580,11 +579,10 @@ export function CustomsbookingAction() {
                                     onClick={handleStatusUpdate}
                                     // Disable confirm if rejecting but no reason is provided
                                     disabled={statusModal.nextStatus === "Rejected-Custom" && !statusModal.remarks?.trim()}
-                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
-                                        statusModal.nextStatus === "Approved-Custom" ? "bg-green-600 hover:bg-green-700" :
+                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${statusModal.nextStatus === "Approved-Custom" ? "bg-green-600 hover:bg-green-700" :
                                             statusModal.nextStatus === "Examine-Custom" ? "bg-yellow-600 hover:bg-yellow-700" :
                                                 "bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:shadow-none"
-                                    }`}
+                                        }`}
                                 >
                                     Confirm
                                 </button>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { getAleContainerById } from "../../../services/aleContainerService.js";
-import {AnimatePresence, motion} from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
     AlertCircle,
     AlertTriangle,
@@ -13,11 +13,11 @@ import {
     ExternalLink,
     FileText,
     Upload,
-    X, FileImage, Eye, Trash2, 
+    X, FileImage, Eye, Trash2,
 } from "lucide-react";
 import ShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
-import {getCompanyById} from "../../../services/companyService.js";
-import {getAleAssignedHaulierByContainerId} from "../../../services/aleAssignedHaulierService.js";
+import { getCompanyById } from "../../../services/companyService.js";
+import { getAleAssignedHaulierByContainerId } from "../../../services/aleAssignedHaulierService.js";
 import {
     deleteAleBookingDocument,
     getAleBookingDocumentByBookingNumber,
@@ -34,7 +34,7 @@ export function ALEViewROTDetails() {
     const [isLoading, setIsLoading] = useState(true);
     const [billingPartyName, setBillingPartyName] = useState(null);
     const [assignedHaulier, setAssignedHaulier] = useState(null);
-    
+
     const [documents, setDocuments] = useState([]);
     const [previewData, setPreviewData] = useState({ url: null, type: null, fileName: null });
     const [editModal, setEditModal] = useState({ isOpen: false, doc: null });
@@ -226,7 +226,7 @@ export function ALEViewROTDetails() {
                             <div className="flex justify-between"><span className="text-gray-500">Terminal</span> <span className="font-bold">{data.aleBooking?.terminalLocation || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Seal No.</span> <span className="font-bold">{data.aleBooking?.sealNumber || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Forwarding Remarks</span> <span className="font-bold italic">{data.aleBooking?.forwardingRemarks || "N/A"}</span></div>
-                    </div>
+                        </div>
                         <div className="space-y-3">
                             <div className="flex justify-between"><span className="text-gray-500">Custom Form Type</span> <span className="font-bold">{data.aleBooking?.customFormType || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Custom Form No.</span> <span className="font-bold">{data.aleBooking?.customFormNo || "N/A"}</span></div>
@@ -241,13 +241,13 @@ export function ALEViewROTDetails() {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-12 text-sm">
                         <div className="space-y-3">
                             <div className="flex justify-between"><span className="text-gray-500">Total Package Quantity</span> <span className="font-bold">{data.aleBooking?.updatedTotalPackageQuantity || data.aleBooking?.totalPackageQuantity || "N/A"}</span></div>
-                           </div>
+                        </div>
                         <div className="space-y-3">
                             <div className="flex justify-between"><span className="text-gray-500">Weight</span> <span className="font-bold">{data.aleBooking.updatedWeight || data.aleBooking?.weight || "N/A"}</span></div>
-                            </div>
+                        </div>
                         <div className="space-y-3">
                             <div className="flex justify-between"><span className="text-gray-500">Size</span> <span className="font-bold">{data.aleBooking?.size || "N/A"}</span></div>
-                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -334,7 +334,7 @@ export function ALEViewROTDetails() {
                                     <div className="flex items-center justify-start gap-4 mt-4 pt-3 border-t border-gray-50">
                                         <div className="flex gap-4">
                                             <button onClick={() => handlePreview(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-blue-50 text-gray-500 hover:text-blue-600 rounded-md"><Eye size={16} />Preview</button>
-                                            <button onClick={() => handleDownload(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-green-50 text-gray-500 hover:text-green-600 rounded-md"><Download size={16}/>Download</button>
+                                            <button onClick={() => handleDownload(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-green-50 text-gray-500 hover:text-green-600 rounded-md"><Download size={16} />Download</button>
                                         </div>
                                         {/*<div className="flex gap-1">*/}
                                         {/*    <button onClick={() => { setEditModal({ isOpen: true, doc }); setNewFileName(doc.fileName); }} className="p-1.5 hover:bg-amber-50 text-gray-500 hover:text-amber-600 rounded-md"><Edit3 size={16} /></button>*/}
@@ -441,7 +441,7 @@ export function ALEViewROTDetails() {
                                 <h2 className="text-xl font-bold flex items-center gap-2">
                                     <Edit3 className="text-system-color" /> Edit Document
                                 </h2>
-                                <button onClick={() => setEditModal({isOpen: false, doc: null})} className="p-2 hover:bg-gray-100 rounded-full">
+                                <button onClick={() => setEditModal({ isOpen: false, doc: null })} className="p-2 hover:bg-gray-100 rounded-full">
                                     <X size={20} />
                                 </button>
                             </div>
@@ -496,7 +496,7 @@ export function ALEViewROTDetails() {
                                     </div>
                                     {editFile && (
                                         <p className="text-[10px] text-amber-600 mt-2 flex gap-1 items-center">
-                                            <AlertTriangle size={12}/> This will overwrite the existing file and update the uploaded date.
+                                            <AlertTriangle size={12} /> This will overwrite the existing file and update the uploaded date.
                                         </p>
                                     )}
                                 </div>

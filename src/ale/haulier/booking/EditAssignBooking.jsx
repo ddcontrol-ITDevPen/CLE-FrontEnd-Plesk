@@ -183,7 +183,7 @@ export function ALEEditAssignBooking() {
 
     return (
         <Layout role="haulier">
-            <Toaster richColors position="top-right"/>
+            <Toaster richColors position="top-right" />
             <div className="max-w-5xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
                     <div>
@@ -212,13 +212,13 @@ export function ALEEditAssignBooking() {
                         </div>
 
                         <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <SelectField label="Driver Name" name="driverId" icon={<User size={18}/>} value={formData.driverId} onChange={handleChange} error={errors.driverId} required options={drivers.map(d => ({ label: d.name, value: d.id }))} />
-                            <SelectField label="Trucker/PM No. (Prime Mover)" name="pmId" icon={<Hash size={18}/>} value={formData.pmId} onChange={handleChange} error={errors.pmId} required options={primeMovers.map(p => ({ label: p.plateNumber, value: p.id }))} />
-                            <SelectField label="Booking Date" name="bookingDate" icon={<Clock size={18}/>} value={selectedDate} onChange={handleDateChange} required options={availableDates.map(d => ({ label: d, value: d }))} />
+                            <SelectField label="Driver Name" name="driverId" icon={<User size={18} />} value={formData.driverId} onChange={handleChange} error={errors.driverId} required options={drivers.map(d => ({ label: d.name, value: d.id }))} />
+                            <SelectField label="Trucker/PM No. (Prime Mover)" name="pmId" icon={<Hash size={18} />} value={formData.pmId} onChange={handleChange} error={errors.pmId} required options={primeMovers.map(p => ({ label: p.plateNumber, value: p.id }))} />
+                            <SelectField label="Booking Date" name="bookingDate" icon={<Clock size={18} />} value={selectedDate} onChange={handleDateChange} required options={availableDates.map(d => ({ label: d, value: d }))} />
                             <SelectField
                                 label="Time Slot"
                                 name="timeSlotId"
-                                icon={<Clock size={18}/>}
+                                icon={<Clock size={18} />}
                                 value={formData.timeSlotId}
                                 onChange={handleChange}
                                 error={errors.timeSlotId}
@@ -229,11 +229,11 @@ export function ALEEditAssignBooking() {
                                     value: s.id
                                 }))}
                             />
-                            <SelectField label="Trailer No." name="trailerId" icon={<LucideTruck size={18}/>} value={formData.trailerId} onChange={handleChange} error={errors.trailerId} required options={trailers.map(t => ({ label: `${t.plateNumber} - ${t.type}`, value: t.id }))} />
+                            <SelectField label="Trailer No." name="trailerId" icon={<LucideTruck size={18} />} value={formData.trailerId} onChange={handleChange} error={errors.trailerId} required options={trailers.map(t => ({ label: `${t.plateNumber} - ${t.type}`, value: t.id }))} />
                             <InputField
                                 label="Pass No."
                                 name="passNumber"
-                                icon={<TicketCheck size={18}/>}
+                                icon={<TicketCheck size={18} />}
                                 value={formData.passNumber}
                                 onChange={handleChange}
                                 error={errors.passNumber}
@@ -245,7 +245,7 @@ export function ALEEditAssignBooking() {
                                 label="Consignee Time Slot."
                                 name="consigneeTimeSlot"
                                 type="time"
-                                icon={<Clock size={18}/>}
+                                icon={<Clock size={18} />}
                                 value={formData.consigneeTimeSlot}
                                 onChange={handleChange}
                                 error={errors.consigneeTimeSlot}
@@ -276,7 +276,7 @@ const InputField = ({ icon, label, name, value, onChange, error, required, readO
             value={value}
             onChange={onChange}
             readOnly={readOnly}
-            className={`p-3 rounded-xl border border-gray-200 ${readOnly ? "bg-gray-100/50" : "bg-gray-50/50" } bg-gray-100/50 outline-none  ${error ? 'border-red-500' : 'border-gray-100 hover:border-indigo-300'}`}
+            className={`p-3 rounded-xl border border-gray-200 ${readOnly ? "bg-gray-100/50" : "bg-gray-50/50"} bg-gray-100/50 outline-none  ${error ? 'border-red-500' : 'border-gray-100 hover:border-indigo-300'}`}
         />
         <AnimatePresence>
             {error && (

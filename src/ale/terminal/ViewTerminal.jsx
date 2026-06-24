@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../ale/layout/Layout.jsx";
-import {getAleContainerById} from "../../services/aleContainerService.js";
+import { getAleContainerById } from "../../services/aleContainerService.js";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock } from "lucide-react";
 import ShipmentLog from "../../ale/ALEComponents/ALEShipmentLog.jsx";
-import {getCompanyById} from "../../services/companyService.js";
+import { getCompanyById } from "../../services/companyService.js";
 
 export function ViewTerminal() {
     const { id } = useParams();

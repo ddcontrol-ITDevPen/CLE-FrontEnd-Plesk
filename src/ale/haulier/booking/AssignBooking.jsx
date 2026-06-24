@@ -11,18 +11,18 @@ import {
     Save,
     ArrowLeft, LucideShieldUser, TicketCheck
 } from "lucide-react";
-import {getAleContainerById, updateAleContainer} from "../../../services/aleContainerService.js";
+import { getAleContainerById, updateAleContainer } from "../../../services/aleContainerService.js";
 import { toast, Toaster } from "sonner";
 import { getDrivers } from "../../../services/driverService.js";
 import { getPrimeMovers } from "../../../services/primeMoverService.js";
 import { getTrailers } from "../../../services/trailerService.js";
-import {getAleTimeSlots, updateAleTimeSlot} from "../../../services/aleTimeSlotService.js";
+import { getAleTimeSlots, updateAleTimeSlot } from "../../../services/aleTimeSlotService.js";
 import { registerAleAssignedHaulier } from "../../../services/aleAssignedHaulierService.js";
-import {getUserById} from "../../../services/userService.js";
-import {getCompanyById} from "../../../services/companyService.js";
+import { getUserById } from "../../../services/userService.js";
+import { getCompanyById } from "../../../services/companyService.js";
 
 export function ALEAssignBooking() {
-    const { id } = useParams(); 
+    const { id } = useParams();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(true);
     const [drivers, setDrivers] = useState([]);
@@ -36,12 +36,12 @@ export function ALEAssignBooking() {
     const [billingParty, setBillingParty] = useState(null);
 
     const [formData, setFormData] = useState({
-        driverId: "",      
-        pmId: "",        
-        trailerId: "",   
-        timeSlotId: "",        
-        containerId: id,     
-        rotNumber: "",       
+        driverId: "",
+        pmId: "",
+        trailerId: "",
+        timeSlotId: "",
+        containerId: id,
+        rotNumber: "",
         haulierId: localStorage.getItem("companyCode") || "",
         passNumber: "",
         consigneeTimeSlot: "",
@@ -98,7 +98,7 @@ export function ALEAssignBooking() {
                     getTrailers(),
                     getAleTimeSlots()
                 ]);
-                
+
                 const user = await getUserById(localStorage.getItem("userId"));
                 const haulierId = user.companyCode
                 setDrivers(driverData.filter(x => x.haulierId === haulierId) || []);
@@ -153,7 +153,7 @@ export function ALEAssignBooking() {
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName;
             const assignmentPayload = {
-                containerId: parseInt(id),                      
+                containerId: parseInt(id),
                 rotNumber: container.rotNumber,
                 haulierId: user.companyCode,
                 driverId: formData.driverId,
@@ -166,7 +166,7 @@ export function ALEAssignBooking() {
                     : formData.consigneeTimeSlot
             };
             await registerAleAssignedHaulier(assignmentPayload);
-            const updatedContainerData = {...container, containerId: id, status: "Enroute", enrouteTime: new Date().toISOString(), UpdatedBy: updatedBy}
+            const updatedContainerData = { ...container, containerId: id, status: "Enroute", enrouteTime: new Date().toISOString(), UpdatedBy: updatedBy }
             await updateAleContainer(id, updatedContainerData);
             const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
             if (selectedSlot) {
@@ -191,7 +191,7 @@ export function ALEAssignBooking() {
 
     return (
         <Layout role="haulier">
-            <Toaster richColors position="top-right"/>
+            <Toaster richColors position="top-right" />
             <div className="max-w-5xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
@@ -242,10 +242,10 @@ export function ALEAssignBooking() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <InputField label="AWB No." name="awbNumber" value={formData.awbNumber} readOnly={true}/>
-                                <InputField label="House AWB No." name="houseAWBNumber" value={formData.houseAWBNumber} readOnly={true}/>
-                                <InputField label="Flight No." name="flightNumber" value={formData.flightNumber} readOnly={true}/>
-                                <SelectField label="Terminal" name="terminalLocation" value={formData.terminalLocation} disabled={true} options={[{label: container?.terminal?.companyName || "N/A", value: formData.terminalLocation}]} />
+                                <InputField label="AWB No." name="awbNumber" value={formData.awbNumber} readOnly={true} />
+                                <InputField label="House AWB No." name="houseAWBNumber" value={formData.houseAWBNumber} readOnly={true} />
+                                <InputField label="Flight No." name="flightNumber" value={formData.flightNumber} readOnly={true} />
+                                <SelectField label="Terminal" name="terminalLocation" value={formData.terminalLocation} disabled={true} options={[{ label: container?.terminal?.companyName || "N/A", value: formData.terminalLocation }]} />
                                 <SelectField label="Airline" name="airline" value={formData.airline} disabled={true} options={[{ label: container?.aleBooking?.airline?.companyName || "N/A", value: formData.airline }]} />
                                 <SelectField label="Billing Party" name="billingParty" value={formData.billingParty} disabled={true} options={[{ label: billingParty || "N/A", value: billingParty }]} />
                             </div>
@@ -256,7 +256,7 @@ export function ALEAssignBooking() {
                                     <label className="text-sm font-semibold text-gray-800">Trucker Assignment <span className="text-red-500">*</span></label>
                                     <div className="flex items-center gap-4 h-12">
                                         <label className="flex items-center gap-2 min-w-[120px] cursor-pointer">
-                                            <input type="checkbox" checked={formData.haulierChoice === "Multiple"} onChange={(e) => handleChange({ target: { name: 'haulierChoice', value: e.target.checked ? "Multiple" : "Single" }})} className="w-4 h-4 rounded text-system-color" disabled={true}/>
+                                            <input type="checkbox" checked={formData.haulierChoice === "Multiple"} onChange={(e) => handleChange({ target: { name: 'haulierChoice', value: e.target.checked ? "Multiple" : "Single" } })} className="w-4 h-4 rounded text-system-color" disabled={true} />
                                             <span className="text-xs font-medium text-gray-600 italic">Multiple</span>
                                         </label>
                                         {formData.haulierChoice === "Single" && (
@@ -266,7 +266,7 @@ export function ALEAssignBooking() {
                                         )}
                                     </div>
                                 </div>
-                                <SelectField label="Consignee/Shipper" name="consignee" value={formData.consignee} options={[{ label: container?.consignee?.companyName || "N/A", value: formData.consignee }]} disabled={true}/>
+                                <SelectField label="Consignee/Shipper" name="consignee" value={formData.consignee} options={[{ label: container?.consignee?.companyName || "N/A", value: formData.consignee }]} disabled={true} />
                                 {formData.consignee === "Other" && (
                                     <>
                                         <InputField label="Consignee/Shipper Name" name="externalConsigneeName" value={formData.externalConsigneeName} readOnly={true} />
@@ -321,7 +321,7 @@ export function ALEAssignBooking() {
                                 <SelectField label="Custom Form Type" name="customFormType" options={["K1", "K2", "K8"]} value={formData.customFormType} options={[{ label: container?.aleBooking?.customFormType || "N/A", value: formData.customFormType }]} disabled={true} />
                                 <InputField label="Custom Form No." name="customFormNo" value={formData.customFormNo} readOnly={true} />
                                 <InputField label="Custom Receipt No." name="customReceiptNo" value={formData.customReceiptNo} readOnly={true} />
-                                <InputField label="DIC No." name="dicNumber" value={formData.dicNumber}readOnly={true} />
+                                <InputField label="DIC No." name="dicNumber" value={formData.dicNumber} readOnly={true} />
                                 <InputField label="FCZ No." name="zbNumber" value={formData.zbNumber} readOnly={true} />
                                 <InputField label="Seal No." name="sealNo" value={formData.sealNo} readOnly={true} />
                             </div>
@@ -344,7 +344,7 @@ export function ALEAssignBooking() {
                             <SelectField
                                 label="Driver Name"
                                 name="driverId"
-                                icon={<User size={18}/>}
+                                icon={<User size={18} />}
                                 value={formData.driverId}
                                 onChange={handleChange}
                                 error={errors.driverId}
@@ -355,7 +355,7 @@ export function ALEAssignBooking() {
                             <SelectField
                                 label="Trucker/PM No. (Prime Mover)"
                                 name="pmId"
-                                icon={<Hash size={18}/>}
+                                icon={<Hash size={18} />}
                                 value={formData.pmId}
                                 onChange={handleChange}
                                 error={errors.pmId}
@@ -366,7 +366,7 @@ export function ALEAssignBooking() {
                             <SelectField
                                 label="Booking Date"
                                 name="bookingDate"
-                                icon={<Clock size={18}/>}
+                                icon={<Clock size={18} />}
                                 value={selectedDate}
                                 onChange={handleDateChange}
                                 required
@@ -376,7 +376,7 @@ export function ALEAssignBooking() {
                             <SelectField
                                 label="Time Slot"
                                 name="timeSlotId"
-                                icon={<Clock size={18}/>}
+                                icon={<Clock size={18} />}
                                 value={formData.timeSlotId}
                                 onChange={handleChange}
                                 error={errors.timeSlotId}
@@ -385,26 +385,26 @@ export function ALEAssignBooking() {
                                 options={filteredSlots
                                     .filter(s => s.pickUpTotalSlot > 0 && !s.isCancelled)
                                     .map(s => ({
-                                    label: `${s.time} (${s.pickUpTotalSlot} left)`,
-                                    value: s.id
-                                }))}
+                                        label: `${s.time} (${s.pickUpTotalSlot} left)`,
+                                        value: s.id
+                                    }))}
                             />
-                            
+
                             <SelectField
                                 label="Trailer No."
                                 name="trailerId"
-                                icon={<LucideTruck size={18}/>}
+                                icon={<LucideTruck size={18} />}
                                 value={formData.trailerId}
                                 onChange={handleChange}
                                 error={errors.trailerId}
                                 required
                                 options={trailers.map(t => ({ label: `${t.plateNumber} - ${t.type}`, value: t.id }))}
                             />
-                            
+
                             <InputField
                                 label="Pass No."
                                 name="passNumber"
-                                icon={<TicketCheck size={18}/>}
+                                icon={<TicketCheck size={18} />}
                                 value={formData.passNumber}
                                 onChange={handleChange}
                                 error={errors.passNumber}
@@ -416,7 +416,7 @@ export function ALEAssignBooking() {
                                 label="Consignee Time Slot."
                                 name="consigneeTimeSlot"
                                 type="time"
-                                icon={<Clock size={18}/>}
+                                icon={<Clock size={18} />}
                                 value={formData.consigneeTimeSlot}
                                 onChange={handleChange}
                                 error={errors.consigneeTimeSlot}
@@ -452,7 +452,7 @@ const InputField = ({ icon, label, name, value, onChange, error, required, readO
             value={value}
             onChange={onChange}
             readOnly={readOnly}
-            className={`p-3 rounded-xl border border-gray-200 ${readOnly ? "bg-gray-100/50" : "bg-gray-50/50" } bg-gray-100/50 outline-none  ${error ? 'border-red-500' : 'border-gray-100 hover:border-indigo-300'}`}
+            className={`p-3 rounded-xl border border-gray-200 ${readOnly ? "bg-gray-100/50" : "bg-gray-50/50"} bg-gray-100/50 outline-none  ${error ? 'border-red-500' : 'border-gray-100 hover:border-indigo-300'}`}
             min={min}
         />
         <AnimatePresence>

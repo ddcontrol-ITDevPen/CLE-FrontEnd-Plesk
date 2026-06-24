@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
-import {Printer, Download, ArrowLeft, MapPinned, Phone, Mail} from "lucide-react";
+import { Printer, Download, ArrowLeft, MapPinned, Phone, Mail } from "lucide-react";
 import { getAleContainerById } from "../../../services/aleContainerService.js";
-import {getCompanyById} from "../../../services/companyService.js";
+import { getCompanyById } from "../../../services/companyService.js";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas-pro";
 
@@ -98,7 +98,7 @@ export function ALEViewROTPDF() {
             return cont?.toName || "N/A";
         }
     };
-    
+
     if (loading) return <div className="p-20 text-center">Generating PDF View...</div>;
     if (!data) return <div className="p-20 text-center text-red-500">Record not found.</div>;
 
@@ -114,26 +114,26 @@ export function ALEViewROTPDF() {
                     </button>
                 </div>
 
-                <div ref={pdfRef} className="bg-white shadow-2xl border border-gray-200 p-8 rounded-sm min-h-[1056px] font-sans text-[#333]" style = {{border: '1px solid #e5e7eb', padding: '32px', borderRadius: '2px', minHeight: '1056px', backgroundColor: '#ffffff', color: '#333333',}}>
+                <div ref={pdfRef} className="bg-white shadow-2xl border border-gray-200 p-8 rounded-sm min-h-[1056px] font-sans text-[#333]" style={{ border: '1px solid #e5e7eb', padding: '32px', borderRadius: '2px', minHeight: '1056px', backgroundColor: '#ffffff', color: '#333333', }}>
                     {/* Header Section */}
-                    <div className="flex justify-between items-start border-b-2 border-[#f3f4f6] pb-4 mb-4" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #f3f4f6', paddingBottom: '16px', marginBottom: '16px',}}>
+                    <div className="flex justify-between items-start border-b-2 border-[#f3f4f6] pb-4 mb-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #f3f4f6', paddingBottom: '16px', marginBottom: '16px', }}>
                         <div className="flex items-center gap-4">
-                            <img src={company?.logoPath || "/public/assets/CLE-Logo.png"} alt="Company Logo" className="h-20 object-contain" style={{ height: '80px', objectFit: 'contain' }}/>
+                            <img src={company?.logoPath || "/public/assets/CLE-Logo.png"} alt="Company Logo" className="h-20 object-contain" style={{ height: '80px', objectFit: 'contain' }} />
                             <div className="space-y-0.5">
                                 <h2 className="text-2xl font-bold" style={{ fontSize: '24px', fontWeight: 'bold', margin: '0' }}>{company.companyName}</h2>
                                 <div className="flex items-start gap-2 text-[12px] max-w-md"
-                                     style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', maxWidth: '448px', color: '#6a7282' }}>
-                                    <MapPinned size={15} className="shrink-0" style={{ color: '#0054dc' }}/>
+                                    style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', maxWidth: '448px', color: '#6a7282' }}>
+                                    <MapPinned size={15} className="shrink-0" style={{ color: '#0054dc' }} />
                                     <span>{company.address}</span>
                                 </div>
                                 <div className="flex items-start gap-2 text-[12px]"
-                                     style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', color: '#6a7282' }}>
-                                    <Phone size={15} className="shrink-0" style={{ color: '#0054dc' }}/>
+                                    style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', color: '#6a7282' }}>
+                                    <Phone size={15} className="shrink-0" style={{ color: '#0054dc' }} />
                                     <span>{company.telephoneNumber}</span>
                                 </div>
                                 <div className="flex items-start gap-2 text-[12px]"
-                                     style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', color: '#6a7282' }}>
-                                    <Mail size={15} className="shrink-0" style={{ color: '#0054dc' }}/>
+                                    style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', color: '#6a7282' }}>
+                                    <Mail size={15} className="shrink-0" style={{ color: '#0054dc' }} />
                                     <span>{company.emailAddress}</span>
                                 </div>
                             </div>
@@ -141,7 +141,7 @@ export function ALEViewROTPDF() {
                     </div>
 
                     <div className="text-center py-1 font-bold text-[-16px] tracking-widest mb-4"
-                         style={{display: 'flex', justifyContent: 'space-between', textAlign: 'center', paddingTop: '4px', paddingBottom: '4px', paddingLeft: '25px', paddingRight: '25px', fontWeight: 'bold', fontSize: '16px', letterSpacing: '0.1em', marginBottom: '16px', backgroundColor: '#0054dc', color: '#ffffff',}}>
+                        style={{ display: 'flex', justifyContent: 'space-between', textAlign: 'center', paddingTop: '4px', paddingBottom: '4px', paddingLeft: '25px', paddingRight: '25px', fontWeight: 'bold', fontSize: '16px', letterSpacing: '0.1em', marginBottom: '16px', backgroundColor: '#0054dc', color: '#ffffff', }}>
                         <p>e-ROT</p>
                         <p>{aleBooking.rotNumber}</p>
                     </div>

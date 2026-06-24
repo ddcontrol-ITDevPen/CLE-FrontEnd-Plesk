@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../../ale/layout/Layout.jsx";
-import {getAleContainerById} from "../../../services/aleContainerService.js";
+import { getAleContainerById } from "../../../services/aleContainerService.js";
 import { motion } from "framer-motion";
-import {ArrowLeft, Clock, Download, Edit3, ExternalLink, Eye, File, FileImage, FileText, Trash2, X} from "lucide-react";
+import { ArrowLeft, Clock, Download, Edit3, ExternalLink, Eye, File, FileImage, FileText, Trash2, X } from "lucide-react";
 import ShipmentLog from "../../../ale/ALEComponents/ALEShipmentLog.jsx";
-import {getCompanyById} from "../../../services/companyService.js";
+import { getCompanyById } from "../../../services/companyService.js";
 import api from "../../../services/api.js";
-import {toast} from "sonner";
-import {getUserById} from "../../../services/userService.js";
-import {getAleBookingDocumentByBookingNumber} from "../../../services/aleBookingDocumentService.js";
+import { toast } from "sonner";
+import { getUserById } from "../../../services/userService.js";
+import { getAleBookingDocumentByBookingNumber } from "../../../services/aleBookingDocumentService.js";
 import ROTShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
-import {getAleAssignedHaulierByContainerId} from "../../../services/aleAssignedHaulierService.js";
+import { getAleAssignedHaulierByContainerId } from "../../../services/aleAssignedHaulierService.js";
 
 export function CustomsbookingDetails() {
     const { id } = useParams();
@@ -26,8 +26,8 @@ export function CustomsbookingDetails() {
 
     // --- NEW STATES FOR DOCUMENTS ---
     const [documents, setDocuments] = useState([]);
-    const [isDocsLoading, setIsDocsLoading] = useState(false); 
-    
+    const [isDocsLoading, setIsDocsLoading] = useState(false);
+
     useEffect(() => {
         const fetchDetails = async () => {
             try {
@@ -80,7 +80,7 @@ export function CustomsbookingDetails() {
 
         fetchDocuments();
     }, [data?.rotNumber]); // Runs as soon as data.rotNumber is set
-    
+
     const getLocationName = (cont, type) => {
         const { movementType, tripType } = cont.booking || {};
 
@@ -130,7 +130,7 @@ export function CustomsbookingDetails() {
         </>
     );
 
-    
+
     const getFileIcon = (fileName) => {
         const ext = fileName.split('.').pop().toLowerCase();
         if (['jpg', 'jpeg', 'png'].includes(ext)) return <FileImage className="text-orange-500" />;
@@ -226,7 +226,7 @@ export function CustomsbookingDetails() {
                         <InfoRow label="Volumetric" value={data.trailerType} />
                     </Section>
 
-                   
+
                     <Section title="Trucker/Transporter Information">
                         <InfoRow label="Name" value={data.haulierName} />
                         <InfoRow label="Address" value={data.haulier?.address} />
@@ -260,7 +260,7 @@ export function CustomsbookingDetails() {
                     </Section>
 
                 </div>
-                
+
                 {/* Updated Document Grid Section */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between border-b pb-2">

@@ -73,33 +73,33 @@ const StatusInfographic = ({ containers }) => {
                         <div className="p-4">
                             <table className="w-full border-collapse border-gray-100 rounded-lg overflow-hidden">
                                 <thead>
-                                <tr className="bg-gray-100 text-gray-600 text-xs uppercase">
-                                    <th className="p-3 border">Assigned</th>
-                                    <th className="p-3 border">Enroute</th>
-                                    <th className="p-3 border">Approved-AKPS</th>
-                                    <th className="p-3 border">Approved-Custom</th>
-                                    <th className="p-3 border">Approved-Both</th>
-                                    <th className="p-3 border">Gate In</th>
-                                    <th className="p-3 border">Gate Out</th>
-                                    <th className="p-3 border">Delivered</th>
-                                    <th className="p-3 border">RFC</th>
-                                    <th className="p-3 border">Rejected</th>
-                                </tr>
+                                    <tr className="bg-gray-100 text-gray-600 text-xs uppercase">
+                                        <th className="p-3 border">Assigned</th>
+                                        <th className="p-3 border">Enroute</th>
+                                        <th className="p-3 border">Approved-AKPS</th>
+                                        <th className="p-3 border">Approved-Custom</th>
+                                        <th className="p-3 border">Approved-Both</th>
+                                        <th className="p-3 border">Gate In</th>
+                                        <th className="p-3 border">Gate Out</th>
+                                        <th className="p-3 border">Delivered</th>
+                                        <th className="p-3 border">RFC</th>
+                                        <th className="p-3 border">Rejected</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                <tr className="text-center font-bold text-lg text-system-color">
-                                    <td className="p-4 border bg-orange-50/30">{stats.Assigned}</td>
-                                    <td className="p-4 border bg-amber-50/30">{stats.Enroute}</td>
-                                    <td className="p-4 border bg-amber-50/30">{stats["Approved-AKPS"]}</td>
-                                    <td className="p-4 border bg-amber-50/30">{stats["Approved-Custom"]}</td>
-                                    <td className="p-4 border bg-amber-50/30">{stats["Approved-Complete"]}</td>
-                                    <td className="p-4 border bg-blue-50/30">{stats["Gate-In"]}</td>
-                                    <td className="p-4 border bg-indigo-50/30">{stats["Gate-Out"]}</td>
-                                    <td className="p-4 border bg-emerald-50/30">{stats.Delivered}</td>
-                                    <td className="p-4 border bg-teal-50/30">{stats.RFC}</td>
-                                    <td className="p-4 border bg-teal-50/30">{stats.Rejected}</td>
-                                    
-                                </tr>
+                                    <tr className="text-center font-bold text-lg text-system-color">
+                                        <td className="p-4 border bg-orange-50/30">{stats.Assigned}</td>
+                                        <td className="p-4 border bg-amber-50/30">{stats.Enroute}</td>
+                                        <td className="p-4 border bg-amber-50/30">{stats["Approved-AKPS"]}</td>
+                                        <td className="p-4 border bg-amber-50/30">{stats["Approved-Custom"]}</td>
+                                        <td className="p-4 border bg-amber-50/30">{stats["Approved-Complete"]}</td>
+                                        <td className="p-4 border bg-blue-50/30">{stats["Gate-In"]}</td>
+                                        <td className="p-4 border bg-indigo-50/30">{stats["Gate-Out"]}</td>
+                                        <td className="p-4 border bg-emerald-50/30">{stats.Delivered}</td>
+                                        <td className="p-4 border bg-teal-50/30">{stats.RFC}</td>
+                                        <td className="p-4 border bg-teal-50/30">{stats.Rejected}</td>
+
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

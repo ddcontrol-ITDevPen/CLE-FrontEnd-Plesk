@@ -46,28 +46,28 @@ export function ALEEditProfile() {
 
     const validateForm = () => {
         let newErrors = {};
-        
-            if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
-            
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!formData.emailAddress) {
-                newErrors.emailAddress = "Email is required";
-            } else if (!emailRegex.test(formData.emailAddress)) {
-                newErrors.emailAddress = "Invalid email format";
-            }
 
-            const phoneRegex = /^[0-9]{10,12}$/;
-            if (!formData.contactNumber) {
-                newErrors.contactNumber = "Contact number is required";
-            } else if (!phoneRegex.test(formData.contactNumber)) {
-                newErrors.contactNumber = "Phone must be 10-12 digits";
-            }
+        if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!formData.emailAddress) {
+            newErrors.emailAddress = "Email is required";
+        } else if (!emailRegex.test(formData.emailAddress)) {
+            newErrors.emailAddress = "Invalid email format";
+        }
+
+        const phoneRegex = /^[0-9]{10,12}$/;
+        if (!formData.contactNumber) {
+            newErrors.contactNumber = "Contact number is required";
+        } else if (!phoneRegex.test(formData.contactNumber)) {
+            newErrors.contactNumber = "Phone must be 10-12 digits";
+        }
 
         const curPw = formData.currentPassword.trim();
         const newPw = formData.newPassword.trim();
         const conPw = formData.confirmPassword.trim();
         const isChangingPassword = newPw.length > 0 || conPw.length > 0;
-            
+
         if (isChangingPassword) {
             if (!formData.currentPassword) newErrors.currentPassword = "Old password is required";
 
@@ -102,7 +102,7 @@ export function ALEEditProfile() {
             return;
         }
         setIsSaving(true);
-        
+
         try {
             const userId = localStorage.getItem("userId");
             const trimmedNewPw = formData.newPassword.trim();
@@ -150,7 +150,7 @@ export function ALEEditProfile() {
 
     return (
         <Layout role={getUserRole}>
-            <Toaster richColors position="top-right"/>
+            <Toaster richColors position="top-right" />
             <div className="max-w-4xl mx-auto">
                 <div className="flex items-center gap-4 mb-8">
                     <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -190,19 +190,19 @@ export function ALEEditProfile() {
                                         label="Full Name"
                                         value={formData.fullName}
                                         error={errors.fullName}
-                                        onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                                     />
                                     <EditInput
                                         label="Email Address"
                                         value={formData.emailAddress}
                                         error={errors.emailAddress}
-                                        onChange={(e) => setFormData({...formData, emailAddress: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, emailAddress: e.target.value })}
                                     />
                                     <EditInput
                                         label="Contact Number"
                                         value={formData.contactNumber}
                                         error={errors.contactNumber}
-                                        onChange={(e) => setFormData({...formData, contactNumber: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
                                     />
                                 </motion.div>
                             ) : (
@@ -219,7 +219,7 @@ export function ALEEditProfile() {
                                         autoComplete="one-time-code"
                                         value={formData.currentPassword}
                                         error={errors.currentPassword}
-                                        onChange={(e) => setFormData({...formData, currentPassword: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
                                     />
                                     <div className="h-px bg-gray-100 w-full my-2"></div>
                                     <EditInput
@@ -227,14 +227,14 @@ export function ALEEditProfile() {
                                         type="password"
                                         error={errors.newPassword}
                                         value={formData.newPassword}
-                                        onChange={(e) => setFormData({...formData, newPassword: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                                     />
                                     <EditInput
                                         label="Confirm New Password"
                                         type="password"
                                         error={errors.confirmPassword}
                                         value={formData.confirmPassword}
-                                        onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                                     />
                                 </motion.div>
                             )}
@@ -259,11 +259,10 @@ export function ALEEditProfile() {
 const TabButton = ({ active, onClick, icon, label }) => (
     <button
         onClick={onClick}
-        className={`flex items-center gap-2 px-8 py-4 text-sm font-bold transition-all border-b-2 ${
-            active
+        className={`flex items-center gap-2 px-8 py-4 text-sm font-bold transition-all border-b-2 ${active
                 ? "border-system-color text-system-color bg-white"
                 : "border-transparent text-gray-400 hover:text-gray-600"
-        }`}
+            }`}
     >
         {icon} {label}
     </button>

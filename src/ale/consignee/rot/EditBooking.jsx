@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {useNavigate, useLocation, useParams} from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -11,15 +11,15 @@ import {
     Trash2,
     Upload
 } from "lucide-react";
-import {getCompanies} from "../../../services/companyService.js";
+import { getCompanies } from "../../../services/companyService.js";
 import {
     getAleBookingById,
     getAleBookings,
     registerAleBooking,
     updateAleBooking
 } from "../../../services/aleBookingService.js";
-import {getUserById} from "../../../services/userService.js";
-import {toast, Toaster} from "sonner";
+import { getUserById } from "../../../services/userService.js";
+import { toast, Toaster } from "sonner";
 import {
     deleteAleBookingDocument,
     getAleBookingDocuments,
@@ -55,7 +55,7 @@ export function ALEEditBooking() {
         // ssmNumber: "",
         size: "",
     });
-    
+
     const [documents, setDocuments] = useState({
         doForm: null,
         customForm: null,
@@ -69,7 +69,7 @@ export function ALEEditBooking() {
         packingList: null,
         otherDoc: null
     });
-    
+
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
@@ -78,7 +78,7 @@ export function ALEEditBooking() {
             try {
                 const data = await getCompanies();
                 if (Array.isArray(data)) {
-                    const forwardings = data.filter(h => h.role === "Forwarding").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
+                    const forwardings = data.filter(h => h.role === "Forwarding").map(h => ({ companyName: h.companyName, companyCode: h.companyCode }));
                     setForwardings(forwardings);
                 }
                 const booking = await getAleBookingById(id);
@@ -99,7 +99,7 @@ export function ALEEditBooking() {
                         // externalConsigneeContact: booking.externalConsigneeContact || "",
                         // carrierReferenceNumber: booking.carrierReferenceNumber || "",
                         updatedTotalPackageQuantity: booking.updatedTotalPackageQuantity || booking.totalPackageQuantity || 1,
-                        updatedWeight:  booking.updatedWeight || booking.weight || 1.0,
+                        updatedWeight: booking.updatedWeight || booking.weight || 1.0,
                         size: booking.size || "",
                         // ssmNumber: booking.ssmNumber || booking.ssmNo || "",
                         // forwardingId: booking.forwardingId || "",
@@ -114,7 +114,7 @@ export function ALEEditBooking() {
                                 console.log(filteredDocs);
                                 const mappedExistingDocs = { doForm: null, customForm: null, packingList: null, otherDoc: null };
                                 filteredDocs.forEach(doc => {
-                                    const docInfo = {id: doc.bookingDocumentId, name: doc.fileName}
+                                    const docInfo = { id: doc.bookingDocumentId, name: doc.fileName }
                                     if (doc.documentType === "DO Form") mappedExistingDocs.doForm = docInfo || "DO_Form_Uploaded";
                                     if (doc.documentType === "Custom Form") mappedExistingDocs.customForm = docInfo || "Custom_Form_Uploaded";
                                     if (doc.documentType === "Packing List") mappedExistingDocs.packingList = docInfo || "Packing_List_Uploaded";
@@ -178,10 +178,10 @@ export function ALEEditBooking() {
             toast.error("Could not find a valid database ID for this file reference.");
             return;
         }
-        
+
         try {
             await deleteAleBookingDocument(targetedDoc.id)
-            setExistingDocuments(prev => ({...prev, [type]: null}));
+            setExistingDocuments(prev => ({ ...prev, [type]: null }));
             toast.info(`Removed server reference for ${type}. Ready for new file upload.`);
         } catch (err) {
             console.error("Error clearing existing document:", err);
@@ -208,15 +208,15 @@ export function ALEEditBooking() {
         //
         // if (!formData.ssmNumber) newErrors.ssmNumber = "SSM or ROC Number is required!";
 
-        if (!formData.updatedTotalPackageQuantity) {newErrors.updatedTotalPackageQuantity = "Total Package Quantity is required!";}
-        else if (isNaN(formData.updatedTotalPackageQuantity)) {newErrors.updatedTotalPackageQuantity = "Total Package Quantity should be a number!";}
-        else if (Number(formData.updatedTotalPackageQuantity) <= 0) {newErrors.updatedTotalPackageQuantity = "Total Package Quantity must be greater than zero!";}
+        if (!formData.updatedTotalPackageQuantity) { newErrors.updatedTotalPackageQuantity = "Total Package Quantity is required!"; }
+        else if (isNaN(formData.updatedTotalPackageQuantity)) { newErrors.updatedTotalPackageQuantity = "Total Package Quantity should be a number!"; }
+        else if (Number(formData.updatedTotalPackageQuantity) <= 0) { newErrors.updatedTotalPackageQuantity = "Total Package Quantity must be greater than zero!"; }
 
-        if (!formData.updatedWeight) {newErrors.updatedWeight = "Weight is required!";}
-        else if (isNaN(formData.updatedWeight)) {newErrors.updatedWeight = "Weight should be a number!";}
-        else if (Number(formData.updatedWeight) <= 0) {newErrors.updatedWeight = "Weight must be greater than zero!";}
+        if (!formData.updatedWeight) { newErrors.updatedWeight = "Weight is required!"; }
+        else if (isNaN(formData.updatedWeight)) { newErrors.updatedWeight = "Weight should be a number!"; }
+        else if (Number(formData.updatedWeight) <= 0) { newErrors.updatedWeight = "Weight must be greater than zero!"; }
 
-        if (!formData.size) {newErrors.size = "Size is required!";}
+        if (!formData.size) { newErrors.size = "Size is required!"; }
 
         if (!documents.doForm && !existingDocuments.doForm) newErrors.doForm = "DO Form is required!";
         if (!documents.packingList && !existingDocuments.packingList) newErrors.packingList = "Packing List is required!";
@@ -227,7 +227,7 @@ export function ALEEditBooking() {
             return;
         }
         setIsSubmitting(true);
-        try{
+        try {
             const userData = await getUserById(localStorage.getItem("userId"));
             const companyCode = await userData.companyCode;
             const bookingPayload = {
@@ -274,7 +274,7 @@ export function ALEEditBooking() {
                     await registerAleBookingDocument(docFormData);
                 }
             }
-            
+
             toast.success("ROT Booking updated successfully!");
             setTimeout(() => navigate("/ale/consignee/booking/history"), 2000);
         } catch (error) {
@@ -308,9 +308,9 @@ export function ALEEditBooking() {
                             </div>
                             <div className="p-8">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <InputField label="AWB No." name="awbNumber" value={formData.awbNumber} readOnly={true}/>
-                                    <InputField label="House AWB No." name="houseAWBNumber" value={formData.houseAWBNumber} readOnly={true}/>
-                                    <InputField label="Flight No." name="flightNumber" value={formData.flightNumber} readOnly={true}/>
+                                    <InputField label="AWB No." name="awbNumber" value={formData.awbNumber} readOnly={true} />
+                                    <InputField label="House AWB No." name="houseAWBNumber" value={formData.houseAWBNumber} readOnly={true} />
+                                    <InputField label="Flight No." name="flightNumber" value={formData.flightNumber} readOnly={true} />
                                     {/*<InputField label="Carrier Reference No." name="carrierReferenceNumber" value={formData.carrierReferenceNumber} onChange={handleChange} error={errors.carrierReferenceNumber} required />*/}
                                     {/*<SelectField label="Consignee/Shipper" name="consignee" required options={[{ label: "Other", value: "Other" }, ...consignees.map(t => ({label: t.companyName, value: t.companyCode}))]} value={formData.consignee} onChange={handleChange} error={errors.consignee}/>*/}
                                     {/*{formData.consignee === "Other" && (*/}
@@ -360,8 +360,8 @@ export function ALEEditBooking() {
                             <div className="p-8 space-y-6">
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                     <FileUpload name="doForm" label="DO Form" fileName={documents.doForm?.name || existingDocuments.doForm?.name} onChange={(e) => handleFileChange(e, "doForm")} onRemove={() => documents.doForm ? setDocuments(prev => ({ ...prev, doForm: null })) : handleRemoveExistingFile("doForm")} required={true} error={errors.doForm} />
-                                    <FileUpload name="customForm" label="Custom Form" fileName={documents.customForm?.name || existingDocuments.customForm?.name} onChange={(e) => handleFileChange(e, "customForm")} onRemove={() => documents.customForm ? setDocuments(prev => ({ ...prev, customForm: null })) : handleRemoveExistingFile("customForm")} required={true} error={errors.customForm}/>
-                                    <FileUpload name="packingList" label="Packing List/Invoice" fileName={documents.packingList?.name || existingDocuments.packingList?.name} onChange={(e) => handleFileChange(e, "packingList")} onRemove={() => documents.packingList ? setDocuments(prev => ({ ...prev, packingList: null })) : handleRemoveExistingFile("packingList")} required={true} error={errors.packingList}/>
+                                    <FileUpload name="customForm" label="Custom Form" fileName={documents.customForm?.name || existingDocuments.customForm?.name} onChange={(e) => handleFileChange(e, "customForm")} onRemove={() => documents.customForm ? setDocuments(prev => ({ ...prev, customForm: null })) : handleRemoveExistingFile("customForm")} required={true} error={errors.customForm} />
+                                    <FileUpload name="packingList" label="Packing List/Invoice" fileName={documents.packingList?.name || existingDocuments.packingList?.name} onChange={(e) => handleFileChange(e, "packingList")} onRemove={() => documents.packingList ? setDocuments(prev => ({ ...prev, packingList: null })) : handleRemoveExistingFile("packingList")} required={true} error={errors.packingList} />
                                     <FileUpload name="otherDoc" label="Other Document" fileName={documents.otherDoc?.name || existingDocuments.otherDoc?.name} onChange={(e) => handleFileChange(e, "otherDoc")} onRemove={() => documents.otherDoc ? setDocuments(prev => ({ ...prev, otherDoc: null })) : handleRemoveExistingFile("otherDoc")} />
                                 </div>
                             </div>
@@ -424,7 +424,8 @@ const SelectField = ({ label, name, value, onChange, error, required, options })
                     const isObj = typeof opt === 'object';
                     const val = isObj ? opt.value : opt;
                     const lab = isObj ? opt.label : opt;
-                    return (<option key={index} value={val}>{lab}</option>);})}
+                    return (<option key={index} value={val}>{lab}</option>);
+                })}
             </select>
             <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400 group-hover:text-system-color transition-colors">
                 <CircleChevronDown size={18} />
@@ -469,7 +470,7 @@ const FileUpload = ({ label, name, onChange, fileName, onRemove, required, error
                 )}
             </div>
             {!fileName && (
-                <input name={name} type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={onChange}/>
+                <input name={name} type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={onChange} />
             )}
         </div>
         <AnimatePresence>

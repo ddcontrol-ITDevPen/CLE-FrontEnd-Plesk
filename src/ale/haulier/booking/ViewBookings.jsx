@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { getAleContainerById } from "../../../services/aleContainerService.js";
-import {AnimatePresence, motion} from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
     AlertCircle,
     AlertTriangle,
@@ -19,15 +19,15 @@ import {
     X
 } from "lucide-react";
 import ShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
-import {getCompanyById} from "../../../services/companyService.js";
-import {getAleAssignedHaulierByContainerId} from "../../../services/aleAssignedHaulierService.js";
+import { getCompanyById } from "../../../services/companyService.js";
+import { getAleAssignedHaulierByContainerId } from "../../../services/aleAssignedHaulierService.js";
 import {
     deleteAleBookingDocument,
     getAleBookingDocumentByBookingNumber,
     updateAleBookingDocument
 } from "../../../services/aleBookingDocumentService.js";
 import api from "../../../services/api.js";
-import {toast} from "sonner";
+import { toast } from "sonner";
 
 export function ALEViewBookings() {
     const { id } = useParams();
@@ -205,20 +205,20 @@ export function ALEViewBookings() {
                     <h1 className="text-2xl font-bold">View ROT</h1>
                     <div className="flex items-center gap-4 ">
                         <button className="flex items-center bg-system-color text-white font-bold rounded-lg px-4 py-2 gap-3 cursor-pointer"
-                                onClick={() => navigate(`/ale/rot/view/pdf/${data.containerId}`)}>
-                            <FileText
-                                size={20}
-                                className="text-blue-600-600 cursor-pointer hover:text-blue-800"/>
-                            <p>e-ROT</p>
-                        </button>
-                        {data.status !== "Assigned" &&
-                        <button className="flex items-center bg-system-color text-white font-bold rounded-lg px-4 py-2 gap-3 cursor-pointer"
-                                onClick={() => navigate(`/ale/booking/view/eCSN/${data.containerId}`)}>
+                            onClick={() => navigate(`/ale/rot/view/pdf/${data.containerId}`)}>
                             <FileText
                                 size={20}
                                 className="text-blue-600-600 cursor-pointer hover:text-blue-800" />
-                            <p>e-CSN</p>
+                            <p>e-ROT</p>
                         </button>
+                        {data.status !== "Assigned" &&
+                            <button className="flex items-center bg-system-color text-white font-bold rounded-lg px-4 py-2 gap-3 cursor-pointer"
+                                onClick={() => navigate(`/ale/booking/view/eCSN/${data.containerId}`)}>
+                                <FileText
+                                    size={20}
+                                    className="text-blue-600-600 cursor-pointer hover:text-blue-800" />
+                                <p>e-CSN</p>
+                            </button>
                         }
                         <button
                             onClick={() => navigate(-1)}
@@ -314,13 +314,13 @@ export function ALEViewBookings() {
                     </Section>
 
                     {(data.status !== "Assigned" && data.status !== "Deleted" && data.status !== "Rejected") && (
-                    <Section title="Assigned Trucker Information">
-                        <InfoRow label="Driver Name" value={`${assignedHaulier?.driver?.name || "N/A"} (${assignedHaulier?.driver?.mobileNumber || "N/A"} / ${assignedHaulier?.driver?.emailAddress || "N/A"})`} />
-                        <InfoRow label="PM No." value={assignedHaulier?.primeMover?.plateNumber || "N/A"} />
-                        <InfoRow label="Trailer No." value={`${assignedHaulier?.trailer?.plateNumber || "N/A"} - ${assignedHaulier?.trailer?.type || "N/A"}`} />
-                        <InfoRow label="Time Slot" value={`${assignedHaulier?.aleTimeSlot?.date || "N/A"} @ ${assignedHaulier?.aleTimeSlot?.time || "N/A"}`} />
-                        <InfoRow label="Trucker Remarks" value={data?.aleBooking?.haulierRemarks || "N/A"} />
-                    </Section>
+                        <Section title="Assigned Trucker Information">
+                            <InfoRow label="Driver Name" value={`${assignedHaulier?.driver?.name || "N/A"} (${assignedHaulier?.driver?.mobileNumber || "N/A"} / ${assignedHaulier?.driver?.emailAddress || "N/A"})`} />
+                            <InfoRow label="PM No." value={assignedHaulier?.primeMover?.plateNumber || "N/A"} />
+                            <InfoRow label="Trailer No." value={`${assignedHaulier?.trailer?.plateNumber || "N/A"} - ${assignedHaulier?.trailer?.type || "N/A"}`} />
+                            <InfoRow label="Time Slot" value={`${assignedHaulier?.aleTimeSlot?.date || "N/A"} @ ${assignedHaulier?.aleTimeSlot?.time || "N/A"}`} />
+                            <InfoRow label="Trucker Remarks" value={data?.aleBooking?.haulierRemarks || "N/A"} />
+                        </Section>
                     )}
                 </div>
 
@@ -348,7 +348,7 @@ export function ALEViewBookings() {
                                     <div className="flex items-center justify-start gap-4 mt-4 pt-3 border-t border-gray-50">
                                         <div className="flex gap-4">
                                             <button onClick={() => handlePreview(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-blue-50 text-gray-500 hover:text-blue-600 rounded-md"><Eye size={16} />Preview</button>
-                                            <button onClick={() => handleDownload(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-green-50 text-gray-500 hover:text-green-600 rounded-md"><Download size={16}/>Download</button>
+                                            <button onClick={() => handleDownload(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-green-50 text-gray-500 hover:text-green-600 rounded-md"><Download size={16} />Download</button>
                                         </div>
                                         {/*<div className="flex gap-1">*/}
                                         {/*    <button onClick={() => { setEditModal({ isOpen: true, doc }); setNewFileName(doc.fileName); }} className="p-1.5 hover:bg-amber-50 text-gray-500 hover:text-amber-600 rounded-md"><Edit3 size={16} /></button>*/}
@@ -364,7 +364,7 @@ export function ALEViewBookings() {
                         </div>
                     )}
                 </div>
-                
+
                 {/* Log of Shipment (Timeline) */}
                 {ShipmentLog(data)}
             </div>
@@ -455,7 +455,7 @@ export function ALEViewBookings() {
                                 <h2 className="text-xl font-bold flex items-center gap-2">
                                     <Edit3 className="text-system-color" /> Edit Document
                                 </h2>
-                                <button onClick={() => setEditModal({isOpen: false, doc: null})} className="p-2 hover:bg-gray-100 rounded-full">
+                                <button onClick={() => setEditModal({ isOpen: false, doc: null })} className="p-2 hover:bg-gray-100 rounded-full">
                                     <X size={20} />
                                 </button>
                             </div>
@@ -510,7 +510,7 @@ export function ALEViewBookings() {
                                     </div>
                                     {editFile && (
                                         <p className="text-[10px] text-amber-600 mt-2 flex gap-1 items-center">
-                                            <AlertTriangle size={12}/> This will overwrite the existing file and update the uploaded date.
+                                            <AlertTriangle size={12} /> This will overwrite the existing file and update the uploaded date.
                                         </p>
                                     )}
                                 </div>

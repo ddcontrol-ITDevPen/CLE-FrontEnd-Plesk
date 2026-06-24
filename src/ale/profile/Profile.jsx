@@ -6,7 +6,7 @@ import {
     FaShieldHalved, FaIdBadge, FaMapLocationDot, FaPenToSquare
 } from "react-icons/fa6";
 import { getUserById } from "../../services/userService.js";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export function ALEProfile() {
     const [userData, setUserData] = useState(null);
@@ -52,7 +52,7 @@ export function ALEProfile() {
         };
         return roles[role] || "";
     };
-    
+
     if (loading) return <div className="p-20 text-center font-bold">Loading Profile...</div>;
 
     return (
@@ -79,7 +79,7 @@ export function ALEProfile() {
                             </div>
                         </div>
                         <button className="md:ml-auto flex items-center gap-2 bg-white text-system-color px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-gray-100 transition-all active:scale-95"
-                        onClick={() => navigate("/ale/profile/edit")}>
+                            onClick={() => navigate("/ale/profile/edit")}>
                             <FaPenToSquare /> Edit Profile
                         </button>
                     </div>

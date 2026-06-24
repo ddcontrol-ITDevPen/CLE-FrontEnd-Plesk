@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Trash2, Settings, ShoppingCart, User, LayoutDashboard, History, FilePlus, LogOut } from 'lucide-react';
-import {getTerminalScheduleByTerminalId, saveTemplate} from "../../../services/aleTerminalScheduleService.js";
-import {getUserById} from "../../../services/userService.js";
+import { getTerminalScheduleByTerminalId, saveTemplate } from "../../../services/aleTerminalScheduleService.js";
+import { getUserById } from "../../../services/userService.js";
 import Layout from "../../layout/Layout.jsx";
-import {toast, Toaster} from "sonner";
+import { toast, Toaster } from "sonner";
 
 const DAYS_OF_WEEK = [
     { key: 'Mon', label: 'Monday:' },
@@ -130,7 +130,7 @@ export function TerminalOperationHours() {
 
     return (
         <Layout role="terminal">
-            <Toaster richColors position="top-right"/>
+            <Toaster richColors position="top-right" />
             <div className="max-w-5xl w-full mx-auto">
                 <div className="mb-6">
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900">Operational Time</h1>
@@ -305,7 +305,7 @@ export function TerminalOperationHours() {
                         </div>
                     </div>
 
-                     <div className="pt-4 border-t border-slate-100 flex justify-end">
+                    <div className="pt-4 border-t border-slate-100 flex justify-end">
                         <button
                             type="submit"
                             disabled={loading}

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../../ale/layout/Layout.jsx";
-import {getAleContainerById, updateAleContainer} from "../../../services/aleContainerService.js";
-import {AnimatePresence, motion} from "framer-motion";
+import { getAleContainerById, updateAleContainer } from "../../../services/aleContainerService.js";
+import { AnimatePresence, motion } from "framer-motion";
 import {
     ArrowLeft,
     Clock,
@@ -15,11 +15,11 @@ import {
     FileImage,
     FileText, File, Download, ExternalLink, X
 } from "lucide-react";
-import {getCompanyById} from "../../../services/companyService.js";
+import { getCompanyById } from "../../../services/companyService.js";
 import api from "../../../services/api.js";
-import {toast} from "sonner";
-import {getUserById} from "../../../services/userService.js";
-import {getAleBookingDocumentByBookingNumber} from "../../../services/aleBookingDocumentService.js";
+import { toast } from "sonner";
+import { getUserById } from "../../../services/userService.js";
+import { getAleBookingDocumentByBookingNumber } from "../../../services/aleBookingDocumentService.js";
 
 export function AkpsbookingAction() {
     const { id } = useParams();
@@ -87,7 +87,7 @@ export function AkpsbookingAction() {
         fetchDocuments();
     }, [data?.rotNumber]); // Runs as soon as data.rotNumber is set
 
-    
+
     const getLocationName = (cont, type) => {
         const { movementType, tripType } = cont.aleBooking || {};
 
@@ -196,7 +196,7 @@ export function AkpsbookingAction() {
                     finalStatus = "Approved-Complete";
                 }
             }
-            
+
             const payload = {
                 ...currentContainer,
                 status: finalStatus,
@@ -438,7 +438,7 @@ export function AkpsbookingAction() {
                         </div>
                     </div>
                 )}
-                
+
             </div>
             {/* Action Button */}
             {/* Action Buttons & Rejection Field */}
@@ -464,18 +464,18 @@ export function AkpsbookingAction() {
                         )}
 
                         {data?.status !== "Rejected-AKPS" && data?.status !== "Rejected-Custom" && data?.status !== "Rejected-Both" && data?.status !== "Rejected" && (
-                        <button
-                            onClick={() => setStatusModal({
-                                isOpen: true,
-                                id: data.containerId,
-                                nextStatus: "Rejected-AKPS",
-                                remarks: ""
-                            })}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-red-600 text-white px-10 py-4 rounded-2xl font-bold shadow-lg hover:bg-red-700 transition-all active:scale-95"
-                        >
-                            <XCircle size={20} /> Reject
-                        </button>
-                            )}
+                            <button
+                                onClick={() => setStatusModal({
+                                    isOpen: true,
+                                    id: data.containerId,
+                                    nextStatus: "Rejected-AKPS",
+                                    remarks: ""
+                                })}
+                                className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-red-600 text-white px-10 py-4 rounded-2xl font-bold shadow-lg hover:bg-red-700 transition-all active:scale-95"
+                            >
+                                <XCircle size={20} /> Reject
+                            </button>
+                        )}
                     </div>
                 ) : (
                     // REJECTION VIEW: Textarea and Confirm/Cancel
@@ -528,10 +528,9 @@ export function AkpsbookingAction() {
                             className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center"
                         >
                             <div className="mb-6 flex justify-center">
-                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                                    statusModal.nextStatus === "Approved-AKPS" ? "bg-green-100 text-green-600" :
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${statusModal.nextStatus === "Approved-AKPS" ? "bg-green-100 text-green-600" :
                                         statusModal.nextStatus === "Examine-AKPS" ? "bg-yellow-100 text-yellow-600" : "bg-red-100 text-red-600"
-                                }`}>
+                                    }`}>
                                     {statusModal.nextStatus === "Approved-AKPS" ? <CheckCircle2 size={40} /> :
                                         statusModal.nextStatus === "Examine-AKPS" ? <Eye size={40} /> : <AlertCircle size={40} />}
                                 </div>
@@ -575,11 +574,10 @@ export function AkpsbookingAction() {
                                     onClick={handleStatusUpdate}
                                     // Disable confirm if rejecting but no reason is provided
                                     disabled={statusModal.nextStatus === "Rejected-AKPS" && !statusModal.remarks?.trim()}
-                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
-                                        statusModal.nextStatus === "Approved-AKPS" ? "bg-green-600 hover:bg-green-700" :
+                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${statusModal.nextStatus === "Approved-AKPS" ? "bg-green-600 hover:bg-green-700" :
                                             statusModal.nextStatus === "Examine-AKPS" ? "bg-yellow-600 hover:bg-yellow-700" :
                                                 "bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:shadow-none"
-                                    }`}
+                                        }`}
                                 >
                                     Confirm
                                 </button>

@@ -1,16 +1,16 @@
-import React, {useState, useEffect, useMemo} from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search, Calendar, FileDown, Eye, Edit, PencilRuler, LucideShieldUser, FileSignature
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import {getUserById} from "../../../services/userService.js";
+import { getUserById } from "../../../services/userService.js";
 import * as XLSX from 'xlsx';
-import {useNavigate} from "react-router-dom";
-import {getAleBookingById, getAleBookings} from "../../../services/aleBookingService.js";
+import { useNavigate } from "react-router-dom";
+import { getAleBookingById, getAleBookings } from "../../../services/aleBookingService.js";
 
-export function ALEAssignedNewBookings ()  {
+export function ALEAssignedNewBookings() {
     const [bookings, setBookings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -52,7 +52,7 @@ export function ALEAssignedNewBookings ()  {
                 : "N/A",
             "SSM Number": aleBooking?.ssmNumber || "N/A",
             "Flight Number": aleBooking?.flightNumber || "N/A",
-            "Carrier Reference Number" : aleBooking?.carrierReferenceNumber || "N/A",
+            "Carrier Reference Number": aleBooking?.carrierReferenceNumber || "N/A",
             "Total Package Quantity": aleBooking?.totalPackageQuantity || "N/A",
             "Weight": aleBooking?.weight || "N/A",
             "Size": aleBooking?.size || "N/A",
@@ -86,7 +86,7 @@ export function ALEAssignedNewBookings ()  {
         } catch (error) {
             toast.error("Failed to fetch booking information");
         } finally {
-            setIsLoading(false);  
+            setIsLoading(false);
         }
     };
 
@@ -202,7 +202,7 @@ export function ALEAssignedNewBookings ()  {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <button className="p-2 border rounded-lg bg-blue-600 text-white"><Search size={20}/></button>
+                    <button className="p-2 border rounded-lg bg-blue-600 text-white"><Search size={20} /></button>
                     {/* Date Range Filter Group */}
                     {/*<div className="flex items-center bg-white border border-gray-200 rounded-lg p-1 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 transition-all">*/}
                     {/*    <div className="flex items-center px-2 border-r border-gray-100">*/}
@@ -248,86 +248,86 @@ export function ALEAssignedNewBookings ()  {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto mt-20">
                     <table className="w-full text-left border-collapse lg:table-auto">
                         <thead className="bg-[#E3DEEB] text-gray-800 font-bold text-sm">
-                        <tr>
-                            <th className="p-4 border-b w-10 text-center">No.</th>
-                            <th className="p-4 border-b w-32">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('rotNumber')}>
-                                    ROT Number
-                                    {sortConfig.key === 'rotNumber' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b w-32">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('awbNumber')}>
-                                    AWB Number
-                                    {sortConfig.key === 'awbNumber' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b w-32">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('houseAWBNumber')}>
-                                    House AWB Number
-                                    {sortConfig.key === 'houseAWBNumber' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b w-36">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('flightNumber')}>
-                                    Flight Number
-                                    {sortConfig.key === 'flightNumber' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            <th className="p-4 border-b">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('carrierReferenceNumber')}>
-                                    Carrier Reference No.
-                                    {sortConfig.key === 'carrierReferenceNumber' && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            {/*<th className="p-4 border-b w-24">*/}
-                            {/*    <div className="flex items-center gap-1" onClick={() => handleSort('eta')}>*/}
-                            {/*        ETA*/}
-                            {/*        {sortConfig.key === 'eta' && (*/}
-                            {/*            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>*/}
-                            {/*        )}*/}
-                            {/*    </div>*/}
-                            {/*</th>*/}
-                            <th className="p-4 border-b w-24">
-                                <div className="flex items-center gap-1" onClick={() => handleSort('consigneeCompany.companyName')}>
-                                    Shipper/Consignee
-                                    {(sortConfig.key === 'consigneeCompany.companyName' || sortConfig.key === 'externalConsigneeName') && (
-                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                                    )}
-                                </div>
-                            </th>
-                            {/*<th className="p-4 border-b">*/}
-                            {/*    <div className="flex items-center gap-1" onClick={() => handleSort('weight')}>*/}
-                            {/*        Weight*/}
-                            {/*        {sortConfig.key === 'weight' && (*/}
-                            {/*            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>*/}
-                            {/*        )}*/}
-                            {/*    </div>*/}
-                            {/*</th>*/}
-                            <th className="p-4 border-b w-28 text-center">Actions</th>
-                        </tr>
+                            <tr>
+                                <th className="p-4 border-b w-10 text-center">No.</th>
+                                <th className="p-4 border-b w-32">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('rotNumber')}>
+                                        ROT Number
+                                        {sortConfig.key === 'rotNumber' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b w-32">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('awbNumber')}>
+                                        AWB Number
+                                        {sortConfig.key === 'awbNumber' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b w-32">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('houseAWBNumber')}>
+                                        House AWB Number
+                                        {sortConfig.key === 'houseAWBNumber' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b w-36">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('flightNumber')}>
+                                        Flight Number
+                                        {sortConfig.key === 'flightNumber' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('carrierReferenceNumber')}>
+                                        Carrier Reference No.
+                                        {sortConfig.key === 'carrierReferenceNumber' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                {/*<th className="p-4 border-b w-24">*/}
+                                {/*    <div className="flex items-center gap-1" onClick={() => handleSort('eta')}>*/}
+                                {/*        ETA*/}
+                                {/*        {sortConfig.key === 'eta' && (*/}
+                                {/*            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>*/}
+                                {/*        )}*/}
+                                {/*    </div>*/}
+                                {/*</th>*/}
+                                <th className="p-4 border-b w-24">
+                                    <div className="flex items-center gap-1" onClick={() => handleSort('consigneeCompany.companyName')}>
+                                        Shipper/Consignee
+                                        {(sortConfig.key === 'consigneeCompany.companyName' || sortConfig.key === 'externalConsigneeName') && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
+                                    </div>
+                                </th>
+                                {/*<th className="p-4 border-b">*/}
+                                {/*    <div className="flex items-center gap-1" onClick={() => handleSort('weight')}>*/}
+                                {/*        Weight*/}
+                                {/*        {sortConfig.key === 'weight' && (*/}
+                                {/*            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>*/}
+                                {/*        )}*/}
+                                {/*    </div>*/}
+                                {/*</th>*/}
+                                <th className="p-4 border-b w-28 text-center">Actions</th>
+                            </tr>
                         </thead>
                         <tbody className="text-[13px] xl:text-sm">
-                        {isLoading ? (
-                            <tr>
-                                <td colSpan="11" className="p-10 text-center text-gray-400">
-                                    <div className="flex flex-col items-center gap-2">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                                        <p>Loading records...</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        ) : paginatedContainers.length > 0 ? (
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan="11" className="p-10 text-center text-gray-400">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                            <p>Loading records...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : paginatedContainers.length > 0 ? (
                                 paginatedContainers.map((aleBooking, index) => {
                                     const recordNumber = (currentPage - 1) * itemsPerPage + index + 1;
                                     return (
@@ -344,18 +344,18 @@ export function ALEAssignedNewBookings ()  {
                                                 {/* Horizontal Action Icons */}
                                                 <div className="flex items-center justify-center gap-3">
                                                     <Eye size={18}
-                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/booking/new/view`, {
-                                                             state: {
+                                                        className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/forwarding/booking/new/view`, {
+                                                            state: {
                                                                 isPreloadedRecord: true,
                                                                 bookingData: aleBooking
-                                                             }
+                                                            }
                                                         })}
                                                     />
-                                                    <FileSignature size={18} 
+                                                    <FileSignature size={18}
                                                         className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/ale/forwarding/rot/add/form1`, {
                                                             state: {
                                                                 isPreloadedRecord: true,
-                                                                bookingData: aleBooking 
+                                                                bookingData: aleBooking
                                                             }
                                                         })}
                                                     />
@@ -371,37 +371,37 @@ export function ALEAssignedNewBookings ()  {
                                         </tr>
                                     );
                                 }))
-                            : (
-                                <tr>
-                                    <td colSpan="11" className="p-12 text-center">
-                                        <div className="flex flex-col items-center justify-center gap-3">
-                                            <div className="bg-gray-50 p-4 rounded-full">
-                                                <Search size={40} className="text-gray-300" />
+                                : (
+                                    <tr>
+                                        <td colSpan="11" className="p-12 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-3">
+                                                <div className="bg-gray-50 p-4 rounded-full">
+                                                    <Search size={40} className="text-gray-300" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-lg font-bold text-gray-800">No records found</p>
+                                                    <p className="text-sm text-gray-500">
+                                                        {searchTerm || startDate
+                                                            ? "Try adjusting your filters or search terms to find what you're looking for."
+                                                            : "There is currently no data available in the system."}
+                                                    </p>
+                                                </div>
+                                                {(searchTerm || startDate) && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setSearchTerm("");
+                                                            setStartDate("");
+                                                            setEndDate("");
+                                                        }}
+                                                        className="mt-2 text-sm text-blue-600 font-semibold hover:underline"
+                                                    >
+                                                        Clear all filters
+                                                    </button>
+                                                )}
                                             </div>
-                                            <div className="space-y-1">
-                                                <p className="text-lg font-bold text-gray-800">No records found</p>
-                                                <p className="text-sm text-gray-500">
-                                                    {searchTerm || startDate
-                                                        ? "Try adjusting your filters or search terms to find what you're looking for."
-                                                        : "There is currently no data available in the system."}
-                                                </p>
-                                            </div>
-                                            {(searchTerm || startDate) && (
-                                                <button
-                                                    onClick={() => {
-                                                        setSearchTerm("");
-                                                        setStartDate("");
-                                                        setEndDate("");
-                                                    }}
-                                                    className="mt-2 text-sm text-blue-600 font-semibold hover:underline"
-                                                >
-                                                    Clear all filters
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            )}
+                                        </td>
+                                    </tr>
+                                )}
                         </tbody>
                     </table>
                 </div>
@@ -439,11 +439,10 @@ export function ALEAssignedNewBookings ()  {
                                             <button
                                                 key={pageNum}
                                                 onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-9 h-9 text-sm font-bold rounded-lg transition-all ${
-                                                    currentPage === pageNum
+                                                className={`w-9 h-9 text-sm font-bold rounded-lg transition-all ${currentPage === pageNum
                                                         ? "bg-blue-600 text-white shadow-md shadow-blue-100"
                                                         : "bg-white text-gray-600 hover:bg-gray-50 border border-transparent"
-                                                }`}
+                                                    }`}
                                             >
                                                 {pageNum}
                                             </button>
@@ -530,9 +529,8 @@ export function ALEAssignedNewBookings ()  {
                                         <label className="text-xs font-bold text-gray-500 uppercase ml-1">IC / Passport Number *</label>
                                         <input
                                             type="text"
-                                            className={`w-full mt-1 p-3 border rounded-xl outline-none text-sm ${
-                                                error === "ic" ? "border-red-500" : "border-gray-200"
-                                            }`}
+                                            className={`w-full mt-1 p-3 border rounded-xl outline-none text-sm ${error === "ic" ? "border-red-500" : "border-gray-200"
+                                                }`}
                                             placeholder="Enter IC for security audit"
                                             value={editModal.icNumber || ""}
                                             onChange={(e) => {
@@ -550,9 +548,8 @@ export function ALEAssignedNewBookings ()  {
                                     <div className="flex gap-2 mt-1">
                                         <input
                                             type="text"
-                                            className={`flex-1 p-3 border rounded-xl outline-none text-sm ${
-                                                error === "remarks" ? "border-red-500" : "border-gray-200"
-                                            }`}
+                                            className={`flex-1 p-3 border rounded-xl outline-none text-sm ${error === "remarks" ? "border-red-500" : "border-gray-200"
+                                                }`}
                                             placeholder="e.g., Typo in original entry"
                                             value={editModal.remarks}
                                             onChange={(e) => {
@@ -615,9 +612,8 @@ export function ALEAssignedNewBookings ()  {
                                 <button
                                     onClick={handleEdit}
                                     disabled={!editModal.showDateField}
-                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
-                                        editModal.showDateField ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-300 cursor-not-allowed"
-                                    }`}
+                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${editModal.showDateField ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-300 cursor-not-allowed"
+                                        }`}
                                 >
                                     Save Changes
                                 </button>

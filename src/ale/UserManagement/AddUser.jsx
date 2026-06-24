@@ -13,7 +13,7 @@ export function AddUser() {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const [adminUser, setAdminUser] = useState(null);
-    const [successModal, setSuccessModal] = useState({isOpen: false, userId: "", password: ""});
+    const [successModal, setSuccessModal] = useState({ isOpen: false, userId: "", password: "" });
     const [copiedField, setCopiedField] = useState(null);
     const loggedInUserId = localStorage.getItem("userId");
     const userRole = localStorage.getItem("role")?.toLowerCase();
@@ -23,8 +23,8 @@ export function AddUser() {
         emailAddress: "",
         contactNumber: "",
         password: "",
-        access: [],      
-        accessLevel: ""   
+        access: [],
+        accessLevel: ""
     });
 
     const [errors, setErrors] = useState({});
@@ -109,7 +109,7 @@ export function AddUser() {
         toast.success("Both credentials copied together cleanly!");
         setTimeout(() => setCopiedField(null), 2000);
     };
-    
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = {};
@@ -267,24 +267,22 @@ export function AddUser() {
                                     {["CLE", "ALE", "WLE"].map((route) => {
                                         const isSelected = formData.access.includes(route);
                                         return (
-                                        <div
-                                            key={route}
-                                            onClick={() => handleMultiCheckboxChange("access", route)}
-                                            className={`p-4 rounded-2xl border-2 flex items-center gap-3 cursor-pointer select-none transition-all ${
-                                                isSelected
-                                                    ? 'border-amber-500 bg-amber-50/40 ring-2 ring-amber-500/20'
-                                                    : 'border-gray-100 bg-gray-50/50 hover:border-gray-300'
-                                            }`}
-                                        >
-                                            <div className={`size-6 rounded-lg border flex items-center justify-center transition-all ${
-                                                isSelected ? 'bg-amber-600 border-amber-600 text-white' : 'border-gray-300 bg-white'
-                                            }`}>
-                                                {isSelected && <div className="size-2 bg-white rounded-full"/>}
+                                            <div
+                                                key={route}
+                                                onClick={() => handleMultiCheckboxChange("access", route)}
+                                                className={`p-4 rounded-2xl border-2 flex items-center gap-3 cursor-pointer select-none transition-all ${isSelected
+                                                        ? 'border-amber-500 bg-amber-50/40 ring-2 ring-amber-500/20'
+                                                        : 'border-gray-100 bg-gray-50/50 hover:border-gray-300'
+                                                    }`}
+                                            >
+                                                <div className={`size-6 rounded-lg border flex items-center justify-center transition-all ${isSelected ? 'bg-amber-600 border-amber-600 text-white' : 'border-gray-300 bg-white'
+                                                    }`}>
+                                                    {isSelected && <div className="size-2 bg-white rounded-full" />}
+                                                </div>
+                                                <span className="font-bold text-gray-700 capitalize text-sm">{route}</span>
                                             </div>
-                                            <span className="font-bold text-gray-700 capitalize text-sm">{route}</span>
-                                        </div>
-                                );
-                                })}
+                                        );
+                                    })}
                                 </div>
                                 {errors.access && <p className="text-xs text-red-500 font-bold mt-1 ml-2">{errors.access}</p>}
                             </div>
@@ -298,16 +296,14 @@ export function AddUser() {
                                         <div
                                             key={level}
                                             onClick={() => handleCheckboxChange("accessLevel", level)}
-                                            className={`p-4 rounded-2xl border-2 flex items-center gap-3 cursor-pointer select-none transition-all ${
-                                                formData.accessLevel === level
+                                            className={`p-4 rounded-2xl border-2 flex items-center gap-3 cursor-pointer select-none transition-all ${formData.accessLevel === level
                                                     ? 'border-amber-500 bg-amber-50/40 ring-2 ring-amber-500/20'
                                                     : 'border-gray-100 bg-gray-50/50 hover:border-gray-300'
-                                            }`}
+                                                }`}
                                         >
-                                            <div className={`size-6 rounded-lg border flex items-center justify-center transition-all ${
-                                                formData.accessLevel === level ? 'bg-amber-600 border-amber-600 text-white' : 'border-gray-300 bg-white'
-                                            }`}>
-                                                {formData.accessLevel === level && <div className="size-2 bg-white rounded-full"/>}
+                                            <div className={`size-6 rounded-lg border flex items-center justify-center transition-all ${formData.accessLevel === level ? 'bg-amber-600 border-amber-600 text-white' : 'border-gray-300 bg-white'
+                                                }`}>
+                                                {formData.accessLevel === level && <div className="size-2 bg-white rounded-full" />}
                                             </div>
                                             <span className="font-bold text-gray-700 text-sm">{level}</span>
                                         </div>
@@ -356,11 +352,10 @@ export function AddUser() {
                                 <button
                                     type="button"
                                     onClick={handleCopyBoth}
-                                    className={`w-full py-3 px-4 rounded-xl border-2 flex items-center justify-center gap-2 font-bold text-sm transition-all ${
-                                        copiedField === 'all'
+                                    className={`w-full py-3 px-4 rounded-xl border-2 flex items-center justify-center gap-2 font-bold text-sm transition-all ${copiedField === 'all'
                                             ? 'bg-green-600 border-green-600 text-white shadow-md'
                                             : 'border-amber-200 bg-amber-50/50 text-amber-800 hover:bg-amber-50 hover:border-amber-400'
-                                    }`}
+                                        }`}
                                 >
                                     {copiedField === 'all' ? <Check size={16} /> : <Copy size={16} />}
                                     {copiedField === 'all' ? "Copied Both Strings!" : "Copy ID & Password Together"}

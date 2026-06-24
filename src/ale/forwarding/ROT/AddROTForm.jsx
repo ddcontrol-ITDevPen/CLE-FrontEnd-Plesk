@@ -11,12 +11,12 @@ import {
     Trash2,
     Upload
 } from "lucide-react";
-import {getCompanies} from "../../../services/companyService.js";
-import {getAleBookings, registerAleBooking, updateAleBooking} from "../../../services/aleBookingService.js";
-import {getUserById} from "../../../services/userService.js";
-import {toast, Toaster} from "sonner";
-import {getAleBookingDocuments, registerAleBookingDocument} from "../../../services/aleBookingDocumentService.js";
-import {registerAleContainer} from "../../../services/aleContainerService.js";
+import { getCompanies } from "../../../services/companyService.js";
+import { getAleBookings, registerAleBooking, updateAleBooking } from "../../../services/aleBookingService.js";
+import { getUserById } from "../../../services/userService.js";
+import { toast, Toaster } from "sonner";
+import { getAleBookingDocuments, registerAleBookingDocument } from "../../../services/aleBookingDocumentService.js";
+import { registerAleContainer } from "../../../services/aleContainerService.js";
 
 export function ALEAddROTForm() {
     const navigate = useNavigate();
@@ -100,11 +100,11 @@ export function ALEAddROTForm() {
         const stateBooking = location.state?.bookingData || {};
         const isPreloaded = location.state?.isPreloadedRecord || false;
         const targetRotNumber = stateBooking.rotNumber || null;
-        
+
         if (targetRotNumber) {
             setRotNumber(targetRotNumber);
         }
-        
+
         setFormData(prev => ({
             ...prev,
             awbNumber: stateBooking.awbNumber || savedData.awbNumber || "",
@@ -144,24 +144,24 @@ export function ALEAddROTForm() {
             ssmNumber: stateBooking.ssmNumber || savedData.ssmNumber || "",
             size: stateBooking.size || savedData.size || "",
         }));
-        
+
         if (isPreloaded) {
             toast.success("All fields populating successfully from matching booking records!");
         }
-        
+
         const fetchData = async () => {
             setIsLoadingPorts(true);
             try {
                 const data = await getCompanies();
                 if (Array.isArray(data)) {
-                    const terminalLocations = data.filter(c => c.role === "Terminal").map(c => ({companyName: c.companyName, companyCode: c.companyCode}));
-                    const haulier = data.filter(h => h.role === "Haulier").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
-                    const airline = data.filter(h => h.role === "Airline").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
+                    const terminalLocations = data.filter(c => c.role === "Terminal").map(c => ({ companyName: c.companyName, companyCode: c.companyCode }));
+                    const haulier = data.filter(h => h.role === "Haulier").map(h => ({ companyName: h.companyName, companyCode: h.companyCode }));
+                    const airline = data.filter(h => h.role === "Airline").map(h => ({ companyName: h.companyName, companyCode: h.companyCode }));
                     const currentForwardingName = localStorage.getItem("companyName") || "Forwarding";
                     const user = await getUserById(localStorage.getItem("userId"));
                     const currentForwardingCode = user.companyCode;
-                    const consignees = data.filter(h => h.role === "Consignee").map(h => ({companyName: h.companyName, companyCode: h.companyCode, address: h.address, ssmNo: h.ssmNo || h.ssmNumber}));
-                    const billingParty = [{companyName: currentForwardingName, companyCode: currentForwardingCode}, ...consignees];
+                    const consignees = data.filter(h => h.role === "Consignee").map(h => ({ companyName: h.companyName, companyCode: h.companyCode, address: h.address, ssmNo: h.ssmNo || h.ssmNumber }));
+                    const billingParty = [{ companyName: currentForwardingName, companyCode: currentForwardingCode }, ...consignees];
                     setTerminals(terminalLocations);
                     setHauliers(haulier);
                     setAirlines(airline);
@@ -245,7 +245,7 @@ export function ALEAddROTForm() {
 
     const handleRemoveExistingFile = async (type) => {
         try {
-            setExistingDocuments(prev => ({...prev, [type]: null}));
+            setExistingDocuments(prev => ({ ...prev, [type]: null }));
             toast.info(`Removed server reference for ${type}. Ready for new file upload.`);
         } catch (err) {
             console.error("Error clearing existing document:", err);
@@ -256,11 +256,11 @@ export function ALEAddROTForm() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = {};
-        
+
         if (!formData.movementType) newErrors.movementType = `Movement Type is required!`;
         // const refLabel = formData.movementType === "Import" ? "BL Number" : "Booking Number";
         // const portLabel = formData.movementType === "Import" ? "POD" : "POL";
-        
+
         if (!formData.awbNumber) newErrors.awbNumber = `Air WayBill Number is required!`;
         if (!formData.houseAWBNumber) newErrors.houseAWBNumber = "House AWB Number is required!";
         if (!formData.flightNumber) newErrors.flightNumber = "Flight Number is required!";
@@ -272,15 +272,15 @@ export function ALEAddROTForm() {
         //if (!formData.dicNumber) newErrors.dicNumber = "DIC Number is required!";
         //if (!formData.zbNumber) newErrors.zbNumber = "Zon Bebas Number is required!";
 
-        if (!formData.truckQuantity) {newErrors.truckQuantity = "Number of Trucks is required!";}
-        else if (isNaN(formData.truckQuantity)) {newErrors.truckQuantity = "Truck Quantity should be a number!";}
-        else if (Number(formData.truckQuantity) <= 0) {newErrors.truckQuantity = "Truck Quantity must be greater than zero!";}
+        if (!formData.truckQuantity) { newErrors.truckQuantity = "Number of Trucks is required!"; }
+        else if (isNaN(formData.truckQuantity)) { newErrors.truckQuantity = "Truck Quantity should be a number!"; }
+        else if (Number(formData.truckQuantity) <= 0) { newErrors.truckQuantity = "Truck Quantity must be greater than zero!"; }
 
-        if (!formData.packageQuantity) {newErrors.packageQuantity = "Number of Packages is required!";}
-        else if (isNaN(formData.packageQuantity)) {newErrors.packageQuantity = "Package Quantity should be a number!";}
-        else if (Number(formData.packageQuantity) <= 0) {newErrors.packageQuantity = "Package Quantity must be greater than zero!";}
+        if (!formData.packageQuantity) { newErrors.packageQuantity = "Number of Packages is required!"; }
+        else if (isNaN(formData.packageQuantity)) { newErrors.packageQuantity = "Package Quantity should be a number!"; }
+        else if (Number(formData.packageQuantity) <= 0) { newErrors.packageQuantity = "Package Quantity must be greater than zero!"; }
         // else if (Number(formData.packageQuantity) > Number(formData.totalPackageQuantity)) {newErrors.packageQuantity = "Package Quantity should not be more than Total Package Quantity!";}
-        
+
         if (!formData.airline) newErrors.airline = "Shipping Agent is required!";
         if (!formData.billingParty) newErrors.billingParty = "Billing Party is required!";
         if (!formData.containerType) newErrors.containerType = "Container Type is required!";
@@ -326,10 +326,10 @@ export function ALEAddROTForm() {
         const tq = Number(formData.truckQuantity);
         const pq = Number(formData.packageQuantity);
         const tpq = Number(formData.totalPackageQuantity);
-        
-        if (isNaN(formData.totalPackageQuantity)) {newErrors.totalPackageQuantity = "Total Package Quantity should be a number!";}
-        else if (tpq <= 0) {newErrors.totalPackageQuantity = "Total Package Quantity must be greater than zero!";}
-        else if (tpq < pq) {newErrors.totalPackageQuantity = "Total Package Quantity should not be less than Package Quantity!";}
+
+        if (isNaN(formData.totalPackageQuantity)) { newErrors.totalPackageQuantity = "Total Package Quantity should be a number!"; }
+        else if (tpq <= 0) { newErrors.totalPackageQuantity = "Total Package Quantity must be greater than zero!"; }
+        else if (tpq < pq) { newErrors.totalPackageQuantity = "Total Package Quantity should not be less than Package Quantity!"; }
         else {
             const totalCapacity = tq * pq;
             if (tpq > totalCapacity) {
@@ -339,8 +339,8 @@ export function ALEAddROTForm() {
             }
         }
 
-        if (isNaN(formData.weight)) {newErrors.weight = "Weight should be a number!";}
-        else if (Number(formData.weight) <= 0) {newErrors.weight = "Weight must be greater than zero!";}
+        if (isNaN(formData.weight)) { newErrors.weight = "Weight should be a number!"; }
+        else if (Number(formData.weight) <= 0) { newErrors.weight = "Weight must be greater than zero!"; }
 
         // if (isNaN(formData.size)) {newErrors.size = "Size should be a number!";}
         // else if (Number(formData.size) <= 0) {newErrors.size = "Size must be greater than zero!";}
@@ -349,27 +349,27 @@ export function ALEAddROTForm() {
         if (!documents.doForm && !existingDocuments.doForm) newErrors.doForm = "DO Form is required!";
         if (!documents.packingList && !existingDocuments.packingList) newErrors.packingList = "Packing List is required!";
         if (!documents.customForm && !existingDocuments.customForm) newErrors.customForm = "Custom Form is required!";
-        
+
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             return;
         }
-        
+
         if (tq > 1 && tpq <= (tq - 1) * pq) {
             toast.info(`Note: Your total packages (${tpq}) could mathematically fit into fewer trucks. Please ensure the extra truck space is intentional.`);
         }
         setIsSubmitting(true);
         console.log("Form ROT NUMBER: ", formData.rotNumber);
-        try{
+        try {
             const userData = await getUserById(localStorage.getItem("userId"));
             const companyCode = await userData.companyCode;
             const bookingPayload = {
                 rotNumber: formData.rotNumber,
-                awbNumber: formData.awbNumber,
-                houseAWBNumber: formData.houseAWBNumber,
+                awbNumber: formData.awbNumber.toUpperCase(),
+                houseAWBNumber: formData.houseAWBNumber.toUpperCase(),
                 movementType: formData.movementType,
                 //tripType: formData.tripType,
-                flightNumber: formData.flightNumber,
+                flightNumber: formData.flightNumber.toUpperCase(),
                 terminalLocation: formData.terminalLocation,
                 eta: formData.eta,
                 commodity: formData.commodity,
@@ -380,12 +380,12 @@ export function ALEAddROTForm() {
                 airlineId: formData.airline,
                 billingParty: formData.billingParty,
                 customFormType: formData.customFormType,
-                customFormNo: formData.customFormNo || "",
-                customReceiptNo: formData.customReceiptNo || "",
-                dicNumber: formData.dicNumber || "",
-                zbNumber: formData.zbNumber || "",
+                customFormNo: formData.customFormNo.toUpperCase() || "",
+                customReceiptNo: formData.customReceiptNo.toUpperCase() || "",
+                dicNumber: formData.dicNumber.toLowerCase() || "",
+                zbNumber: formData.zbNumber.toUpperCase() || "",
                 truckQuantity: Number(formData.truckQuantity),
-                carrierReferenceNumber: formData.carrierReferenceNumber,
+                carrierReferenceNumber: formData.carrierReferenceNumber.toUpperCase(),
                 totalPackageQuantity: Number(formData.totalPackageQuantity),
                 weight: Number(formData.weight),
                 size: formData.size,
@@ -445,7 +445,7 @@ export function ALEAddROTForm() {
                     AssignedTime: new Date().toISOString(),
                     ROTNumber: formData.rotNumber,
                 };
-                
+
                 if (formData.consignee && formData.consignee !== "Other") {
                     const selectedConsignee = consignees.find(c => c.companyCode === formData.consignee);
                     containerPayload.ConsigneeId = formData.consignee;
@@ -457,7 +457,7 @@ export function ALEAddROTForm() {
                     containerPayload.externalConsigneeAddress = formData.externalConsigneeAddress;
                     containerPayload.externalConsigneeContact = formData.externalConsigneeContact;
                 }
-                console.log(`Saving Container ${i + 1}:`,containerPayload);
+                console.log(`Saving Container ${i + 1}:`, containerPayload);
                 await registerAleContainer(containerPayload);
             }
 
@@ -521,11 +521,11 @@ export function ALEAddROTForm() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <InputField label="AWB No." name="awbNumber" value={formData.awbNumber} onChange={handleChange} error={errors.awbNumber} required />
-                                    <InputField label="House AWB No." name="houseAWBNumber" value={formData.houseAWBNumber} onChange={handleChange} error={errors.houseAWBNumber} required/>
+                                    <InputField label="House AWB No." name="houseAWBNumber" value={formData.houseAWBNumber} onChange={handleChange} error={errors.houseAWBNumber} required />
                                     <InputField label="Flight No." name="flightNumber" value={formData.flightNumber} onChange={handleChange} error={errors.flightNumber} required />
-                                    <SelectField label="Terminal" name="terminalLocation" value={formData.terminalLocation} onChange={handleChange} error={errors.terminalLocation} required options={terminals.map(p => ({label: p.companyName, value: p.companyCode}))} />
-                                    <SelectField label="Airline" name="airline" value={formData.airline} onChange={handleChange} error={errors.airline} required options={airlines.map(s => ({label: s.companyName, value: s.companyCode}))} />
-                                    <SelectField label="Billing Party" name="billingParty" value={formData.billingParty} onChange={handleChange} error={errors.billingParty} required options={billingParties.map(b => ({label: b.companyName, value: b.companyCode}))} />
+                                    <SelectField label="Terminal" name="terminalLocation" value={formData.terminalLocation} onChange={handleChange} error={errors.terminalLocation} required options={terminals.map(p => ({ label: p.companyName, value: p.companyCode }))} />
+                                    <SelectField label="Airline" name="airline" value={formData.airline} onChange={handleChange} error={errors.airline} required options={airlines.map(s => ({ label: s.companyName, value: s.companyCode }))} />
+                                    <SelectField label="Billing Party" name="billingParty" value={formData.billingParty} onChange={handleChange} error={errors.billingParty} required options={billingParties.map(b => ({ label: b.companyName, value: b.companyCode }))} />
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -544,7 +544,7 @@ export function ALEAddROTForm() {
                                     {/*        )}*/}
                                     {/*    </div>*/}
                                     {/*</div>*/}
-                                    <SelectField label="Trucker" name="haulier" value={formData.haulier} onChange={handleChange} error={errors.haulier} options={hauliers.map(h => ({label: h.companyName, value: h.companyCode}))} required />
+                                    <SelectField label="Trucker" name="haulier" value={formData.haulier} onChange={handleChange} error={errors.haulier} options={hauliers.map(h => ({ label: h.companyName, value: h.companyCode }))} required />
 
                                     {/* Terminal Choice */}
                                     {/*<div className="flex flex-col gap-2 p-4 bg-blue-50/30 rounded-xl border border-blue-100">*/}
@@ -561,7 +561,7 @@ export function ALEAddROTForm() {
                                     {/*        )}*/}
                                     {/*    </div>*/}
                                     {/*</div>*/}
-                                    <SelectField label="Consignee/Shipper" name="consignee" required options={[{ label: "Other", value: "Other" }, ...consignees.map(t => ({label: t.companyName, value: t.companyCode}))]} value={formData.consignee} onChange={handleChange} error={errors.consignee}/>
+                                    <SelectField label="Consignee/Shipper" name="consignee" required options={[{ label: "Other", value: "Other" }, ...consignees.map(t => ({ label: t.companyName, value: t.companyCode }))]} value={formData.consignee} onChange={handleChange} error={errors.consignee} />
                                     {formData.consignee === "Other" && (
                                         <>
                                             <InputField label="Consignee/Shipper Name" name="externalConsigneeName" value={formData.externalConsigneeName} onChange={handleChange} error={errors.externalConsigneeName} required />
@@ -592,7 +592,7 @@ export function ALEAddROTForm() {
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                                     <InputField label="Total Package Quantity" name="totalPackageQuantity" value={formData.totalPackageQuantity} onChange={handleChange} error={errors.totalPackageQuantity} />
                                     <InputField label="Weight (kg)" name="weight" value={formData.weight} onChange={handleChange} error={errors.weight} />
-                                    <InputField label="Size" name="size" value={formData.size} onChange={handleChange}/>
+                                    <InputField label="Size" name="size" value={formData.size} onChange={handleChange} />
                                 </div>
                             </div>
                         </div>
@@ -660,8 +660,8 @@ export function ALEAddROTForm() {
                             <div className="p-8 space-y-6">
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                     <FileUpload name="doForm" label="DO Form" fileName={documents.doForm?.name || existingDocuments.doForm} onChange={(e) => handleFileChange(e, "doForm")} onRemove={() => documents.doForm ? setDocuments(prev => ({ ...prev, doForm: null })) : handleRemoveExistingFile("doForm")} required={true} error={errors.doForm} />
-                                    <FileUpload name="customForm" label="Custom Form" fileName={documents.customForm?.name || existingDocuments.customForm} onChange={(e) => handleFileChange(e, "customForm")} onRemove={() => documents.customForm ? setDocuments(prev => ({ ...prev, customForm: null })) : handleRemoveExistingFile("customForm")} required={true} error={errors.customForm}/>
-                                    <FileUpload name="packingList" label="Packing List/Invoice" fileName={documents.packingList?.name || existingDocuments.packingList} onChange={(e) => handleFileChange(e, "packingList")} onRemove={() => documents.packingList ? setDocuments(prev => ({ ...prev, packingList: null })) : handleRemoveExistingFile("packingList")} required={true} error={errors.packingList}/>
+                                    <FileUpload name="customForm" label="Custom Form" fileName={documents.customForm?.name || existingDocuments.customForm} onChange={(e) => handleFileChange(e, "customForm")} onRemove={() => documents.customForm ? setDocuments(prev => ({ ...prev, customForm: null })) : handleRemoveExistingFile("customForm")} required={true} error={errors.customForm} />
+                                    <FileUpload name="packingList" label="Packing List/Invoice" fileName={documents.packingList?.name || existingDocuments.packingList} onChange={(e) => handleFileChange(e, "packingList")} onRemove={() => documents.packingList ? setDocuments(prev => ({ ...prev, packingList: null })) : handleRemoveExistingFile("packingList")} required={true} error={errors.packingList} />
                                     <FileUpload name="otherDoc" label="Other Document" fileName={documents.otherDoc?.name || existingDocuments.otherDoc} onChange={(e) => handleFileChange(e, "otherDoc")} onRemove={() => documents.otherDoc ? setDocuments(prev => ({ ...prev, otherDoc: null })) : handleRemoveExistingFile("otherDoc")} />
                                 </div>
                             </div>
@@ -724,7 +724,8 @@ const SelectField = ({ label, name, value, onChange, error, required, options })
                     const isObj = typeof opt === 'object';
                     const val = isObj ? opt.value : opt;
                     const lab = isObj ? opt.label : opt;
-                    return (<option key={index} value={val}>{lab}</option>);})}
+                    return (<option key={index} value={val}>{lab}</option>);
+                })}
             </select>
             <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400 group-hover:text-system-color transition-colors">
                 <CircleChevronDown size={18} />
@@ -769,7 +770,7 @@ const FileUpload = ({ label, name, onChange, fileName, onRemove, required, error
                 )}
             </div>
             {!fileName && (
-                <input name={name} type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={onChange}/>
+                <input name={name} type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={onChange} />
             )}
         </div>
         <AnimatePresence>

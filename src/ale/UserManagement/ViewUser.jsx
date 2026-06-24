@@ -95,11 +95,10 @@ export function ViewUser() {
                                 <p className="text-orange-100 font-medium text-sm mt-1">User ID: {employee.userId}</p>
                             </div>
                             <div className="mt-4 sm:mt-0">
-                                <span className={`inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black uppercase tracking-wider shadow-sm ${
-                                    employee.accessLevel === 'Full Access'
+                                <span className={`inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black uppercase tracking-wider shadow-sm ${employee.accessLevel === 'Full Access'
                                         ? 'bg-white text-green-700'
                                         : 'bg-white text-blue-700'
-                                }`}>
+                                    }`}>
                                     <ShieldCheck size={14} />
                                     {employee.accessLevel || "No Access Setup"}
                                 </span>

@@ -137,8 +137,6 @@ export function TerminalList() {
             const terminalId = user.companyCode;
             const data = await getAleContainers();
             const filteredData = data.filter(c => c.terminalId === terminalId);
-
-            console.log(filteredData);
             setContainers(data);
         } catch (error) {
             toast.error("Failed to fetch ROT history");

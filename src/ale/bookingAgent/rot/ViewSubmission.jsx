@@ -4,10 +4,10 @@ import Layout from "../../layout/Layout.jsx";
 import {
     ArrowLeft, Download, ExternalLink, FileText, X, FileImage, Eye, CircleChevronUp, Users, Package
 } from "lucide-react";
-import {getAleBookingDocumentByBookingNumber,} from "../../../services/aleBookingDocumentService.js";
+import { getAleBookingDocumentByBookingNumber, } from "../../../services/aleBookingDocumentService.js";
 import api from "../../../services/api.js";
 import { toast, Toaster } from "sonner";
-import {getAleBookingById} from "../../../services/aleBookingService.js";
+import { getAleBookingById } from "../../../services/aleBookingService.js";
 
 export function ALEViewSubmission() {
     const { id } = useParams();
@@ -18,7 +18,7 @@ export function ALEViewSubmission() {
 
     const [documents, setDocuments] = useState([]);
     const [previewData, setPreviewData] = useState({ url: null, type: null, fileName: null });
-    
+
     useEffect(() => {
         const fetchDetails = async () => {
             try {
@@ -90,9 +90,8 @@ export function ALEViewSubmission() {
     const DataField = ({ label, value, isHighlight = false, isItalic = false }) => (
         <div className="flex flex-col gap-1">
             <span className="text-[13px] font-bold text-gray-400 uppercase tracking-wider">{label}</span>
-            <span className={`text-[15px] font-bold tracking-wide leading-tight ${
-                isHighlight ? 'text-blue-600' : 'text-gray-800'
-            } ${isItalic ? 'italic text-gray-500 font-medium' : ''}`}>
+            <span className={`text-[15px] font-bold tracking-wide leading-tight ${isHighlight ? 'text-blue-600' : 'text-gray-800'
+                } ${isItalic ? 'italic text-gray-500 font-medium' : ''}`}>
                 {value || "—"}
             </span>
         </div>
@@ -177,7 +176,7 @@ export function ALEViewSubmission() {
                                     <div className="flex items-center justify-start gap-4 mt-4 pt-3 border-t border-gray-50">
                                         <div className="flex gap-4">
                                             <button onClick={() => handlePreview(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-blue-50 text-gray-500 hover:text-blue-600 rounded-md"><Eye size={16} />Preview</button>
-                                            <button onClick={() => handleDownload(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-green-50 text-gray-500 hover:text-green-600 rounded-md"><Download size={16}/>Download</button>
+                                            <button onClick={() => handleDownload(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-green-50 text-gray-500 hover:text-green-600 rounded-md"><Download size={16} />Download</button>
                                         </div>
                                         {/*<div className="flex gap-1">*/}
                                         {/*    <button onClick={() => { setEditModal({ isOpen: true, doc }); setNewFileName(doc.fileName); }} className="p-1.5 hover:bg-amber-50 text-gray-500 hover:text-amber-600 rounded-md"><Edit3 size={16} /></button>*/}
@@ -285,7 +284,7 @@ export function ALEViewSubmission() {
             {/*                        <X size={20} />*/}
             {/*                    </button>*/}
             {/*                </div>*/}
-            
+
             {/*                <form onSubmit={handleUpdate} className="space-y-5">*/}
             {/*                    <div>*/}
             {/*                        <label className="block text-sm font-semibold text-gray-700 mb-2">Display File Name</label>*/}
@@ -314,7 +313,7 @@ export function ALEViewSubmission() {
             {/*                            <option value="Other Document">Other Document</option>*/}
             {/*                        </select>*/}
             {/*                    </div>*/}
-            
+
             {/*                    /!* File Re-upload (Optional) *!/*/}
             {/*                    <div>*/}
             {/*                        <label className="block text-sm font-semibold text-gray-700 mb-2">Replace File (Optional)</label>*/}
@@ -340,7 +339,7 @@ export function ALEViewSubmission() {
             {/*                            </p>*/}
             {/*                        )}*/}
             {/*                    </div>*/}
-            
+
             {/*                    <div className="pt-4 flex gap-3">*/}
             {/*                        <button*/}
             {/*                            type="button"*/}
@@ -361,7 +360,7 @@ export function ALEViewSubmission() {
             {/*        </div>*/}
             {/*    )}*/}
             {/*</AnimatePresence>*/}
-            
+
             {/*/!* Delete Confirmation Modal *!/*/}
             {/*<AnimatePresence>*/}
             {/*    {deleteModal.isOpen && (*/}

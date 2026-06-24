@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {useNavigate, useLocation, useParams} from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -11,15 +11,15 @@ import {
     Trash2,
     Upload
 } from "lucide-react";
-import {getCompanies} from "../../../services/companyService.js";
+import { getCompanies } from "../../../services/companyService.js";
 import {
     getAleBookingById,
     getAleBookings,
     registerAleBooking,
     updateAleBooking
 } from "../../../services/aleBookingService.js";
-import {getUserById} from "../../../services/userService.js";
-import {toast, Toaster} from "sonner";
+import { getUserById } from "../../../services/userService.js";
+import { toast, Toaster } from "sonner";
 
 export function ALEEditSubmission() {
     const navigate = useNavigate();
@@ -60,9 +60,9 @@ export function ALEEditSubmission() {
             try {
                 const data = await getCompanies();
                 if (Array.isArray(data)) {
-                    const consignees = data.filter(h => h.role === "Consignee").map(h => ({companyName: h.companyName, companyCode: h.companyCode, address: h.address, ssmNo: h.ssmNo || h.ssmNumber}));
+                    const consignees = data.filter(h => h.role === "Consignee").map(h => ({ companyName: h.companyName, companyCode: h.companyCode, address: h.address, ssmNo: h.ssmNo || h.ssmNumber }));
                     setConsignees(consignees);
-                    const forwardings = data.filter(h => h.role === "Forwarding").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
+                    const forwardings = data.filter(h => h.role === "Forwarding").map(h => ({ companyName: h.companyName, companyCode: h.companyCode }));
                     setForwardings(forwardings);
                 }
                 const booking = await getAleBookingById(id);
@@ -136,28 +136,28 @@ export function ALEEditSubmission() {
 
         if (!formData.ssmNumber) newErrors.ssmNumber = "SSM or ROC Number is required!";
 
-        if (!formData.totalPackageQuantity) {newErrors.totalPackageQuantity = "Total Package Quantity is required!";}
-        else if (isNaN(formData.totalPackageQuantity)) {newErrors.totalPackageQuantity = "Total Package Quantity should be a number!";}
-        else if (Number(formData.totalPackageQuantity) <= 0) {newErrors.totalPackageQuantity = "Total Package Quantity must be greater than zero!";}
+        if (!formData.totalPackageQuantity) { newErrors.totalPackageQuantity = "Total Package Quantity is required!"; }
+        else if (isNaN(formData.totalPackageQuantity)) { newErrors.totalPackageQuantity = "Total Package Quantity should be a number!"; }
+        else if (Number(formData.totalPackageQuantity) <= 0) { newErrors.totalPackageQuantity = "Total Package Quantity must be greater than zero!"; }
 
-        if (!formData.weight) {newErrors.weight = "Weight is required!";}
-        else if (isNaN(formData.weight)) {newErrors.weight = "Weight should be a number!";}
-        else if (Number(formData.weight) <= 0) {newErrors.weight = "Weight must be greater than zero!";}
+        if (!formData.weight) { newErrors.weight = "Weight is required!"; }
+        else if (isNaN(formData.weight)) { newErrors.weight = "Weight should be a number!"; }
+        else if (Number(formData.weight) <= 0) { newErrors.weight = "Weight must be greater than zero!"; }
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             return;
         }
         setIsSubmitting(true);
-        try{
+        try {
             const userData = await getUserById(localStorage.getItem("userId"));
             const companyCode = await userData.companyCode;
             const bookingPayload = {
                 rotNumber: formData.rotNumber,
-                awbNumber: formData.awbNumber,
-                houseAWBNumber: formData.houseAWBNumber,
-                flightNumber: formData.flightNumber,
-                carrierReferenceNumber: formData.carrierReferenceNumber,
+                awbNumber: formData.awbNumber.toUpperCase(),
+                houseAWBNumber: formData.houseAWBNumber.to,
+                flightNumber: formData.flightNumber.toUpperCase(),
+                carrierReferenceNumber: formData.carrierReferenceNumber.toUpperCase(),
                 totalPackageQuantity: Number(formData.totalPackageQuantity),
                 weight: Number(formData.weight),
                 forwardingId: formData.forwardingId,
@@ -210,10 +210,10 @@ export function ALEEditSubmission() {
                             <div className="p-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <InputField label="AWB No." name="awbNumber" value={formData.awbNumber} onChange={handleChange} error={errors.awbNumber} required />
-                                    <InputField label="House AWB No." name="houseAWBNumber" value={formData.houseAWBNumber} onChange={handleChange} error={errors.houseAWBNumber} required/>
+                                    <InputField label="House AWB No." name="houseAWBNumber" value={formData.houseAWBNumber} onChange={handleChange} error={errors.houseAWBNumber} required />
                                     <InputField label="Flight No." name="flightNumber" value={formData.flightNumber} onChange={handleChange} error={errors.flightNumber} required />
                                     <InputField label="Carrier Reference No." name="carrierReferenceNumber" value={formData.carrierReferenceNumber} onChange={handleChange} error={errors.carrierReferenceNumber} required />
-                                    <SelectField label="Consignee/Shipper" name="consignee" required options={[{ label: "Other", value: "Other" }, ...consignees.map(t => ({label: t.companyName, value: t.companyCode}))]} value={formData.consignee} onChange={handleChange} error={errors.consignee}/>
+                                    <SelectField label="Consignee/Shipper" name="consignee" required options={[{ label: "Other", value: "Other" }, ...consignees.map(t => ({ label: t.companyName, value: t.companyCode }))]} value={formData.consignee} onChange={handleChange} error={errors.consignee} />
                                     {formData.consignee === "Other" && (
                                         <>
                                             <InputField label="Consignee/Shipper Name" name="externalConsigneeName" value={formData.externalConsigneeName} onChange={handleChange} error={errors.externalConsigneeName} required />
@@ -221,8 +221,8 @@ export function ALEEditSubmission() {
                                             <InputField label="Consignee/Shipper Contact Information" name="externalConsigneeContact" value={formData.externalConsigneeContact} onChange={handleChange} placeholder="012-3456789, john@example.com" error={errors.externalConsigneeContact} required />
                                         </>
                                     )}
-                                    <InputField label="SSM/ROC No." name="ssmNumber" value={formData.ssmNumber} onChange={handleChange} readOnly={formData.consignee && formData.consignee !== "Other"} error={errors.ssmNumber} required/>
-                                    <SelectField label="Forwarding Agent" name="forwardingId" value={formData.forwardingId} onChange={handleChange} options={forwardings.map(t => ({label: t.companyName, value: t.companyCode}))} />
+                                    <InputField label="SSM/ROC No." name="ssmNumber" value={formData.ssmNumber} onChange={handleChange} readOnly={formData.consignee && formData.consignee !== "Other"} error={errors.ssmNumber} required />
+                                    <SelectField label="Forwarding Agent" name="forwardingId" value={formData.forwardingId} onChange={handleChange} options={forwardings.map(t => ({ label: t.companyName, value: t.companyCode }))} />
                                 </div>
                             </div>
                         </div>
@@ -303,7 +303,8 @@ const SelectField = ({ label, name, value, onChange, error, required, options })
                     const isObj = typeof opt === 'object';
                     const val = isObj ? opt.value : opt;
                     const lab = isObj ? opt.label : opt;
-                    return (<option key={index} value={val}>{lab}</option>);})}
+                    return (<option key={index} value={val}>{lab}</option>);
+                })}
             </select>
             <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400 group-hover:text-system-color transition-colors">
                 <CircleChevronDown size={18} />
@@ -348,7 +349,7 @@ const FileUpload = ({ label, name, onChange, fileName, onRemove, required, error
                 )}
             </div>
             {!fileName && (
-                <input name={name} type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={onChange}/>
+                <input name={name} type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={onChange} />
             )}
         </div>
         <AnimatePresence>

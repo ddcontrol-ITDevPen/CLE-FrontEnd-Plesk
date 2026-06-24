@@ -13,12 +13,12 @@ import {
     History,
     User
 } from "lucide-react";
-import {LuScanSearch} from "react-icons/lu";
+import { LuScanSearch } from "react-icons/lu";
 
 const ShipmentLog = (data) => {
     const activeRole = (localStorage.getItem("role") || "").toLowerCase();
     const isPrivilegedRole = activeRole === "akps" || activeRole === "customs";
-    
+
     const maskText = (text) => {
         if (!text) return text;
         if (!isPrivilegedRole) {
@@ -26,39 +26,39 @@ const ShipmentLog = (data) => {
         }
         return text;
     }
-    
+
     // Timeline statuses in reverse order
     const timeline = [
-        {label: "Drop-off RFC", time: data.rtRFCTime},
-        {label: "Drop-off Delivered", time: data.rtDeliveredTime},
-        {label: "Drop-off Gated Out", time: data.rtGatedOutTime},
-        {label: "Drop-off Gated In", time: data.rtGatedInTime},
-        {label: "Drop-off Accepted", time: data.rtAcceptedTime},
-        {label: "Drop-off Enroute", time: data.rtEnrouteTime},
-        {label: "Drop-off Assigned", time: data.rtAssignedTime},
-        {label: "Rejected", time: data.rejectedTime},
-        {label: "Deleted", time: data.deletedTime},
-        {label: "RFC", time: data.rfcTime},
-        {label: "Delivered", time: data.deliveredTime},
-        {label: "Gate-Out", time: data.gatedOutTime},
-        {label: "Gate-In", time: data.gatedInTime},
-        {label: "Accepted", time: data.acceptedTime},
-        {label: "Rejected-Both", time: data.rejectedBothTime},
-        {label: "Rejected-AKPS", time: data.rejectedAKPSTime},
-        {label: "Rejected-Custom", time: data.rejectedCustomTime},
-        {label: "Approved-Complete", time: data.approvedBothTime},
-        {label: "Approved-AKPS", time: data.approvedAKPSTime},
-        {label: "Approved-Custom", time: data.approvedCustomTime},
-        {label: "Examine-Both", time: data.examineBothTime},
-        {label: "Examine-AKPS", time: data.examineAKPSTime},
-        {label: "Examine-Custom", time: data.examineCustomTime},
-        {label: "Enroute", time: data.enrouteTime},
-        {label: "Assigned", time: data.assignedTime},
+        { label: "Drop-off RFC", time: data.rtRFCTime },
+        { label: "Drop-off Delivered", time: data.rtDeliveredTime },
+        { label: "Drop-off Gated Out", time: data.rtGatedOutTime },
+        { label: "Drop-off Gated In", time: data.rtGatedInTime },
+        { label: "Drop-off Accepted", time: data.rtAcceptedTime },
+        { label: "Drop-off Enroute", time: data.rtEnrouteTime },
+        { label: "Drop-off Assigned", time: data.rtAssignedTime },
+        { label: "Rejected", time: data.rejectedTime },
+        { label: "Deleted", time: data.deletedTime },
+        { label: "RFC", time: data.rfcTime },
+        { label: "Delivered", time: data.deliveredTime },
+        { label: "Gate-Out", time: data.gatedOutTime },
+        { label: "Gate-In", time: data.gatedInTime },
+        { label: "Accepted", time: data.acceptedTime },
+        { label: "Rejected-Both", time: data.rejectedBothTime },
+        { label: "Rejected-AKPS", time: data.rejectedAKPSTime },
+        { label: "Rejected-Custom", time: data.rejectedCustomTime },
+        { label: "Approved-Complete", time: data.approvedBothTime },
+        { label: "Approved-AKPS", time: data.approvedAKPSTime },
+        { label: "Approved-Custom", time: data.approvedCustomTime },
+        { label: "Examine-Both", time: data.examineBothTime },
+        { label: "Examine-AKPS", time: data.examineAKPSTime },
+        { label: "Examine-Custom", time: data.examineCustomTime },
+        { label: "Enroute", time: data.enrouteTime },
+        { label: "Assigned", time: data.assignedTime },
     ].filter(t => t.time)
         .map(t => ({
             ...t, label: maskText(t.label)
         }))
-        .sort((a, b) => { 
+        .sort((a, b) => {
             return new Date(b.time).getTime() - new Date(a.time).getTime();
         });
 
@@ -68,8 +68,8 @@ const ShipmentLog = (data) => {
             action: maskText(log.action)
         }))
         .sort((a, b) => new Date(b.updatedTime) - new Date(a.updatedTime)
-    );
-    
+        );
+
     const getStatusStyles = (label) => {
         const lowerLabel = label.toLowerCase();
 
@@ -106,30 +106,30 @@ const ShipmentLog = (data) => {
                 <div className="max-h-[600px] min-h-[200px] overflow-y-auto overflow-x-hidden pr-4 scrollbar-thin scrollbar-thumb-slate-200 pl-12 relative">
                     <div className="relative space-y-10">
                         <div className="absolute -left-[18px] top-0 bottom-0 w-0.5 bg-blue-100" />
-                    {auditLogs.map((log, idx) => (  
-                        <div key={idx} className="relative">
-                            <div className="absolute -left-[33px] top-0 w-8 h-8 rounded-full border-4 border-white shadow-sm flex items-center justify-center text-white z-auto bg-slate-400">
-                                <User size={12} />
-                            </div>
+                        {auditLogs.map((log, idx) => (
+                            <div key={idx} className="relative">
+                                <div className="absolute -left-[33px] top-0 w-8 h-8 rounded-full border-4 border-white shadow-sm flex items-center justify-center text-white z-auto bg-slate-400">
+                                    <User size={12} />
+                                </div>
 
-                            <div className="flex flex-col ml-3">
-                                <p className="text-sm font-bold text-slate-700">
-                                    {log.updatedBy || "System User"}
-                                </p>
-                                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                                    Modified: <span className="font-medium text-slate-600">{log.action || "Record updated"}</span>
-                                </p>
-                                <div className="mt-2 flex items-center gap-3">
-                                    <span className="text-[11px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full border border-slate-200">
-                                        {new Date(log.updatedTime).toLocaleDateString()}
-                                    </span>
-                                    <span className="text-[11px] text-slate-400">
-                                        {new Date(log.updatedTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
+                                <div className="flex flex-col ml-3">
+                                    <p className="text-sm font-bold text-slate-700">
+                                        {log.updatedBy || "System User"}
+                                    </p>
+                                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                                        Modified: <span className="font-medium text-slate-600">{log.action || "Record updated"}</span>
+                                    </p>
+                                    <div className="mt-2 flex items-center gap-3">
+                                        <span className="text-[11px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full border border-slate-200">
+                                            {new Date(log.updatedTime).toLocaleDateString()}
+                                        </span>
+                                        <span className="text-[11px] text-slate-400">
+                                            {new Date(log.updatedTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
                     </div>
                     {auditLogs.length === 0 && <p className="text-slate-400 italic text-sm">No audit history available.</p>}
                 </div>
@@ -139,43 +139,43 @@ const ShipmentLog = (data) => {
                 <div className="max-h-[600px] min-h-[200px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-200 pl-12 relative">
                     <div className="relative space-y-10">
                         <div className="absolute -left-[18px] top-0 bottom-0 w-0.5 bg-blue-100" />
-                    {timeline.map((step, idx) => {
-                        const styles = getStatusStyles(step.label);
-                        return(
-                            <div key={idx} className="relative">
-                                {/* Icon Container */}
-                                <div className={`absolute -left-[33px] top-1 w-8 h-8 rounded-full border-4 border-white shadow-md flex items-center justify-center text-white z-auto 
+                        {timeline.map((step, idx) => {
+                            const styles = getStatusStyles(step.label);
+                            return (
+                                <div key={idx} className="relative">
+                                    {/* Icon Container */}
+                                    <div className={`absolute -left-[33px] top-1 w-8 h-8 rounded-full border-4 border-white shadow-md flex items-center justify-center text-white z-auto 
                                 ${styles.color} ${idx === 0 ? "ring-3 ring-opacity-100 ring-blue-500" : ""}`}
-                                >
-                                    {styles.icon}
-                                </div>
+                                    >
+                                        {styles.icon}
+                                    </div>
 
-                                <div className="flex flex-col md:flex-row pt-1 gap-2 md:gap-0 ml-3">
-                                    <p className="text-lg font-semibold text-gray-800 w-30">
-                                        {step.label}
-                                    </p>
-                                    <div className="w-55 ml-2">
-                                        <p className="text-sm text-gray-500 font-medium">
-                                            {new Date(step.time).toLocaleDateString()}
+                                    <div className="flex flex-col md:flex-row pt-1 gap-2 md:gap-0 ml-3">
+                                        <p className="text-lg font-semibold text-gray-800 w-30">
+                                            {step.label}
                                         </p>
-                                        <p className="text-xs text-gray-400">
-                                            {new Date(step.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
-                                        {data.status === "Deleted" && step.label === "Deleted" && (
-                                            <div className="w-fit text-xs text-accent-danger font-bold italic mt-2 bg-red-50 p-2 rounded-lg border border-red-100">
-                                                Reason: {data.deletedRemarks || "N/A"}
-                                            </div>
-                                        )}
-                                        {data.status === "Rejected" && step.label === "Rejected" && (
-                                            <div className="w-fit text-xs text-accent-danger font-bold italic mt-2 bg-red-50 p-2 rounded-lg border border-red-100">
-                                                Reason: {data.rejectedRemarks || "N/A"}
-                                            </div>
-                                        )}
+                                        <div className="w-55 ml-2">
+                                            <p className="text-sm text-gray-500 font-medium">
+                                                {new Date(step.time).toLocaleDateString()}
+                                            </p>
+                                            <p className="text-xs text-gray-400">
+                                                {new Date(step.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </p>
+                                            {data.status === "Deleted" && step.label === "Deleted" && (
+                                                <div className="w-fit text-xs text-accent-danger font-bold italic mt-2 bg-red-50 p-2 rounded-lg border border-red-100">
+                                                    Reason: {data.deletedRemarks || "N/A"}
+                                                </div>
+                                            )}
+                                            {data.status === "Rejected" && step.label === "Rejected" && (
+                                                <div className="w-fit text-xs text-accent-danger font-bold italic mt-2 bg-red-50 p-2 rounded-lg border border-red-100">
+                                                    Reason: {data.rejectedRemarks || "N/A"}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
                     </div>
                     {timeline.length === 0 && <p className="text-gray-400 italic">No movement logs recorded yet.</p>}
                 </div>

@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import { useNavigate } from "react-router-dom";
-import {getUsers, deleteUser, getUserById} from "../../services/userService.js";
+import { getUsers, deleteUser, getUserById } from "../../services/userService.js";
 
 export function UserManagement() {
     const navigate = useNavigate();
@@ -75,7 +75,7 @@ export function UserManagement() {
             fullName: emp.fullName
         });
     };
-    
+
     const handleDelete = async (userId) => {
         try {
             await deleteUser(deleteModal.userId);
@@ -141,89 +141,88 @@ export function UserManagement() {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                            <tr className="bg-gray-50/50 border-b border-gray-100">
-                                <th className="px-8 py-6 text-sm font-black text-gray-400 uppercase tracking-widest">Employee</th>
-                                <th className="px-6 py-6 text-sm font-black text-gray-400 uppercase tracking-widest">Contact</th>
-                                <th className="px-6 py-6 text-sm font-black text-gray-400 uppercase tracking-widest">Access Level</th>
-                                <th className="px-6 py-6 text-sm font-black text-gray-400 uppercase tracking-widest text-center">Actions</th>
-                            </tr>
+                                <tr className="bg-gray-50/50 border-b border-gray-100">
+                                    <th className="px-8 py-6 text-sm font-black text-gray-400 uppercase tracking-widest">Employee</th>
+                                    <th className="px-6 py-6 text-sm font-black text-gray-400 uppercase tracking-widest">Contact</th>
+                                    <th className="px-6 py-6 text-sm font-black text-gray-400 uppercase tracking-widest">Access Level</th>
+                                    <th className="px-6 py-6 text-sm font-black text-gray-400 uppercase tracking-widest text-center">Actions</th>
+                                </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                            <AnimatePresence>
-                                {filteredUsers.map((emp) => (
-                                    <motion.tr
-                                        key={emp.userId}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        className="hover:bg-amber-50/30 transition-colors group"
-                                    >
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="size-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center text-amber-700 font-bold text-xl shadow-sm">
-                                                    {emp.fullName.charAt(0)}
+                                <AnimatePresence>
+                                    {filteredUsers.map((emp) => (
+                                        <motion.tr
+                                            key={emp.userId}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            className="hover:bg-amber-50/30 transition-colors group"
+                                        >
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="size-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center text-amber-700 font-bold text-xl shadow-sm">
+                                                        {emp.fullName.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-black text-gray-800 text-lg">{emp.fullName}</div>
+                                                        <div className="text-gray-400 font-medium text-sm">ID: {emp.userId}</div>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <div className="font-black text-gray-800 text-lg">{emp.fullName}</div>
-                                                    <div className="text-gray-400 font-medium text-sm">ID: {emp.userId}</div>
+                                            </td>
+                                            <td className="px-6 py-6">
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2 text-gray-600 text-sm font-medium">
+                                                        <Mail size={14} className="text-amber-500" /> {emp.emailAddress}
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-gray-600 text-sm font-medium">
+                                                        <Phone size={14} className="text-amber-500" /> {emp.contactNumber || "N/A"}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-6">
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-2 text-gray-600 text-sm font-medium">
-                                                    <Mail size={14} className="text-amber-500" /> {emp.emailAddress}
-                                                </div>
-                                                <div className="flex items-center gap-2 text-gray-600 text-sm font-medium">
-                                                    <Phone size={14} className="text-amber-500" /> {emp.contactNumber || "N/A"}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-6">
-                                                <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-tighter ${
-                                                    emp.accessLevel === 'Full Access'
+                                            </td>
+                                            <td className="px-6 py-6">
+                                                <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-tighter ${emp.accessLevel === 'Full Access'
                                                         ? 'bg-green-100 text-green-700'
                                                         : 'bg-blue-100 text-blue-700'
-                                                }`}>
+                                                    }`}>
                                                     <ShieldCheck size={14} />
                                                     {emp.accessLevel}
                                                 </span>
+                                            </td>
+                                            <td className="px-6 py-6">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <button
+                                                        onClick={() => navigate(`/user/management/view/${emp.userId}`)}
+                                                        className="p-3 text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye size={20} />
+                                                    </button>
+                                                    {/*<button*/}
+                                                    {/*    onClick={() => navigate(`/management/employees/edit/${emp.userId}`)}*/}
+                                                    {/*    className="p-3 text-amber-600 hover:bg-amber-50 rounded-xl transition-all"*/}
+                                                    {/*    title="Edit Employee"*/}
+                                                    {/*>*/}
+                                                    {/*    <Edit size={20} />*/}
+                                                    {/*</button>*/}
+                                                    <button
+                                                        onClick={() => openDeleteModal(emp)}
+                                                        className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                        title="Remove Employee"
+                                                    >
+                                                        <Trash2 size={20} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </motion.tr>
+                                    ))}
+                                </AnimatePresence>
+                                {filteredUsers.length === 0 && !isLoading && (
+                                    <tr>
+                                        <td colSpan="4" className="py-20 text-center text-gray-400 font-medium">
+                                            No employees found matching your criteria.
                                         </td>
-                                        <td className="px-6 py-6">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <button
-                                                    onClick={() => navigate(`/user/management/view/${emp.userId}`)}
-                                                    className="p-3 text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-                                                    title="View Details"
-                                                >
-                                                    <Eye size={20} />
-                                                </button>
-                                                {/*<button*/}
-                                                {/*    onClick={() => navigate(`/management/employees/edit/${emp.userId}`)}*/}
-                                                {/*    className="p-3 text-amber-600 hover:bg-amber-50 rounded-xl transition-all"*/}
-                                                {/*    title="Edit Employee"*/}
-                                                {/*>*/}
-                                                {/*    <Edit size={20} />*/}
-                                                {/*</button>*/}
-                                                <button
-                                                    onClick={() => openDeleteModal(emp)}
-                                                    className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                                                    title="Remove Employee"
-                                                >
-                                                    <Trash2 size={20} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </motion.tr>
-                                ))}
-                            </AnimatePresence>
-                            {filteredUsers.length === 0 && !isLoading && (
-                                <tr>
-                                    <td colSpan="4" className="py-20 text-center text-gray-400 font-medium">
-                                        No employees found matching your criteria.
-                                    </td>
-                                </tr>
-                            )}
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
