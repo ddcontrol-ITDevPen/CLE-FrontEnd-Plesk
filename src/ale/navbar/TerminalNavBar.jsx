@@ -6,7 +6,7 @@ import {
     LucideHome,
     LucideLogOut,
     LucideMapPinned,
-    LucideTruck, LucideUserCheck
+    LucideTruck, LucideUserCheck, LucideQrCode
 } from "lucide-react";
 import {logout} from "../../services/authService.js";
 import {useEffect, useState} from "react";
