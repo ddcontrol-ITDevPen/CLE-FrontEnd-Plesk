@@ -54,6 +54,7 @@ export default function TerminalNavBar({ role = "terminal" }) {
         { icon: LucideArchive, label: "Archived ROTs", path: "/ale/terminal/rot/archived" },
         { icon: LucideMapPinned, label: "Track & Trace", path: "/ale/rot/track" },
         { icon: LucideClock, label: "Operational Time", path: "/ale/terminal/operations" },
+        { icon: LucideQrCode, label: "Your QR Code", path: "/ale/terminal/qrcode" },
         //{ icon: LucideFile, label: "View Document", path: "/ale/forwarding/rot/document/view" }
     ];
 

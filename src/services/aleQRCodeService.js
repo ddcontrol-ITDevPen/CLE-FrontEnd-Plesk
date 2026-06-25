@@ -18,7 +18,7 @@ export const generateAleQRCode = async (qrCode) => {
 }
 
 export const verifyAleQRCode = async (qrCode) => {
-    const res = await api.put(`${BASE_URL}/verify-qr`, qrCode);
+    const res = await api.post(`${BASE_URL}/verify-qr`, qrCode);
     return res.data;
 }
 

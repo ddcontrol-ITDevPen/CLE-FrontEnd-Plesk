@@ -91,8 +91,8 @@ import {PortEditBooking} from "../cle/port/booking/PortEditBooking.jsx";
 import {CLECustomsDashboard} from "../cle/customs/dashboard/CLECustomsDashboard.jsx";
 import {CLECustomsbookingList} from "../cle/customs/booking/CLECustomsbookingList.jsx";
 import {CLECustomsbookingDetails} from "../cle/customs/booking/CLECustomsbookingDetails.jsx";
-import {CLECustomsbookingAction} from "../cle/customs/booking/CLECustomsbookingAction.jsx";
-
+import { CLECustomsbookingAction } from "../cle/customs/booking/CLECustomsbookingAction.jsx";
+import { YourQRCode } from "../ale/terminal/qrcode/YourQRCode.jsx";
 
 export default function AppRouter() {
     return (
@@ -633,6 +633,14 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <TerminalList />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/ale/terminal/qrcode"
+                    element={
+                        <ProtectedRoute>
+                            <YourQRCode />
                         </ProtectedRoute>
                     }
                 />
