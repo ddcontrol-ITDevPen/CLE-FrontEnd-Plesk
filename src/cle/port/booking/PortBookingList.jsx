@@ -3,7 +3,7 @@ import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search, Calendar, FileDown, Eye, Edit, Trash2,
-    FileText, AlertCircle, CheckCircle2, LucideX, Check
+    FileText, AlertCircle, CheckCircle2, LucideX, Check, Clock
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import {getContainers, deleteContainer, updateContainer, getContainerById} from "../../../services/containerService.js";
@@ -498,14 +498,36 @@ export function PortBookingList ()  {
                                             <td className="p-4">
                                                 {/* Horizontal Action Icons */}
                                                 <div className="flex items-center justify-center gap-3">
-                                                    {cont.status === "Assigned" && (
-                                                        <button onClick={() => navigate(`/haulier/booking/assign/${cont.containerId}`)} className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept / Enroute">
-                                                            <Check size={18} />
+                                                    {["Enroute"].includes(cont.status) && cont.acceptedTime === null && (
+                                                        <button
+                                                            onClick={() => setStatusModal({
+                                                                isOpen: true,
+                                                                id: cont.containerId,
+                                                                nextStatus: "Rejected",
+                                                                remarks: ""
+                                                            })}
+                                                            className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+                                                            title="Reject"
+                                                        >
+                                                            <LucideX size={18} />
                                                         </button>
                                                     )}
-                                                    {cont.status === "Assigned" && (
-                                                        <button onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Rejected" })} className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors" title="Reject">
-                                                            <LucideX size={18} />
+                                                    {["Accepted"].includes(cont.status) && cont.acceptedTime !== null && (
+                                                        <button
+                                                            onClick={() => handleGatedIn(cont.containerId)}
+                                                            className="p-1.5 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors"
+                                                            title="Manual Gate In"
+                                                        >
+                                                            <Clock size={18} />
+                                                        </button>
+                                                    )}
+                                                    {["Gate-In"].includes(cont.status) && cont.gatedInTime !== null && (
+                                                        <button
+                                                            onClick={() => handleGatedOut(cont.containerId)}
+                                                            className="p-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors"
+                                                            title="Manual Gate Out"
+                                                        >
+                                                            <Clock size={18} />
                                                         </button>
                                                     )}
                                                     <Eye size={18}

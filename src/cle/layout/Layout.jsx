@@ -9,6 +9,7 @@ import {logout} from "../../services/authService.js";
 import HaulierNavBar from "../NavBar/HaulierNavbar.jsx";
 import DepotNavBar from "../NavBar/DepotNavBar.jsx";
 import PortNavBar from "../NavBar/PortNavBar.jsx";
+import ConsigneeNavBar from "../NavBar/ConsigneeNavBar.jsx";
 import CustomsNavBar from "../NavBar/CustomsNavBar.jsx";
 import AKPSNavBar from "../NavBar/AKPSNavBar.jsx";
 export default function Layout({ children, role }) {
@@ -54,6 +55,7 @@ export default function Layout({ children, role }) {
                 {user?.Role === "haulier" && <HaulierNavBar />}
                 {user?.Role === "depot" && <DepotNavBar />}
                 {user?.Role === "port" && <PortNavBar />}
+                {user?.Role === "consignee" && <ConsigneeNavBar />}
                 {user?.Role === "customs" && <CustomsNavBar />}
                 {user?.Role === "akps" && <AKPSNavBar />}
                 {/*other roles*/}

@@ -105,7 +105,7 @@ export function ROTHistory ()  {
             const forwardingId = user.companyCode;
             const data = await getContainers();
             const filteredData = await data
-                .filter(c => c.booking.forwardingId === forwardingId)
+                .filter(c => c.booking?.forwardingId === forwardingId)
                 .sort((a, b) => {
                     const dateA = new Date(getStatusTimestamp(a) || 0);
                     const dateB = new Date(getStatusTimestamp(b) || 0);

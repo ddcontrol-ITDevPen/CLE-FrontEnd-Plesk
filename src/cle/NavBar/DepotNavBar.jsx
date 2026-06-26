@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     LucideArchive,
-    LucideArchiveX, LucideBolt, LucideClipboardCheck, LucideClipboardClock, LucideFile,
+    LucideArchiveX, LucideBolt, LucideClipboardCheck, LucideClipboardClock, LucideClock, LucideFile,
     LucideHistory,
     LucideHome,
     LucideLogOut,
@@ -20,10 +20,9 @@ export default function DepotNavBar({ role = "haulier" }) {
 
     const menuItems = [
         { icon: LucideHome, label: "Dashboard", path: "/depot/dashboard" },
-        { icon: LucideTruck, label: "Create Booking", path: "/depot/booking/add/form1" },
-        { icon: LucideClipboardClock, label: "Your ROTs", path: "/depot/booking" },
-        { icon: LucideMapPinned, label: "Track & Trace", path: "/rot/track" },
-        { icon: LucideBolt, label: "Haulier Management", path: "/depot/management/configure" },
+        { icon: LucideClipboardClock, label: "Booking List", path: "/depot/booking/list" },
+        { icon: LucideMapPinned, label: "Track & Trace", path: "/forwarding/rot/track" },
+        { icon: LucideClock, label: "Operational Time", path: "/depot/operations" },
     ];
 
     return (

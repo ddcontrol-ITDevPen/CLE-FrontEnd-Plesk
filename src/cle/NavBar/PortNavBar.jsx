@@ -49,8 +49,7 @@ export default function PortNavBar({ role = "port" }) {
     const menuItems = [
         { icon: LucideHome, label: "Dashboard", path: "/port/dashboard" },
         { icon: LucideFile, label: "Booking List", path: "/port/booking/list" },
-        { icon: LucideArchive, label: "Archived ROTs", path: "/port/rot/archived" },
-        { icon: LucideMapPinned, label: "Track & Trace", path: "/port/rot/track" },
+        { icon: LucideMapPinned, label: "Track & Trace", path: "/forwarding/rot/track" },
         { icon: LucideClock, label: "Operational Time", path: "/port/operations" },
         //{ icon: LucideFile, label: "View Document", path: "/cle/forwarding/rot/document/view" }
     ];

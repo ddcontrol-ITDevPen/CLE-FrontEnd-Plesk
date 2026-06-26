@@ -100,7 +100,7 @@ export function AssignBooking() {
         setSelectedDate(date);
         const slotsForDate = timeSlots.filter(s => s.date === date).sort((a, b) => a.time.localeCompare(b.time));
         setFilteredSlots(slotsForDate);
-        setFormData(prev => ({ ...prev, timeSlot: "" }));
+        setFormData(prev => ({ ...prev, timeSlotId: "" }));
     };
 
     const handleSubmit = async (e) => {
@@ -124,7 +124,7 @@ export function AssignBooking() {
             await registerAssignedHaulier(updatedData);
             const updatedContainerData = {...container, containerId: id, status: "Enroute", enrouteTime: new Date().toISOString(), UpdatedBy: updatedBy}
             await updateContainer(id, updatedContainerData);
-            const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
+            const selectedSlot = timeSlots.find(s => s.id == formData.timeSlotId);
             if (selectedSlot) {
                 const updatedSlotData = {
                     id: selectedSlot.id,

@@ -41,7 +41,7 @@ export default function AKPSNavBar({ role = "akps" }) {
         { icon: LucideFileInput, label: "New Booking", path: "/cle/terminal/booking/new", badgeCount: actionNeededCount },
         { icon: LucideFile, label: "Booking List", path: "/akps/bookinglist" },
         { icon: LucideArchive, label: "Archived ROTs", path: "/cle/akps/rot/archived" },
-        { icon: LucideMapPinned, label: "Track & Trace", path: "/cle/rot/track" },
+        { icon: LucideMapPinned, label: "Track & Trace", path: "/forwarding/rot/track" },
         //{ icon: LucideFile, label: "View Document", path: "/ale/forwarding/rot/document/view" }
     ];
 

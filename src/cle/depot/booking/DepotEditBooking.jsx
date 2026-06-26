@@ -1,0 +1,429 @@
+﻿import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import Layout from "../../layout/Layout.jsx";
+import {getContainerById, updateContainer} from "../../../services/containerService.js";
+import {AnimatePresence, motion} from "framer-motion";
+import {AlertCircle, ArrowLeft, Check, CheckCircle2, Clock, FileText, Save, XCircle} from "lucide-react";
+import ShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
+import {getCompanyById} from "../../../services/companyService.js";
+import {getAssignedHaulierByContainerId} from "../../../services/assignedHaulier.js";
+import { toast, Toaster } from "sonner"; 
+import {getUserById} from "../../../services/userService.js";
+
+export function DepotEditBooking() {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [data, setData] = useState(null);
+    const [forwarding, setForwarding] = useState(null);
+    const [statusModal, setStatusModal] = useState({ isOpen: false, id: null, nextStatus: "", remarks: "" });
+    const [companyDetails, setCompanyDetails] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [billingPartyName, setBillingPartyName] = useState(null);
+    const [assignedHaulier, setAssignedHaulier] = useState(null);
+    const [isRejecting, setIsRejecting] = useState(false);
+    const [rejectReason, setRejectReason] = useState("");
+    useEffect(() => {
+        const fetchDetails = async () => {
+            try {
+                const result = await getContainerById(id);
+                console.log(result);
+                setData(result);
+                const forwardingId = result.booking?.forwardingId;
+                const forwardingInfo = await getCompanyById(forwardingId);
+                setForwarding(forwardingInfo);
+                const assignedHaulierData = await getAssignedHaulierByContainerId(id);
+                setAssignedHaulier(assignedHaulierData);
+                if (result.booking?.billingParty) {
+                    try {
+                        const company = await getCompanyById(result.booking.billingParty);
+                        setBillingPartyName(company?.companyName || "N/A");
+                    } catch {
+                        setBillingPartyName("N/A");
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching ROT details:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchDetails();
+    }, [id]);
+
+    const getLocationName = (cont, type) => {
+        const { movementType, tripType } = cont.booking || {};
+
+        if (type === 'from') {
+            if (tripType) {
+                if (movementType === "Import" && tripType === "Pick-up") return cont.portName || "Port";
+                if (tripType === "Drop-off") return cont.consignee.companyName || "Consignee";
+                if (movementType === "Export" && tripType === "Pick-up") return cont.depotName || "Depot";
+                if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+            } else {
+                if (movementType === "Import") return cont.depotName || "Depot";
+                if (movementType === "Export") return cont.portName || "Port";
+            }
+            return cont.booking?.fromName || "N/A";
+        } else {
+            if (tripType) {
+                if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
+                if (tripType === "Pick-up") return cont.consignee.companyName || "Consignee";
+                if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
+                if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+            } else {
+                if (movementType === "Import") return cont.portName || "Port";
+                if (movementType === "Export") return cont.depotName || "Depot";
+            }
+            return cont.toName || "N/A";
+        }
+    };
+
+    if (isLoading) return <div className="p-10 text-center">Loading details...</div>;
+    if (!data) return <div className="p-10 text-center">Record not found.</div>;
+
+    const handleStatusUpdate = async () => {
+        const toastId = toast.loading(`Updating status to ${statusModal.nextStatus}...`);
+        try {
+            const currentContainer = await getContainerById(statusModal.id);
+            const now = new Date().toISOString();
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = user.fullName + " - " + user.companyName;
+
+            const payload = {
+                ...currentContainer,
+                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
+                status: statusModal.nextStatus,
+                acceptedTime: statusModal.nextStatus === "Accepted" ? now : currentContainer.acceptedTime,
+                rejectedTime: statusModal.nextStatus === "Rejected" ? now : currentContainer.rejectedTime,
+                rejectedRemarks: statusModal.remarks,
+                UpdatedBy: updatedBy,
+            };
+            await updateContainer(statusModal.id, payload);
+            toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
+            setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
+            // Redirect back to the booking list after brief delay so user sees success toast
+            setTimeout(() => {
+                navigate(-1);
+            }, 1000);
+        } catch (error) {
+            toast.error("Update failed", { id: toastId });
+        }
+    };
+    const handleGatedIn = async (containerId) => {
+        const toastId = toast.loading("Updating status to Gate-In...");
+        try {
+            const currentContainer = await getContainerById(containerId);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = `${user.fullName} - ${user.companyName}`;
+
+            const payload = {
+                ...currentContainer,
+                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
+                status: "Gate-In",
+                gatedInTime: new Date().toISOString(),
+                UpdatedBy: updatedBy,
+            };
+
+            await updateContainer(containerId, payload);
+            toast.success("Status updated to Gate-In", { id: toastId });
+            setTimeout(() => {
+                navigate(-1);
+            }, 1000);
+        } catch (error) {
+            console.error("Update Error:", error);
+            toast.error("Failed to update status", { id: toastId });
+        }
+    };
+
+    const handleGatedOut = async (containerId) => {
+        const toastId = toast.loading("Updating status to Gate-Out...");
+        try {
+            const currentContainer = await getContainerById(containerId);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = `${user.fullName} - ${user.companyName}`;
+
+            const payload = {
+                ...currentContainer,
+                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
+                status: "Gate-Out",
+                gatedOutTime: new Date().toISOString(),
+                UpdatedBy: updatedBy,
+            };
+
+            await updateContainer(containerId, payload);
+            toast.success("Status updated to Gate-Out", { id: toastId });
+            setTimeout(() => {
+                navigate(-1);
+            }, 1000);
+        } catch (error) {
+            console.error("Update Error:", error);
+            toast.error("Failed to update status", { id: toastId });
+        }
+    };
+    const Section = ({ title, children }) => (
+        <div className="bg-card-color p-6 rounded-xl shadow-sm border border-gray-100 h-full">
+            <h3 className="text-system-color font-bold mb-4 border-b pb-2">{title}</h3>
+            <div className="grid grid-cols-2 gap-y-3 text-sm">
+                {children}
+            </div>
+        </div>
+    );
+
+    const InfoRow = ({ label, value }) => (
+        <>
+            <span className="text-gray-500 font-medium">{label}</span>
+            <span className="text-gray-900 font-semibold">{value || "N/A"}</span>
+        </>
+    );
+
+    return (
+        <Layout role="depot">
+            <div className="space-y-6 max-w-7xl mx-auto pb-10">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold">Review Booking</h1>
+                    <div className="flex items-center gap-4 ">
+                        <button className="flex items-center bg-system-color text-white font-bold rounded-lg px-4 py-2 gap-3 cursor-pointer"
+                                onClick={() => navigate(`/rot/view/pdf/${data.containerId}`)}>
+                            <FileText
+                                size={20}
+                                className="text-blue-600-600 cursor-pointer hover:text-blue-800"/>
+                            <p>e-ROT</p>
+                        </button>
+                        {data.status !== "Assigned" &&
+                            <button className="flex items-center bg-system-color text-white font-bold rounded-lg px-4 py-2 gap-3 cursor-pointer"
+                                    onClick={() => navigate(`/haulier/booking/view/eCSN/${data.containerId}`)}>
+                                <FileText
+                                    size={20}
+                                    className="text-blue-600-600 cursor-pointer hover:text-blue-800" />
+                                <p>e-CSN</p>
+                            </button>
+                        }
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold transition-all cursor-pointer"
+                        >
+                            <ArrowLeft size={18} /> Back
+                        </button>
+                    </div>
+                </div>
+
+                {/* General Information */}
+                <div className="bg-card-color p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 className="text-system-color font-bold mb-4 border-b pb-2">General Information</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-12 text-sm">
+                        <div className="space-y-3">
+                            <div className="flex justify-between"><span className="text-gray-500">ROT Number.</span> <span className="font-bold">{data.rotNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">BL/Booking Number</span> <span className="font-bold">{data.booking?.blOrBookingNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">House BL Number</span> <span className="font-bold">{data.booking?.houseBLNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">SCN.</span> <span className="font-bold">{data.booking?.scn || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Movement Type</span> <span className="font-bold text-blue-600">{data.booking?.movementType || "N/A"}</span></div>
+                        </div>
+                        <div className="space-y-3">
+                            <div className="flex justify-between"><span className="text-gray-500">Type of Trip</span> <span className="font-bold">{data.booking?.tripType || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">ETA</span> <span className="font-bold">{data.booking?.eta || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">POD/POL</span> <span className="font-bold">{data.booking?.portLocation || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Seal No.</span> <span className="font-bold">{data.booking?.sealNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Forwarding Remarks</span> <span className="font-bold italic">{data.booking?.forwardingRemarks || "N/A"}</span></div>
+                        </div>
+                        <div className="space-y-3">
+                            <div className="flex justify-between"><span className="text-gray-500">Custom Form No.</span> <span className="font-bold">{data.booking?.customFormNo || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Custom Receipt No.</span> <span className="font-bold">{data.booking?.customReceiptNo || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">DIC Number</span> <span className="font-bold">{data.booking?.dicNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">ZB Number</span> <span className="font-bold">{data.booking?.zbNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Container Quantity</span> <span className="font-bold">{data.booking?.containerQuantity || "N/A"}</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Grid Layout for details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Section title="Shipping Information">
+                        <InfoRow label="From" value={getLocationName(data, "from")} />
+                        <InfoRow label="To" value={getLocationName(data, "to")} />
+                        <InfoRow label="Shipping Agent" value={data.booking?.shippingAgentName} />
+                        <InfoRow label="Billing Party" value={billingPartyName} />
+                        <InfoRow label="ROT Date" value={data.rotDate} />
+                    </Section>
+
+                    <Section title="Container Information">
+                        <InfoRow label="No." value={data.containerNumber} />
+                        <InfoRow label="Size" value={data.containerSize} />
+                        <InfoRow label="Type" value={data.containerType} />
+                        <InfoRow label="VGM" value={data.vgm} />
+                        <InfoRow label="Trailer Type" value={data.trailerType} />
+                    </Section>
+
+                    <Section title="Forwarding Information">
+                        <InfoRow label="Name" value={forwarding.companyName} />
+                        <InfoRow label="Address" value={forwarding.address} />
+                        <InfoRow label="PIC Name" value={forwarding.picName} />
+                        <InfoRow label="PIC Number" value={forwarding.handphoneNumber} />
+                        <InfoRow label="PIC Email" value={forwarding.emailAddress} />
+                    </Section>
+
+                    <Section title="Consignee Information">
+                        <InfoRow label="Name" value={data.consignee?.companyName} />
+                        <InfoRow label="Address" value={data.toAddress?.map(a => a.address).join(", ")} />
+                        <InfoRow label="PIC Name" value={data.consignee?.picName} />
+                        <InfoRow label="PIC Number" value={data.consignee?.handphoneNumber} />
+                        <InfoRow label="PIC Email" value={data.consignee?.emailAddress} />
+                    </Section>
+
+                    <Section title="Port Information">
+                        <InfoRow label="Name" value={data.port?.companyName} />
+                        <InfoRow label="Address" value={data.port?.address} />
+                        <InfoRow label="PIC Name" value={data.port?.picName} />
+                        <InfoRow label="PIC Number" value={data.port?.handphoneNumber} />
+                        <InfoRow label="PIC Email" value={data.port?.emailAddress} />
+                    </Section>
+
+                    <Section title="Depot Information">
+                        <InfoRow label="Name" value={data.depotName} />
+                        <InfoRow label="Address" value={data.depot?.address} />
+                        <InfoRow label="PIC Name" value={data.depot?.picName} />
+                        <InfoRow label="PIC Number" value={data.depot?.handphoneNumber} />
+                        <InfoRow label="PIC Email" value={data.depot?.emailAddress} />
+                    </Section>
+                </div>
+                {(data.status !== "Assigned" && data.status !== "Deleted" && data.status !== "Rejected") && (
+                    <Section title="Enroute Information">
+                        <InfoRow label="Driver" value={`${assignedHaulier?.driver?.name} (${assignedHaulier?.driver?.mobileNumber} / ${assignedHaulier?.driver?.emailAddress})`} />
+                        <InfoRow label="PM Number" value={assignedHaulier.primeMover?.plateNumber} />
+                        <InfoRow label="Trailer Number" value={`${assignedHaulier.trailer?.plateNumber} - ${assignedHaulier.trailer?.type}`} />
+                        <InfoRow label="Time Slot" value={`${assignedHaulier?.timeSlot?.date} @ ${assignedHaulier?.timeSlot?.time}`} />
+                        <InfoRow label="ROT Date" value={data.rotDate} />
+                    </Section>
+                )}
+                {/* Action Button */}
+                {/* Action Buttons & Rejection Field */}
+                <div className="max-w-7xl mx-auto px-6 pb-10">
+                   
+                      
+                        <div className="flex justify-end gap-4 pt-4">
+                            {/* Accept */}
+                            {data.status === "Enroute" && data.acceptedTime === null && (
+                                <button
+                                    onClick={() =>
+                                        setStatusModal({
+                                            isOpen: true,
+                                            id: data.containerId,
+                                            nextStatus: "Accepted",
+                                        })
+                                    }
+                                    className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-green-700"
+                                >
+                                    <Check size={18} />
+                                    Accept
+                                </button>
+                            )}
+
+                            {/* Reject */}
+                            {data.status === "Enroute" && data.acceptedTime === null && (
+                                <button
+                                    onClick={() =>
+                                        setStatusModal({
+                                            isOpen: true,
+                                            id: data.containerId,
+                                            nextStatus: "Rejected",
+                                            remarks: "",
+                                        })
+                                    }
+                                    className="flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700"
+                                >
+                                    <XCircle size={18} />
+                                    Reject
+                                </button>
+                            )}
+
+                            {/* Gate In */}
+                            {data.status === "Accepted" && data.acceptedTime !== null && (
+                                <button
+                                    onClick={() => handleGatedIn(data.containerId)}
+                                    className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700"
+                                >
+                                    <Clock size={18} />
+                                    Gate-In
+                                </button>
+                            )}
+
+                            {/* Gate Out */}
+                            {data.status === "Gate-In" && data.gatedInTime !== null && (
+                                <button
+                                    onClick={() => handleGatedOut(data.containerId)}
+                                    className="flex items-center gap-2 bg-orange-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-orange-700"
+                                >
+                                    <Clock size={18} />
+                                    Gate-Out
+                                </button>
+                            )}
+                        </div>
+                   
+                </div>
+           
+            </div>
+
+            {/* Accept&Reject Confirmation Modal */}
+            <AnimatePresence>
+                {statusModal.isOpen && (
+                    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center"
+                        >
+                            <div className="mb-6 flex justify-center">
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${statusModal.nextStatus === "Accepted" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
+                                    {statusModal.nextStatus === "Accepted" ? <CheckCircle2 size={40} /> : <AlertCircle size={40} />}
+                                </div>
+                            </div>
+
+                            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                                {statusModal.nextStatus === "Accepted" ? "Accept" : "Confirm Rejection?"}
+                            </h2>
+
+                            <p className="text-gray-500 mb-6">
+                                {statusModal.nextStatus === "Rejected"
+                                    ? "Please provide a reason for rejecting this booking."
+                                    : "Are you sure you want to proceed with this action?"}
+                            </p>
+
+                            {statusModal.nextStatus === "Rejected" && (
+                                <div className="mb-6 text-left">
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                                        Reject Reason
+                                    </label>
+                                    <textarea
+                                        autoFocus
+                                        value={statusModal.remarks}
+                                        onChange={(e) => setStatusModal({ ...statusModal, remarks: e.target.value })}
+                                        placeholder="Type reason here..."
+                                        className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-red-500 focus:ring-0 transition-all h-28 resize-none text-sm"
+                                    />
+                                </div>
+                            )}
+
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" })}
+                                    className="flex-1 py-3 border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleStatusUpdate}
+                                    disabled={statusModal.nextStatus === "Rejected" && !statusModal.remarks?.trim()}
+                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${statusModal.nextStatus === "Accepted" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:shadow-none"}`}
+                                >
+                                    Confirm
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </Layout>
+    );
+}

@@ -93,7 +93,19 @@ import {CLECustomsbookingList} from "../cle/customs/booking/CLECustomsbookingLis
 import {CLECustomsbookingDetails} from "../cle/customs/booking/CLECustomsbookingDetails.jsx";
 import { CLECustomsbookingAction } from "../cle/customs/booking/CLECustomsbookingAction.jsx";
 import { YourQRCode } from "../ale/terminal/qrcode/YourQRCode.jsx";
-
+import {DepotDashboard} from "../cle/depot/dashboard/DepotDashboard.jsx";
+import {DepotBookingList} from "../cle/depot/booking/DepotBookingList.jsx"
+import {DepotViewBooking} from "../cle/depot/booking/DepotViewBooking.jsx";
+import {DepotEditBooking} from "../cle/depot/booking/DepotEditBooking.jsx";
+import {ConsigneeDashboard} from "../cle/consignee/dashboard/ConsigneeDashboard.jsx";
+import {ConsigneeBookingList} from "../cle/consignee/booking/ConsigneeBookingList.jsx"
+import {ConsigneeViewBooking} from "../cle/consignee/booking/ConsigneeViewBooking.jsx";
+import {ConsigneeEditBooking} from "../cle/consignee/booking/ConsigneeEditBooking.jsx";
+import {ShippingLineDashboard} from "../cle/shippingLine/dashboard/ShippingLineDashboard.jsx";
+import {ShippingLineBookingList} from "../cle/shippingLine/booking/ShippingLineBookingList.jsx"
+import {ShippingLineViewBooking} from "../cle/shippingLine/booking/ShippingLineViewBooking.jsx";
+import {ShippingLineEditBooking} from "../cle/shippingLine/booking/ShippingLineEditBooking.jsx";
+import {DepotOperationHours} from "../cle/depot/operation/DepotOperationHours.jsx";
 export default function AppRouter() {
     return (
         <BrowserRouter>
@@ -833,6 +845,110 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <CLECustomsbookingAction />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/depot/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <DepotDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/depot/booking/list"
+                    element={
+                        <ProtectedRoute>
+                            <DepotBookingList />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/depot/booking/view/:id"
+                    element={
+                        <ProtectedRoute>
+                            <DepotViewBooking />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/depot/booking/edit/:id"
+                    element={
+                        <ProtectedRoute>
+                            <DepotEditBooking/>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/consignee/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <ConsigneeDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/consignee/booking/list"
+                    element={
+                        <ProtectedRoute>
+                            <ConsigneeBookingList />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/consignee/booking/view/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ConsigneeViewBooking />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/consignee/booking/edit/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ConsigneeEditBooking/>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/shippingLine/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <ShippingLineDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/shippingLine/booking/list"
+                    element={
+                        <ProtectedRoute>
+                            <ShippingLineBookingList />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/shippingLine/booking/view/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ShippingLineViewBooking />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/shippingLine/booking/edit/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ShippingLineEditBooking/>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/depot/operations"
+                    element={
+                        <ProtectedRoute>
+                            <DepotOperationHours />
                         </ProtectedRoute>
                     }
                 />

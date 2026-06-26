@@ -42,7 +42,7 @@ export default function CustomsNavBar({ role = "customs" }) {
         { icon: LucideFileInput, label: "New Booking", path: "/cle/terminal/booking/new", badgeCount: actionNeededCount },
         { icon: LucideFile, label: "Booking List", path: "/customs/bookinglist" },
         { icon: LucideArchive, label: "Archived ROTs", path: "/cle/customs/rot/archived" },
-        { icon: LucideMapPinned, label: "Track & Trace", path: "/cle/rot/track" },
+        { icon: LucideMapPinned, label: "Track & Trace", path: "/forwarding/rot/track" },
         //{ icon: LucideFile, label: "View Document", path: "/ale/forwarding/rot/document/view" }
     ];
 
