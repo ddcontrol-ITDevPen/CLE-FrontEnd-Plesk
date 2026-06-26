@@ -55,7 +55,7 @@ export function ALEViewROTDocument() {
         return <File className="text-system-color" />;
     };
 
-    const handlePreview = async (filePath, fileName) => {
+  /*  const handlePreview = async (filePath, fileName) => {
         try {
             const response = await api.get(filePath, { responseType: 'blob' });
             const extension = fileName.split('.').pop().toLowerCase();
@@ -82,8 +82,51 @@ export function ALEViewROTDocument() {
         } catch (error) {
             toast.error("Download failed. Your session may have expired.");
         }
+    };*/
+    
+    // Updated Download Function
+    const handleDownload = (filePath, fileName) => {
+        if (!filePath) {
+            toast.error("File path is empty");
+            return;
+        }
+
+        // If it's already a full cloud link, use it directly. 
+        // Otherwise fallback to your old local API structure.
+        const downloadUrl = filePath.startsWith('http')
+            ? filePath
+            : `http://localhost:5173/api/uploads/${filePath}`;
+
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.setAttribute('download', fileName || 'download.xlsx');
+        link.setAttribute('target', '_blank');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
+// Updated Preview Function
+    const handlePreview = (filePath) => {
+        if (!filePath) {
+            toast.error("File path is empty");
+            return;
+        }
+
+        const fileUrl = filePath.startsWith('http')
+            ? filePath
+            : `http://localhost:5173/api/uploads/${filePath}`;
+
+        // Excel files cannot be rendered natively in web browsers.
+        // We pass the Cloudinary link to Microsoft Office Viewer to load it!
+        if (fileUrl.toLowerCase().endsWith('.xlsx') || fileUrl.toLowerCase().endsWith('.xls')) {
+            const officePreviewUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`;
+            window.open(officePreviewUrl, '_blank');
+        } else {
+            // Images and PDFs can be opened directly in a new tab
+            window.open(fileUrl, '_blank');
+        }
+    };
     const openEditModal = (doc) => {
         setEditModal({ isOpen: true, doc });
         setNewFileName(doc.fileName);
