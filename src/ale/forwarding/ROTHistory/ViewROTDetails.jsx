@@ -13,7 +13,7 @@ import {
     ExternalLink,
     FileText,
     Upload,
-    X, FileImage, Eye, Trash2,
+    X, FileImage, Eye, Trash2, File
 } from "lucide-react";
 import ShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
 import { getCompanyById } from "../../../services/companyService.js";

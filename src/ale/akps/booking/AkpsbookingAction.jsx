@@ -213,15 +213,10 @@ export function AkpsbookingAction() {
             };
 
             await updateAleContainer(statusModal.id, payload);
-            // 1. Show success message
             toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
-
-            // 2. IMMEDIATELY close the modal state
             setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
-
-            // 3. Redirect back to the List page after a short delay so the user sees the success toast
             setTimeout(() => {
-                navigate("/akps/bookinglist"); // Ensure this path matches your App.js route
+                navigate("/ale/akps/bookinglist"); 
             }, 1500);
         } catch (error) {
             console.error(error);

@@ -365,7 +365,7 @@ export default function AppRouter() {
                     }
                 />
                 <Route
-                    path="/akps/bookinglist"
+                    path="/ale/akps/bookinglist"
                     element={
                         <ProtectedRoute>
                             <AkpsbookingList />
