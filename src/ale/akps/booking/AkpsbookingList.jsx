@@ -23,17 +23,17 @@ const STATUS_CONFIG = {
     "Enroute": { bg: "bg-enroute", text: "text-amber-900", border: "border-amber-200" },
     "Examine-AKPS": { bg: "bg-examine", text: "text-purple-900", border: "border-purple-200" },
     "Examine-Custom": { bg: "bg-examine", text: "text-purple-900", border: "border-purple-200" },
-    "Examine-Complete": { bg: "bg-examine", text: "text-purple-900", border: "border-purple-200" },
+    "Examine-Both": { bg: "bg-examine", text: "text-purple-900", border: "border-purple-200" },
     "Approved-AKPS": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
     "Approved-Custom": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
     "Approved-Complete": { bg: "bg-delivered-rfc", text: "text-teal-900", border: "border-teal-200" },
     "Accepted": { bg: "bg-accepted", text: "text-green", border: "border-green-200" },
     "Gate-In": { bg: "bg-gate-in-out", text: "text-blue-900", border: "border-indigo-200" },
     "Gate-Out": { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
-    "Delivered": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
-    "RFC": { bg: "bg-delivered-rfc", text: "text-teal-900", border: "border-teal-200" },
+    // "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    // "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Rejected": { bg: "bg-red-100", text: "text-red-900", border: "border-red-200" },
-    //"Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
+    // "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
 
 export function AkpsbookingList() {
@@ -138,7 +138,8 @@ export function AkpsbookingList() {
                         return {
                             ...cont,
                             pmNo: assignment?.primeMover?.plateNumber,
-                            timeSlot: assignment?.timeSlot?.time || "N/A"
+                            date: assignment?.aleTimeSlot?.date || "N/A",
+                            timeSlot: assignment?.aleTimeSlot?.time || "N/A"
                         };
                     } catch (err) {
                         console.error("No assignment found for", cont.containerId);
@@ -182,7 +183,7 @@ export function AkpsbookingList() {
         if (container.status === "Deleted") return container.deletedTime;
         if (container.status === "Examine-AKPS") return container.examineAKPSTime;
         if (container.status === "Examine-Custom") return container.examineCustomTime;
-        if (container.status === "Examine-Complete") return container.examineBothTime;
+        if (container.status === "Examine-Both") return container.examineBothTime;
         if (container.status === "Approved-Custom") return container.approvedCustomTime;
         if (container.status === "Approved-AKPS") return container.approvedAKPSTime;
         if (container.status === "Approved-Complete") return container.approvedBothTime;
@@ -300,7 +301,7 @@ export function AkpsbookingList() {
                 matchesStatus =
                     cont.status === "Examine-AKPS" ||
                     cont.status === "Examine-Custom" ||
-                    cont.status === "Examine-Complete";
+                    cont.status === "Examine-Both";
             } else if (filterStatus === "Approved") {
                 matchesStatus =
                     cont.status === "Approved-AKPS" ||
@@ -333,10 +334,10 @@ export function AkpsbookingList() {
                     return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
                 }
 
-                if (sortConfig.key === 'rotDate') {
+                if (sortConfig.key === 'bookingDate') {
                     // Treat null/undefined as very old dates so they move to the bottom
-                    const dateA = a.rotDate ? new Date(a.rotDate).getTime() : 0;
-                    const dateB = b.rotDate ? new Date(b.rotDate).getTime() : 0;
+                    const dateA = a.date ? new Date(a.date).getTime() : 0;
+                    const dateB = b.date ? new Date(b.date).getTime() : 0;
 
                     return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
                 }
@@ -364,31 +365,32 @@ export function AkpsbookingList() {
 
     const getLocationName = (cont, type) => {
         const { movementType, tripType } = cont.aleBooking || {};
+        const finalConsignee = (cont.consigneeName?.trim() !== "Unknown" || cont.consigneeName?.trim() === null) ? cont.consigneeName : cont.externalConsigneeName?.trim();
 
         if (type === 'from') {
             if (tripType) {
-                if (movementType === "Import" && tripType === "Pick-up") return cont.portName || "Port";
-                if (tripType === "Drop-off") return cont.consignee.companyName || "Consignee";
-                if (movementType === "Export" && tripType === "Pick-up") return cont.depotName || "Depot";
-                if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
-                if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                // if (movementType === "Import" && tripType === "Pick-up") return cont.portName || "Port";
+                // if (tripType === "Drop-off") return cont.consignee.companyName || "Consignee";
+                // if (movementType === "Export" && tripType === "Pick-up") return cont.terminalName || "Terminal";
+                // if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.terminalName || "Terminal";
             } else {
-                if (movementType === "Import") return cont.depotName || "Depot";
-                if (movementType === "Export") return cont.portName || "Port";
+                if (movementType === "Import") return cont.terminalName || "Terminal";
+                if (movementType === "Export") return finalConsignee;
             }
-            return cont.aleBooking?.fromName || "N/A";
+            return "N/A";
         } else {
             if (tripType) {
-                if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
-                if (tripType === "Pick-up") return cont.consignee.companyName || "Consignee";
-                if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
-                if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
-                if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                // if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
+                // if (tripType === "Pick-up") return cont.consignee.companyName || "Consignee";
+                // if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
+                // if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
             } else {
-                if (movementType === "Import") return cont.portName || "Port";
-                if (movementType === "Export") return cont.depotName || "Depot";
+                if (movementType === "Import") return finalConsignee
+                if (movementType === "Export") return cont.terminalName || "Terminal";
             }
-            return cont.toName || "N/A";
+            return "N/A";
         }
     };
 
@@ -504,7 +506,7 @@ export function AkpsbookingList() {
                     </button>
 
                     {Object.keys(STATUS_CONFIG)
-                        .filter((status) => !status.startsWith("Examine-") && !status.startsWith("Approved-") && status !== "Assigned" && status !== "Enroute" && status !== "Examine-AKPS" && status !== "Examine-Custom" && status !== "Examine-Complete")
+                        .filter((status) => !status.startsWith("Examine-") && !status.startsWith("Approved-") && status !== "Assigned" && status !== "Enroute" && status !== "Examine-AKPS" && status !== "Examine-Custom" && status !== "Examine-Both")
                         .map((status) => (
                             <button
                                 key={status}
@@ -551,18 +553,31 @@ export function AkpsbookingList() {
                                     </div>
                                 </th>
                                 <th className="p-4 border-b">
-                                    <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('containerNumber')}>
+                                    <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('bookingDate')}>
+                                        Booking Date
+                                        {sortConfig.key === 'bookingDate' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b">
+                                    <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('pmNo')}>
                                         Prime Mover No.
-                                        {sortConfig.key === 'containerNumber' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
+                                        {sortConfig.key === 'pmNo' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
+                                    </div>
+                                </th>
+                                <th className="p-4 border-b w-30 text-center">
+                                    <div className="flex items-center justify-center gap-1" onClick={() => handleSort('status')}>
+                                        Status
+                                        {sortConfig.key === 'status' && (
+                                            <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                        )}
                                     </div>
                                 </th>
                                 <th className="p-4 border-b">
                                     <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleSort('timeStamp')}>
-                                        Date Time
+                                        TimeStamp
                                         {sortConfig.key === 'timeStamp' && (<span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>)}
                                     </div>
                                 </th>
-                                <th className="p-4 border-b text-center">Status</th>
                                 <th className="p-4 border-b text-center">Customs</th>
                                 <th className="p-4 border-b text-center">AKPS</th>
                                 <th className="p-4 border-b text-center">MAHSB</th>
@@ -617,15 +632,13 @@ export function AkpsbookingList() {
                                             <td className="p-4 text-center text-xs font-bold text-gray-600">{cont.aleBooking?.movementType}</td>
 
                                             <td className="p-4 text-center text-gray-600">{cont.haulierName}</td>
-                                            <td className="p-4 text-center text-gray-600">{cont?.pmNo}</td>
-
-
-                                            <td className="p-4 text-center text-[12px] text-gray-500">
-                                                {displayTime ? new Date(displayTime).toLocaleString('en-GB', {
-                                                    dateStyle: 'short',
-                                                    timeStyle: 'short'
-                                                }) : "-"}
+                                            <td className="p-4 whitespace-nowrap">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">{cont.date ? cont.date : cont.rotDate}</span>
+                                                    <span className="text-[11px] text-blue-500 font-bold bg-blue-50 px-2 py-0.5 rounded mt-1 w-fit">{cont.timeSlot}</span>
+                                                </div>
                                             </td>
+                                            <td className="p-4 text-center text-gray-600">{cont?.pmNo}</td>
 
                                             <td className="p-4 text-center">
                                                 {/* Status Badge using Theme Colors */}
@@ -633,6 +646,12 @@ export function AkpsbookingList() {
                                                     className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase tracking-wider whitespace-nowrap ${theme.bg} ${theme.text}`}>
                                                     {cont.status}
                                                 </span>
+                                            </td>
+                                            <td className="p-4 text-center text-[12px] text-gray-500">
+                                                {displayTime ? new Date(displayTime).toLocaleString('en-GB', {
+                                                    dateStyle: 'short',
+                                                    timeStyle: 'short'
+                                                }) : "-"}
                                             </td>
                                             {/* Customs Status Column */}
                                             <td className="p-4 text-center">

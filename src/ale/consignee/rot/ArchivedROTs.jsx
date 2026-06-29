@@ -17,15 +17,15 @@ const STATUS_CONFIG = {
     "Enroute": { bg: "bg-enroute", text: "text-amber-900", border: "border-amber-200" },
     // "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
     // "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
-    // "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    // "Examine-Both": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
     "Approved-AKPS": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
     "Approved-Custom": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
     "Approved-Complete": { bg: "bg-delivered-rfc", text: "text-teal-900", border: "border-teal-200" },
     "Accepted": { bg: "bg-accepted", text: "text-green", border: "border-green-200" },
     "Gate-In": { bg: "bg-gate-in-out", text: "text-blue-900", border: "border-indigo-200" },
     "Gate-Out": { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
-    "Delivered": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
-    "RFC": { bg: "bg-delivered-rfc", text: "text-teal-900", border: "border-teal-200" },
+    // "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    // "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Rejected": { bg: "bg-red-100", text: "text-red-900", border: "border-red-200" },
     //"Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
@@ -51,7 +51,16 @@ export function ALEConsigneeArchivedROTs() {
     const maskStatus = (statusText) => {
         if (!statusText) return statusText;
         if (!isPrivilegedRole) {
-            return statusText.replace(/examine/gi, "Approved");
+            switch (statusText) {
+                case "Examine-Both":
+                    return "Approved-Complete";
+                case "Examine-AKPS":
+                    return "Approved-AKPS";
+                case "Examine-Custom":
+                    return "Approved-Custom";
+                default:
+                    return statusText.replace(/examine/gi, "Approved");
+            }
         }
         return statusText;
     };
@@ -179,7 +188,7 @@ export function ALEConsigneeArchivedROTs() {
         if (currentStatus === "Deleted") return container.deletedTime;
         if (currentStatus === "Examine-AKPS" || currentStatus === "Approved-AKPS") return container.examineAKPSTime || container.approvedAKPSTime;
         if (currentStatus === "Examine-Custom" || currentStatus === "Approved-Custom") return container.examineCustomTime || container.approvedCustomTime;
-        if (currentStatus === "Examine-Complete" || currentStatus === "Approved-Complete") return container.examineBothTime || container.approvedBothTime;
+        if (currentStatus === "Examine-Both" || currentStatus === "Approved-Complete") return container.examineBothTime || container.approvedBothTime;
         if (currentStatus === "Rejected-Both") return container.rejectedBothTime;
         if (currentStatus === "Rejected-Custom") return container.rejectedCustomTime;
         if (currentStatus === "Rejected-AKPS") return container.akpsRejectedTime;

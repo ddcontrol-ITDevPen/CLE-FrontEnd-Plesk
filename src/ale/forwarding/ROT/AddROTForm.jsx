@@ -16,7 +16,7 @@ import { getAleBookings, registerAleBooking, updateAleBooking } from "../../../s
 import { getUserById } from "../../../services/userService.js";
 import { toast, Toaster } from "sonner";
 import { getAleBookingDocuments, registerAleBookingDocument } from "../../../services/aleBookingDocumentService.js";
-import { registerAleContainer } from "../../../services/aleContainerService.js";
+import { getAleContainers, registerAleContainer } from "../../../services/aleContainerService.js";
 
 export function ALEAddROTForm() {
     const navigate = useNavigate();
@@ -32,6 +32,7 @@ export function ALEAddROTForm() {
     const [haulierChoice, setHaulierChoice] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [rotNumber, setRotNumber] = useState("");
+    const [containers, setContainers] = useState([]);
 
     const rotNumberGenerator = () => {
         const newNumber = (Math.floor(Math.random() * 9000000000) + 1).toString().padStart(10, "0");
@@ -170,6 +171,8 @@ export function ALEAddROTForm() {
                 }
                 const bookings = await getAleBookings();
                 setBookings(bookings || []);
+                const containers = await getAleContainers();
+                setContainers(containers);
 
                 if (targetRotNumber) {
                     try {
@@ -265,7 +268,6 @@ export function ALEAddROTForm() {
         if (!formData.houseAWBNumber) newErrors.houseAWBNumber = "House AWB Number is required!";
         if (!formData.flightNumber) newErrors.flightNumber = "Flight Number is required!";
         if (!formData.terminalLocation) newErrors.terminalLocation = `Terminal is required!`;
-        if (!formData.eta) newErrors.eta = "ETA is required!";
         if (!formData.customFormNo) newErrors.customFormNo = "Custom Form Number is required!";
         if (!formData.customFormType) newErrors.customFormType = "Custom Form Type is required!";
         //if (!formData.customReceiptNo) newErrors.customReceiptNo = "Custom Receipt No is required!";
@@ -301,12 +303,29 @@ export function ALEAddROTForm() {
 
         if (!formData.terminalLocation) newErrors.terminalLocation = "Please select a Terminal!";
         if (!formData.rotDate) newErrors.rotDate = "ROT Date is required!";
+        if (!formData.eta) {
+            newErrors.eta = "ETA is required!";
+        } else if (formData.eta) {
+            const eta = new Date(formData.eta);
+            const rot = new Date(formData.rotDate);
+            if (rot < eta) {
+                newErrors.eta = "ETA Date must be before the ROT date!";
+            }
+        }
 
-        const isDuplicate = bookings.some(booking =>
-            booking.awbNumber?.trim().toLowerCase() === formData.awbNumber?.trim().toLowerCase() &&
-            booking.houseAWBNumber?.trim().toLowerCase() === formData.houseAWBNumber?.trim().toLowerCase() &&
-            booking.rotNumber !== rotNumber
-        );
+        const isDuplicate = bookings.some(booking => {
+            const isSameIdentifiers =
+                booking.awbNumber?.trim().toLowerCase() === formData.awbNumber?.trim().toLowerCase() &&
+                booking.houseAWBNumber?.trim().toLowerCase() === formData.houseAWBNumber?.trim().toLowerCase() &&
+                booking.rotNumber !== rotNumber;
+
+            if (!isSameIdentifiers) return false;
+
+            const rejectedStatuses = ["rejected", "rejected-akps", "rejected-custom", "rejected-both"];
+            const relatedContainers = containers.filter(c => c.rotNumber === booking.rotNumber);
+            const hasRejectedContainers = relatedContainers.length === 0 || relatedContainers.every(container => !rejectedStatuses.includes(container.status?.toLowerCase()))
+            return hasRejectedContainers;
+        });
 
         if (isDuplicate) {
             newErrors.awbNumber = "This combination of AWB No. and House AWB No. already exists in a booking.";
@@ -344,7 +363,6 @@ export function ALEAddROTForm() {
 
         // if (isNaN(formData.size)) {newErrors.size = "Size should be a number!";}
         // else if (Number(formData.size) <= 0) {newErrors.size = "Size must be greater than zero!";}
-
 
         if (!documents.doForm && !existingDocuments.doForm) newErrors.doForm = "DO Form is required!";
         if (!documents.packingList && !existingDocuments.packingList) newErrors.packingList = "Packing List is required!";

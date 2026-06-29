@@ -11,21 +11,22 @@ import { getUserById } from "../../services/userService.js";
 import * as XLSX from 'xlsx';
 import { useNavigate } from "react-router-dom";
 import StatusInfographic from "../ROTComponents/ROTStatistics.jsx";
+import { getAleAssignedHaulierByContainerId } from "../../services/aleAssignedHaulierService.js";
 
 const STATUS_CONFIG = {
     "Assigned": { bg: "bg-assigned", text: "text-orange-900", border: "border-orange-300" },
     "Enroute": { bg: "bg-enroute", text: "text-amber-900", border: "border-amber-200" },
-    // "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
-    // "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
-    // "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    "Examine-AKPS": { bg: "bg-examine", text: "text-purple-900", border: "border-purple-200" },
+    "Examine-Custom": { bg: "bg-examine", text: "text-purple-900", border: "border-purple-200" },
+    "Examine-Both": { bg: "bg-examine", text: "text-purple-900", border: "border-purple-200" },
     "Approved-AKPS": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
     "Approved-Custom": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
     "Approved-Complete": { bg: "bg-delivered-rfc", text: "text-teal-900", border: "border-teal-200" },
     "Accepted": { bg: "bg-accepted", text: "text-green", border: "border-green-200" },
     "Gate-In": { bg: "bg-gate-in-out", text: "text-blue-900", border: "border-indigo-200" },
     "Gate-Out": { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
-    "Delivered": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
-    "RFC": { bg: "bg-delivered-rfc", text: "text-teal-900", border: "border-teal-200" },
+    // "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    // "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Rejected": { bg: "bg-red-100", text: "text-red-900", border: "border-red-200" },
     //"Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
@@ -43,16 +44,6 @@ export function TerminalList() {
     const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
-
-    const activeRole = (localStorage.getItem("role") || "").toLowerCase();
-    const isPrivilegedRole = activeRole === "akps" || activeRole === "customs";
-    const maskStatus = (statusText) => {
-        if (!statusText) return statusText;
-        if (!isPrivilegedRole) {
-            return statusText.replace(/examine/gi, "Approved");
-        }
-        return statusText;
-    };
 
     useEffect(() => {
         fetchData();
@@ -136,8 +127,26 @@ export function TerminalList() {
             const user = await getUserById(localStorage.getItem("userId"));
             const terminalId = user.companyCode;
             const data = await getAleContainers();
-            const filteredData = data.filter(c => c.terminalId === terminalId);
-            setContainers(data);
+            const enrichedData = await Promise.all(
+                data.map(async (cont) => {
+                    try {
+                        const assignment = await getAleAssignedHaulierByContainerId(cont.containerId);
+                        console.log(assignment);
+                        return {
+                            ...cont,
+                            pmNo: assignment?.primeMover?.plateNumber,
+                            date: assignment?.aleTimeSlot?.date,
+                            timeSlot: assignment?.aleTimeSlot?.time || "ROT Date"
+                        };
+                    } catch (err) {
+                        console.error("No assignment found for", cont.containerId);
+                        return { ...cont, timeSlot: "N/A" };
+                    }
+                })
+            );
+            const filteredData = enrichedData
+                .filter(c => c.terminalId === terminalId);
+            setContainers(filteredData);
         } catch (error) {
             toast.error("Failed to fetch ROT history");
         } finally {
@@ -166,7 +175,7 @@ export function TerminalList() {
         if (currentStatus === "Deleted") return container.deletedTime;
         if (currentStatus === "Examine-AKPS" || currentStatus === "Approved-AKPS") return container.examineAKPSTime || container.approvedAKPSTime;
         if (currentStatus === "Examine-Custom" || currentStatus === "Approved-Custom") return container.examineCustomTime || container.approvedCustomTime;
-        if (currentStatus === "Examine-Complete" || currentStatus === "Approved-Complete") return container.examineBothTime || container.approvedBothTime;
+        if (currentStatus === "Examine-Both" || currentStatus === "Approved-Complete") return container.examineBothTime || container.approvedBothTime;
         if (currentStatus === "Rejected-Both") return container.rejectedBothTime;
         if (currentStatus === "Rejected-Custom") return container.rejectedCustomTime;
         if (currentStatus === "Rejected-AKPS") return container.akpsRejectedTime;
@@ -226,13 +235,7 @@ export function TerminalList() {
     };
 
     const filteredContainers = useMemo(() => {
-        let mappedContainers = containers.map(cont => ({
-            ...cont,
-            rawStatus: cont.status,
-            status: maskStatus(cont.status)
-        }));
-
-        let result = mappedContainers.filter(cont => {
+        let result = containers.filter(cont => {
             const matchesSearch =
                 cont.containerNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cont.rotNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -267,6 +270,12 @@ export function TerminalList() {
                     cont.status === "Approved-AKPS" ||
                     cont.status === "Approved-Custom" ||
                     cont.status === "Approved-Complete";
+            }
+            else if (filterStatus === "Examine") {
+                matchesStatus =
+                    cont.status === "Examine-AKPS" ||
+                    cont.status === "Examine-Custom" ||
+                    cont.status === "Examine-Both";
             }
             else
                 matchesStatus = cont.status === filterStatus;
@@ -327,6 +336,7 @@ export function TerminalList() {
 
     const getLocationName = (cont, type) => {
         const { movementType, tripType } = cont.aleBooking || {};
+        const finalConsignee = (cont.consigneeName?.trim() !== "Unknown" || cont.consigneeName?.trim() === null) ? cont.consigneeName : cont.externalConsigneeName?.trim();
 
         if (type === 'from') {
             if (tripType) {
@@ -337,9 +347,9 @@ export function TerminalList() {
                 // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.terminalName || "Terminal";
             } else {
                 if (movementType === "Import") return cont.terminalName || "Terminal";
-                if (movementType === "Export") return cont.consigneeName || "Consignee";
+                if (movementType === "Export") return finalConsignee;
             }
-            return cont.aleBooking?.fromName || "N/A";
+            return "N/A";
         } else {
             if (tripType) {
                 // if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
@@ -348,10 +358,10 @@ export function TerminalList() {
                 // if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
                 // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
             } else {
-                if (movementType === "Import") return cont.consigneeName || "Consignee";
+                if (movementType === "Import") return finalConsignee
                 if (movementType === "Export") return cont.terminalName || "Terminal";
             }
-            return cont?.toName || "N/A";
+            return "N/A";
         }
     };
 
@@ -385,15 +395,9 @@ export function TerminalList() {
             };
 
             await updateAleContainer(statusModal.id, payload);
-            // 1. Show success message
             toast.success(`Trucker ${statusModal.nextStatus} successfully`, { id: toastId });
-
-            // 2. IMMEDIATELY close the modal state
             setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
-
-            // 3. REFRESH THE DATA IMMEDIATELY
-            // This is the missing piece that updates the table without a reload
-            await fetchData(); //
+            await fetchData();
 
         } catch (error) {
             console.error(error);
@@ -491,6 +495,17 @@ export function TerminalList() {
                         ))}
 
                     <button
+                        onClick={() => setFilterStatus("Examine")}
+                        className={`px-4 py-2 rounded-lg font-bold border transition-all
+                        ${filterStatus === "Examine"
+                                ? `bg-examine text-purple-900 border-purple-200 shadow-md ring-2 ring-offset-1 ring-opacity-50`
+                                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                            }`}
+                    >
+                        Examine
+                    </button>
+
+                    <button
                         onClick={() => setFilterStatus("Approved")}
                         className={`px-4 py-2 rounded-lg font-bold border transition-all
                         ${filterStatus === "Approved"
@@ -502,7 +517,7 @@ export function TerminalList() {
                     </button>
 
                     {Object.keys(STATUS_CONFIG)
-                        .filter((status) => !status.startsWith("Approved-") && status !== "Assigned" && status !== "Enroute")
+                        .filter((status) => !status.startsWith("Examine-") && !status.startsWith("Approved-") && status !== "Assigned" && status !== "Enroute")
                         .map((status) => (
                             <button
                                 key={status}
@@ -558,7 +573,7 @@ export function TerminalList() {
                                 </th>
                                 <th className="p-4 border-b w-24">
                                     <div className="flex items-center gap-1" onClick={() => handleSort('rotDate')}>
-                                        ROT Date
+                                        ROT Date / Booking Date
                                         {sortConfig.key === 'rotDate' && (
                                             <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                                         )}
@@ -620,7 +635,12 @@ export function TerminalList() {
                                             <td className="p-4 text-center font-semibold text-blue-600 break-all leading-tight cursor-pointer hover:underline" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)} s>{cont.aleBooking.houseAWBNumber}</td>
                                             <td className="p-4 text-center">{cont.aleBooking?.tripType ? `${cont.aleBooking?.movementType} - ${cont.aleBooking?.tripType}` : cont.aleBooking?.movementType}</td>
                                             <td className="p-4 text-center whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>
-                                            <td className="p-4 text-center whitespace-nowrap">{cont.rotDate}</td>
+                                            <td className="p-4 whitespace-nowrap">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">{cont.date ? cont.date : cont.rotDate}</span>
+                                                    <span className="text-[11px] text-blue-500 font-bold bg-blue-50 px-2 py-0.5 rounded mt-1 w-fit">{cont.timeSlot}</span>
+                                                </div>
+                                            </td>
                                             <td className="p-4 text-center">
                                                 {/* Status Badge using Theme Colors */}
                                                 <span className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase tracking-wider whitespace-nowrap ${theme.bg} ${theme.text}`}>
@@ -637,7 +657,7 @@ export function TerminalList() {
                                                 <div className="flex items-center justify-start gap-3">
                                                     <Eye size={18}
                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/ale/rot/view/${cont.containerId}`)} />
-                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete", "Examine-AKPS", "Examine-Custom", "Examine-Complete"].includes(cont.status) && cont.acceptedTime === null && (
+                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete", "Examine-AKPS", "Examine-Custom", "Examine-Both"].includes(cont.status) && cont.acceptedTime === null && (
                                                         <button
                                                             onClick={() => setStatusModal({
                                                                 isOpen: true,
@@ -648,7 +668,7 @@ export function TerminalList() {
                                                             <Check size={18} />
                                                         </button>
                                                     )}
-                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete", "Examine-AKPS", "Examine-Custom", "Examine-Complete"].includes(cont.status) && (cont.rejectedTime === null && cont.acceptedTime === null) && (
+                                                    {["Enroute", "Approved-AKPS", "Approved-Custom", "Approved-Complete", "Examine-AKPS", "Examine-Custom", "Examine-Both"].includes(cont.status) && (cont.rejectedTime === null && cont.acceptedTime === null) && (
                                                         <button
                                                             onClick={() => setStatusModal({
                                                                 isOpen: true,

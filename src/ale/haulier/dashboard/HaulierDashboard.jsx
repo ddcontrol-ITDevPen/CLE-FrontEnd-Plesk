@@ -127,7 +127,7 @@ export function ALEHaulierDashboard() {
         containers.forEach(cont => {
             if (!cont.gatedInTime) return;
             const date = new Date(cont.gatedInTime);
-            const dayName = days[date.getDay() === 0 ? 6 : date.getDay() - 1]; 
+            const dayName = days[date.getDay() === 0 ? 6 : date.getDay() - 1];
 
             if (counts[dayName] !== undefined) {
                 counts[dayName]++;
@@ -168,22 +168,22 @@ export function ALEHaulierDashboard() {
                         title="Live Fleet"
                         value={stats.totalActive}
                         icon={Truck}
-                        color="bg-blue-600"
+                        color="bg-amber-500"
                         subtext="Containers on road"
                     />
                     <StatCard
                         title="Accepted"
                         value={stats.accepted}
                         icon={CheckCircle}
-                        color="bg-amber-500"
+                        color="bg-emerald-500"
                         subtext="Accepted by Terminal"
                     />
                     <StatCard
                         title="Gated In"
                         value={stats.inTerminal}
                         icon={LogIn}
-                        color="bg-emerald-500"
-                        subtext="Currently at Depot"
+                        color="bg-blue-500"
+                        subtext="Currently at Terminal"
                     />
                     <StatCard
                         title="Avg TAT"
@@ -201,7 +201,7 @@ export function ALEHaulierDashboard() {
                             <h3 className="text-lg font-bold text-gray-800">Performance Efficiency</h3>
                             <div className="flex gap-2">
                                 <span className={`flex items-center gap-1 text-xs font-bold ${stats.isImproving ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50'} px-2 py-1 rounded-md`}>
-                                   {stats.isImproving ? `+${stats.efficiency}%` : `${stats.efficiency}%`} Efficiency
+                                    {stats.isImproving ? `+${stats.efficiency}%` : `${stats.efficiency}%`} Efficiency
                                 </span>
                             </div>
                         </div>
@@ -210,13 +210,13 @@ export function ALEHaulierDashboard() {
                                 <AreaChart data={chartData}>
                                     <defs>
                                         <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
-                                            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1} />
+                                            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 600}} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12}} />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 600 }} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
                                     <Tooltip />
                                     <Area type="monotone" dataKey="value" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
                                 </AreaChart>

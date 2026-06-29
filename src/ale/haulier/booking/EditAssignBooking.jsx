@@ -89,7 +89,8 @@ export function ALEEditAssignBooking() {
                     const currentSlot = slotData.find(s => s.id === assignedHaulierData.timeSlotId);
                     if (currentSlot) {
                         setSelectedDate(currentSlot.date);
-                        setFilteredSlots(slotData.filter(s => s.date === currentSlot.date));
+                        const initialSortedSlots = slotData.filter(s => s.date === currentSlot.date).sort((a, b) => a.time.localeCompare(b.time));
+                        setFilteredSlots(initialSortedSlots);
                     }
 
                     setFormData({
@@ -129,6 +130,21 @@ export function ALEEditAssignBooking() {
         const slotsForDate = timeSlots.filter(s => s.date === date).sort((a, b) => a.time.localeCompare(b.time));
         setFilteredSlots(slotsForDate);
         setFormData(prev => ({ ...prev, timeSlotId: "" }));
+    };
+
+    const getCalendarGrid = () => {
+        const grid = [];
+        const today = new Date();
+
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay());
+
+        for (let i = 0; i < 35; i++) {
+            const nextDay = new Date(startOfWeek);
+            nextDay.setDate(startOfWeek.getDate() + i);
+            grid.push(nextDay);
+        }
+        return grid;
     };
 
     const handleSubmit = async (e) => {
@@ -214,21 +230,109 @@ export function ALEEditAssignBooking() {
                         <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                             <SelectField label="Driver Name" name="driverId" icon={<User size={18} />} value={formData.driverId} onChange={handleChange} error={errors.driverId} required options={drivers.map(d => ({ label: d.name, value: d.id }))} />
                             <SelectField label="Trucker/PM No. (Prime Mover)" name="pmId" icon={<Hash size={18} />} value={formData.pmId} onChange={handleChange} error={errors.pmId} required options={primeMovers.map(p => ({ label: p.plateNumber, value: p.id }))} />
-                            <SelectField label="Booking Date" name="bookingDate" icon={<Clock size={18} />} value={selectedDate} onChange={handleDateChange} required options={availableDates.map(d => ({ label: d, value: d }))} />
-                            <SelectField
-                                label="Time Slot"
-                                name="timeSlotId"
-                                icon={<Clock size={18} />}
-                                value={formData.timeSlotId}
-                                onChange={handleChange}
-                                error={errors.timeSlotId}
-                                required
-                                disabled={!selectedDate}
-                                options={filteredSlots.map(s => ({
-                                    label: `${s.time} ${s.id === assignedHaulier?.timeSlotId ? '(Current)' : `(${s.pickUpTotalSlot} left)`}`,
-                                    value: s.id
-                                }))}
-                            />
+                            <div className="flex flex-col gap-2 md:col-span-1 bg-gray-50/50 p-6 rounded-3xl border border-gray-100">
+                                <label className="text-sm font-bold text-gray-700 flex items-center gap-2 mb-2">
+                                    <Clock size={18} /> Booking Date <span className="text-red-500">*</span>
+                                </label>
+
+                                <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                    <div>Sun</div>
+                                    <div>Mon</div>
+                                    <div>Tue</div>
+                                    <div>Wed</div>
+                                    <div>Thu</div>
+                                    <div>Fri</div>
+                                    <div>Sat</div>
+                                </div>
+
+                                <div className="grid grid-cols-7 gap-2">
+                                    {getCalendarGrid().map((day, idx) => {
+                                        const dateStr = day.toLocaleDateString('en-CA');
+                                        const todayStr = new Date().toLocaleDateString('en-CA');
+
+                                        const maxDate = new Date();
+                                        maxDate.setDate(maxDate.getDate() + 30);;
+                                        const maxDateStr = maxDate.toLocaleDateString('en-CA');
+
+                                        const isToday = dateStr === todayStr;
+                                        const isSelected = selectedDate === dateStr;
+                                        const isSelectable = dateStr >= todayStr && dateStr <= maxDateStr;
+                                        const hasSlots = availableDates.includes(dateStr);
+
+                                        return (
+                                            <button
+                                                key={idx}
+                                                type="button"
+                                                disabled={!isSelectable}
+                                                onClick={() => handleDateChange({ target: { value: dateStr } })}
+                                                className={`
+                                                    relative flex flex-col items-center justify-center h-14 rounded-full font-bold text-sm transition-all duration-150
+                                                    ${!isSelectable ? "text-gray-200 cursor-not-allowed bg-transparent" : ""}
+                                                    ${isSelectable && !isSelected ? "text-gray-700 hover:bg-indigo-50/50 hover:text-indigo-600" : ""}
+                                                    ${isSelected ? "bg-indigo-600 text-white shadow-md shadow-indigo-200 scale-105" : ""}
+                                                `}
+                                            >
+                                                <span>{day.getDate()}</span>
+
+                                                {isToday && !isSelected && (
+                                                    <span className="absolute bottom-1.5 w-1 h-1 rounded-full bg-indigo-600" />
+                                                )}
+
+                                                {hasSlots && isSelectable && !isSelected && (
+                                                    <span className="absolute top-1.5 right-3.5 w-1 h-1 rounded-full bg-emerald-500" />
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2 bg-gray-50/50 p-6 rounded-3xl border border-gray-100 h-[420px]">
+                                <label className="text-sm font-bold text-gray-700 flex items-center gap-2 mb-2">
+                                    <Clock size={18} /> Available Slots <span className="text-red-500">*</span>
+                                </label>
+
+                                {!selectedDate ? (
+                                    <div className="flex-1 flex items-center justify-center text-center p-4 text-gray-400 text-xs italic border border-dashed border-gray-200 rounded-2xl bg-white/50">
+                                        Please select a date on the calendar first
+                                    </div>
+                                ) : filteredSlots.filter(s => s.pickUpTotalSlot > 0 && !s.isCancelled).length === 0 ? (
+                                    <div className="flex-1 flex items-center justify-center text-center p-4 text-gray-400 text-xs font-medium border border-dashed border-gray-200 rounded-2xl bg-white/50">
+                                        No active time slots left for this day.
+                                    </div>
+                                ) : (
+                                    <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                                        {filteredSlots
+                                            .filter(s => s.pickUpTotalSlot > 0 && !s.isCancelled)
+                                            .map((slot) => {
+                                                const isSelected = formData.timeSlotId === slot.id;
+                                                return (
+                                                    <button
+                                                        key={slot.id}
+                                                        type="button"
+                                                        onClick={() => handleChange({ target: { name: 'timeSlotId', value: slot.id } })}
+                                                        className={`w-full flex items-center justify-between p-4 rounded-xl border text-sm font-bold transition-all duration-150 ${isSelected
+                                                                ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100"
+                                                                : "bg-white border-gray-100 text-gray-700 hover:border-indigo-300 hover:bg-indigo-50/20"
+                                                            }`}
+                                                    >
+                                                        <span>{slot.time}</span>
+                                                        <span className={`text-xs px-2.5 py-1 rounded-full ${isSelected ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
+                                                            }`}>
+                                                            {slot.pickUpTotalSlot} left
+                                                        </span>
+                                                    </button>
+                                                );
+                                            })}
+                                    </div>
+                                )}
+
+                                {errors.timeSlotId && (
+                                    <span className="text-xs text-red-500 font-bold mt-1 ml-2 block">
+                                        {errors.timeSlotId}
+                                    </span>
+                                )}
+                            </div>
                             <SelectField label="Trailer No." name="trailerId" icon={<LucideTruck size={18} />} value={formData.trailerId} onChange={handleChange} error={errors.trailerId} required options={trailers.map(t => ({ label: `${t.plateNumber} - ${t.type}`, value: t.id }))} />
                             <InputField
                                 label="Pass No."

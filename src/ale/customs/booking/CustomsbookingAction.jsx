@@ -444,7 +444,7 @@ export function CustomsbookingAction() {
                 {!isRejecting ? (
                     // DEFAULT VIEW: Approve and Reject Buttons
                     <div className="flex justify-end gap-4 pt-4">
-                        {data?.status !== "Examine-Custom" && data?.status !== "Examine-Complete" && (
+                        {data?.status !== "Examine-Custom" && data?.status !== "Examine-Both" && (
                             <>
                                 <button
                                     onClick={() => setStatusModal({ isOpen: true, id: data.containerId, nextStatus: "Approved-Custom" })}

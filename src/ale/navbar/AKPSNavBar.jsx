@@ -8,10 +8,10 @@ import {
     LucideMapPinned,
     LucideTruck, LucideUserCheck
 } from "lucide-react";
-import {logout} from "../../services/authService.js";
-import {useEffect, useState} from "react";
-import {getUserById} from "../../services/userService.js";
-import {getContainersForAKPSAction,} from "../../services/aleContainerService.js";
+import { logout } from "../../services/authService.js";
+import { useEffect, useState } from "react";
+import { getUserById } from "../../services/userService.js";
+import { getContainersForAKPSAction, } from "../../services/aleContainerService.js";
 
 export default function AKPSNavBar({ role = "akps" }) {
     const location = useLocation();
@@ -34,13 +34,12 @@ export default function AKPSNavBar({ role = "akps" }) {
 
     const handleLogout = async () => {
         await logout();
-        //navigate("/login");
     };
 
     const menuItems = [
         { icon: LucideHome, label: "Dashboard", path: "/ale/akps/dashboard" },
         { icon: LucideFileInput, label: "New Booking", path: "/ale/terminal/booking/new", badgeCount: actionNeededCount },
-        { icon: LucideFile, label: "Booking List", path: "/akps/bookinglist" },
+        { icon: LucideFile, label: "Booking List", path: "/ale/akps/bookinglist" },
         { icon: LucideArchive, label: "Archived ROTs", path: "/ale/akps/rot/archived" },
         { icon: LucideMapPinned, label: "Track & Trace", path: "/ale/rot/track" },
         //{ icon: LucideFile, label: "View Document", path: "/ale/forwarding/rot/document/view" }
@@ -70,9 +69,9 @@ export default function AKPSNavBar({ role = "akps" }) {
                                         flex items-center gap-3 px-4 py-3 rounded-lg
                                         transition-all duration-200 font-semibold text-lg
                                         ${isActive
-                                        ? 'bg-white bg-opacity-10 text-system-color'
-                                        : 'text-white text-opacity-80 bg-system-color hover:bg-system-color-dark hover:text-white hover:text-xl'
-                                    }
+                                            ? 'bg-white bg-opacity-10 text-system-color'
+                                            : 'text-white text-opacity-80 bg-system-color hover:bg-system-color-dark hover:text-white hover:text-xl'
+                                        }
                   `                 }
                                 >
                                     <Icon size={25} />

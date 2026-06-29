@@ -8,10 +8,10 @@ import {
     LucideMapPinned,
     LucideTruck, LucideUserCheck
 } from "lucide-react";
-import {logout} from "../../services/authService.js";
-import {useEffect, useState} from "react";
-import {getUserById} from "../../services/userService.js";
-import {getContainersForCustomAction} from "../../services/aleContainerService.js";
+import { logout } from "../../services/authService.js";
+import { useEffect, useState } from "react";
+import { getUserById } from "../../services/userService.js";
+import { getContainersForCustomAction } from "../../services/aleContainerService.js";
 
 
 export default function CustomsNavBar({ role = "customs" }) {
@@ -35,7 +35,6 @@ export default function CustomsNavBar({ role = "customs" }) {
 
     const handleLogout = async () => {
         await logout();
-        //navigate("/login");
     };
 
     const menuItems = [
@@ -71,9 +70,9 @@ export default function CustomsNavBar({ role = "customs" }) {
                                         flex items-center gap-3 px-4 py-3 rounded-lg
                                         transition-all duration-200 font-semibold text-lg
                                         ${isActive
-                                        ? 'bg-white bg-opacity-10 text-system-color'
-                                        : 'text-white text-opacity-80 bg-system-color hover:bg-system-color-dark hover:text-white hover:text-xl'
-                                    }
+                                            ? 'bg-white bg-opacity-10 text-system-color'
+                                            : 'text-white text-opacity-80 bg-system-color hover:bg-system-color-dark hover:text-white hover:text-xl'
+                                        }
                   `                 }
                                 >
                                     <Icon size={25} />
@@ -85,7 +84,7 @@ export default function CustomsNavBar({ role = "customs" }) {
                                         </span>
                                     )}
                                 </Link>
-                            </li>   
+                            </li>
                         );
                     })}
                 </ul>

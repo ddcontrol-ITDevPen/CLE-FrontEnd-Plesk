@@ -18,15 +18,15 @@ const STATUS_CONFIG = {
     "Enroute": { bg: "bg-enroute", text: "text-amber-900", border: "border-amber-200" },
     // "Examine-AKPS": { bg: "bg-examine",text: "text-purple-900",border: "border-purple-200" },
     // "Examine-Custom": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
-    // "Examine-Complete": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
+    // "Examine-Both": { bg: "bg-examine",   text: "text-purple-900",   border: "border-purple-200" },
     "Approved-AKPS": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
     "Approved-Custom": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
     "Approved-Complete": { bg: "bg-delivered-rfc", text: "text-teal-900", border: "border-teal-200" },
     "Accepted": { bg: "bg-accepted", text: "text-green", border: "border-green-200" },
     "Gate-In": { bg: "bg-gate-in-out", text: "text-blue-900", border: "border-indigo-200" },
     "Gate-Out": { bg: "bg-gate-in-out", text: "text-indigo-900", border: "border-indigo-200" },
-    "Delivered": { bg: "bg-delivered-rfc", text: "text-emerald-900", border: "border-teal-200" },
-    "RFC": { bg: "bg-delivered-rfc", text: "text-teal-900", border: "border-teal-200" },
+    // "Delivered": { bg: "bg-delivered-rfc",text: "text-emerald-900",border: "border-teal-200" },
+    // "RFC":       { bg: "bg-delivered-rfc",   text: "text-teal-900",   border: "border-teal-200" },
     "Rejected": { bg: "bg-red-100", text: "text-red-900", border: "border-red-200" },
     //"Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" },
 };
@@ -45,11 +45,20 @@ export function ALEYourBookings() {
     const itemsPerPage = 20;
 
     const activeRole = (localStorage.getItem("role") || "").toLowerCase();
-    const isPrivilegedRole = activeRole === "akps" || activeRole === "customs";
+    const isPrivilegedRole = activeRole === "akps" || activeRole === "customs" || activeRole === "terminal";
     const maskStatus = (statusText) => {
         if (!statusText) return statusText;
         if (!isPrivilegedRole) {
-            return statusText.replace(/examine/gi, "Approved");
+            switch (statusText) {
+                case "Examine-Both":
+                    return "Approved-Complete";
+                case "Examine-AKPS":
+                    return "Approved-AKPS";
+                case "Examine-Custom":
+                    return "Approved-Custom";
+                default:
+                    return statusText.replace(/examine/gi, "Approved");
+            }
         }
         return statusText;
     };
@@ -146,7 +155,7 @@ export function ALEYourBookings() {
                         return {
                             ...cont,
                             date: assignment?.aleTimeSlot?.date,
-                            timeSlot: assignment?.aleTimeSlot?.time || "N/A"
+                            timeSlot: assignment?.aleTimeSlot?.time || "ROT Date"
                         };
                     } catch (err) {
                         return { ...cont, timeSlot: "N/A" };
@@ -191,7 +200,7 @@ export function ALEYourBookings() {
         if (currentStatus === "Deleted") return container.deletedTime;
         if (currentStatus === "Examine-AKPS" || currentStatus === "Approved-AKPS") return container.examineAKPSTime || container.approvedAKPSTime;
         if (currentStatus === "Examine-Custom" || currentStatus === "Approved-Custom") return container.examineCustomTime || container.approvedCustomTime;
-        if (currentStatus === "Examine-Complete" || currentStatus === "Approved-Complete") return container.examineBothTime || container.approvedBothTime;
+        if (currentStatus === "Examine-Both" || currentStatus === "Approved-Complete") return container.examineBothTime || container.approvedBothTime;
         if (currentStatus === "Rejected-Both") return container.rejectedBothTime;
         if (currentStatus === "Rejected-Custom") return container.rejectedCustomTime;
         if (currentStatus === "Rejected-AKPS") return container.akpsRejectedTime;
@@ -321,6 +330,7 @@ export function ALEYourBookings() {
 
     const getLocationName = (cont, type) => {
         const { movementType, tripType } = cont.aleBooking || {};
+        const finalConsignee = (cont.consigneeName?.trim() !== "Unknown" || cont.consigneeName?.trim() === null) ? cont.consigneeName : cont.externalConsigneeName?.trim();
 
         if (type === 'from') {
             if (tripType) {
@@ -331,13 +341,9 @@ export function ALEYourBookings() {
                 // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.terminalName || "Terminal";
             } else {
                 if (movementType === "Import") return cont.terminalName || "Terminal";
-                if (movementType === "Export") {
-                    return cont.consigneeId === null
-                        ? cont.externalConsigneeName
-                        : cont.consigneeName;
-                }
+                if (movementType === "Export") return finalConsignee;
             }
-            return cont.aleBooking?.fromName || "N/A";
+            return "N/A";
         } else {
             if (tripType) {
                 // if (movementType === "Import" && tripType === "Drop-off") return cont.depotName || "Depot";
@@ -346,14 +352,10 @@ export function ALEYourBookings() {
                 // if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
                 // if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
             } else {
-                if (movementType === "Import") {
-                    return cont.consigneeId === null
-                        ? cont.externalConsigneeName
-                        : cont.consigneeName;
-                }
+                if (movementType === "Import") return finalConsignee
                 if (movementType === "Export") return cont.terminalName || "Terminal";
             }
-            return cont?.toName || "N/A";
+            return "N/A";
         }
     };
 
@@ -532,7 +534,7 @@ export function ALEYourBookings() {
                                 </th>
                                 <th className="p-4 border-b w-24">
                                     <div className="flex items-center gap-1" onClick={() => handleSort('rotDate')}>
-                                        ROT Date
+                                        ROT Date / Booking Date
                                         {sortConfig.key === 'rotDate' && (
                                             <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                                         )}

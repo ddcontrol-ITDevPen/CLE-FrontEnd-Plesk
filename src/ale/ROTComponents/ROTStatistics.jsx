@@ -5,12 +5,21 @@ import { ChartNoAxesCombined, CircleChevronDown } from "lucide-react";
 const StatusInfographic = ({ containers }) => {
     const [isOpen, setIsOpen] = useState(false);
     const activeRole = (localStorage.getItem("role") || "").toLowerCase();
-    const isPrivilegedRole = activeRole === "akps" || activeRole === "customs";
+    const isPrivilegedRole = activeRole === "akps" || activeRole === "customs" || activeRole === "terminal";
 
     const maskText = (text) => {
         if (!text) return text;
         if (!isPrivilegedRole) {
-            return text.replace(/examine/gi, "Approved")
+            switch (text) {
+                case "Examine-Both":
+                    return "Approved-Complete";
+                case "Examine-AKPS":
+                    return "Approved-AKPS";
+                case "Examine-Custom":
+                    return "Approved-Custom";
+                default:
+                    return text.replace(/examine/gi, "Approved");
+            }
         }
         return text;
     }

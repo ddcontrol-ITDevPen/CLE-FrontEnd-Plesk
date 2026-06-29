@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo} from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../layout/Layout.jsx";
 import {
@@ -15,10 +15,10 @@ import {
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
-import {getAleBookings} from "../../services/aleBookingService.js";
-import {getAleContainers} from "../../services/aleContainerService.js";
-import {toast} from "sonner";
-import {getUserById} from "../../services/userService.js";
+import { getAleBookings } from "../../services/aleBookingService.js";
+import { getAleContainers } from "../../services/aleContainerService.js";
+import { toast } from "sonner";
+import { getUserById } from "../../services/userService.js";
 
 export function TerminalDashboard() {
     const navigate = useNavigate();
@@ -67,7 +67,7 @@ export function TerminalDashboard() {
         }
     }, [containers, chartView]);
 
-    useEffect( () => {
+    useEffect(() => {
         if (!userId) {
             console.error("No user ID found, redirecting...");
             navigate("/login");
@@ -159,22 +159,22 @@ export function TerminalDashboard() {
                         borderClass="border-orange-600"
                     />
                     <StatCard
-                        title="Pending"
-                        value={containers.filter(c => c.status === "Assigned").length}
-                        icon={Clock}
+                        title="Enroute"
+                        value={containers.filter(c => c.status === "Enroute").length}
+                        icon={Truck}
                         colorClass="bg-amber-500"
                         borderClass="border-amber-500"
                     />
                     <StatCard
-                        title="Enroute"
-                        value={containers.filter(c => c.status === "Enroute").length}
-                        icon={Truck}
-                        colorClass="bg-indigo-500"
-                        borderClass="border-indigo-500"
+                        title="Gate-In"
+                        value={containers.filter(c => c.status === "Gate-In").length}
+                        icon={Clock}
+                        colorClass="bg-blue-500"
+                        borderClass="border-blue-500"
                     />
                     <StatCard
-                        title="Completed"
-                        value={containers.filter(c => c.deliveredTime !== null).length}
+                        title="Gate-Out"
+                        value={containers.filter(c => c.status === "Gate-Out").length}
                         icon={ClipboardCheck}
                         colorClass="bg-emerald-500"
                         borderClass="border-emerald-500"
@@ -224,9 +224,8 @@ export function TerminalDashboard() {
                                                 </p>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                                                    cont.status === 'Assigned' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-system-color'
-                                                }`}>
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${cont.status === 'Assigned' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-system-color'
+                                                    }`}>
                                                     {cont.status}
                                                 </span>
                                                 <ArrowUpRight size={16} className="text-gray-300 group-hover:text-blue-500 transition-colors" />
@@ -258,11 +257,11 @@ export function TerminalDashboard() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={chartData}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#9ca3af'}} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#9ca3af'}} />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
                                     <Tooltip
-                                        cursor={{fill: '#f3f4f6'}}
-                                        contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
+                                        cursor={{ fill: '#f3f4f6' }}
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                     />
                                     <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={chartView === "Weekly" ? 40 : 25}>
                                         {chartData.map((entry, index) => {
