@@ -139,7 +139,7 @@ export function AssignBooking() {
             await updateContainer(id, updatedContainerData);
 
             // 3. Find the selected slot record to securely reduce its active available count by 1
-            const selectedSlot = timeSlots.find(s => s.id == formData.timeSlotId);
+            const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
             if (selectedSlot) {
                 const updatedSlotData = {
                     id: selectedSlot.id,
