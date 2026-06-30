@@ -127,7 +127,7 @@ export function AssignBooking() {
             console.log("type:", typeof updatedData.timeSlotId);
             // 1. Register the newly assigned asset details
             await registerAssignedHaulier(updatedData);
-
+            console.log("containerId:", id);
             // 2. Update the tracking status on the corresponding container
             const updatedContainerData = {
                 ...container,
