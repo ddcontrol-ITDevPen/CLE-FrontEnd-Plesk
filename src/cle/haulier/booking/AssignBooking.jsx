@@ -78,7 +78,7 @@ export function AssignBooking() {
                 setTrailers(trailerData.filter(x => x.haulierId === haulierId) || []);
                 setTimeSlots(slotData || []);
                 
-                const uniqueDates = [...new Set(slotData.map(s => s.Date))].sort();
+                const uniqueDates = [...new Set(slotData.map(s => s.date))].sort();
                 setAvailableDates(uniqueDates);
             } catch (error) {
                 toast.error("Failed to load assignment data");
@@ -99,7 +99,7 @@ export function AssignBooking() {
     const handleDateChange = (e) => {
         const date = e.target.value;
         setSelectedDate(date);
-        const slotsForDate = timeSlots.filter(s => s.Date === date).sort((a, b) => a.Time.localeCompare(b.Time));
+        const slotsForDate = timeSlots.filter(s => s.date === date).sort((a, b) => a.time.localeCompare(b.time));
         setFilteredSlots(slotsForDate);
         setFormData(prev => ({ ...prev, timeSlotId: "" }));
     };
@@ -249,9 +249,9 @@ export function AssignBooking() {
                                 disabled={!selectedDate} // Prevents clicking until a date is selected
                                 options={filteredSlots.map(s => {
                                     // Correctly calculates slots left using PascalCase
-                                    const availableCount = s.PickUpTotalSlot ?? s.DropOffTotalSlot ?? 0;
+                                    const availableCount = s.pickUpTotalSlot ?? s.dropOffTotalSlot ?? 0;
                                     return {
-                                        label: `${s.Time} (${availableCount} left)`,
+                                        label: `${s.time} (${availableCount} left)`,
                                         value: s.Id
                                     };
                                 })}
