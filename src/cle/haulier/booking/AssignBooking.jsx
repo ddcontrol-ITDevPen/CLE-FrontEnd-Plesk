@@ -54,11 +54,12 @@ export function AssignBooking() {
                 setIsLoading(true);
                 const container = await getContainerById(id);
                 setContainer(container);
+                // AssignBooking.jsx - Inside your useEffect block
                 const [driverData, pmData, trailerData, slotData] = await Promise.all([
-                    getDrivers(),
-                    getPrimeMovers(),
-                    getTrailers(),
-                    getTimeSlots()
+                    getDrivers().catch(err => { console.error("Drivers failed:", err); return []; }),
+                    getPrimeMovers().catch(err => { console.error("PM failed:", err); return []; }),
+                    getTrailers().catch(err => { console.error("Trailers failed:", err); return []; }),
+                    getTimeSlots().catch(err => { console.error("Time slots failed:", err); return []; })
                 ]);
                 console.log("RAW DRIVERS FROM API:", driverData);
                 setFormData(prev => ({
@@ -77,7 +78,7 @@ export function AssignBooking() {
                 setTrailers(trailerData.filter(x => x.HaulierId === haulierId) || []);
                 setTimeSlots(slotData || []);
                 
-                const uniqueDates = [...new Set(slotData.map(s => s.date))].sort();
+                const uniqueDates = [...new Set(slotData.map(s => s.Date))].sort();
                 setAvailableDates(uniqueDates);
             } catch (error) {
                 toast.error("Failed to load assignment data");
@@ -98,7 +99,7 @@ export function AssignBooking() {
     const handleDateChange = (e) => {
         const date = e.target.value;
         setSelectedDate(date);
-        const slotsForDate = timeSlots.filter(s => s.date === date).sort((a, b) => a.time.localeCompare(b.time));
+        const slotsForDate = timeSlots.filter(s => s.Date === date).sort((a, b) => a.Time.localeCompare(b.Time));
         setFilteredSlots(slotsForDate);
         setFormData(prev => ({ ...prev, timeSlotId: "" }));
     };
@@ -245,7 +246,9 @@ export function AssignBooking() {
                                 onChange={handleChange}
                                 error={errors.timeSlotId}
                                 required
-                                options={timeSlots.map(s => {
+                                disabled={!selectedDate} // Prevents clicking until a date is selected
+                                options={filteredSlots.map(s => {
+                                    // Correctly calculates slots left using PascalCase
                                     const availableCount = s.PickUpTotalSlot ?? s.DropOffTotalSlot ?? 0;
                                     return {
                                         label: `${s.Time} (${availableCount} left)`,
