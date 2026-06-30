@@ -214,7 +214,7 @@ export function AssignBooking() {
                                 onChange={handleChange}
                                 error={errors.driverId}
                                 required
-                                options={drivers.map(d => ({ label: d.name, value: d.id }))}
+                                options={drivers.map(d => ({ label: d.Name, value: d.Id }))}
                             />
 
                             <SelectField
@@ -225,7 +225,7 @@ export function AssignBooking() {
                                 onChange={handleChange}
                                 error={errors.pmId}
                                 required
-                                options={primeMovers.map(p => ({ label: p.plateNumber, value: p.id }))}
+                                options={primeMovers.map(p => ({ label: p.PlateNumber, value: p.Id }))}
                             />
 
                             <SelectField
@@ -246,11 +246,10 @@ export function AssignBooking() {
                                 error={errors.timeSlotId}
                                 required
                                 options={timeSlots.map(s => {
-                                    // Fallback checks matching the keys from TimeSlot.cs backend model
-                                    const availableCount = s.pickUpTotalSlot ?? s.dropOffTotalSlot ?? 0;
+                                    const availableCount = s.PickUpTotalSlot ?? s.DropOffTotalSlot ?? 0;
                                     return {
-                                        label: `${s.time} (${availableCount} left)`,
-                                        value: s.id
+                                        label: `${s.Time} (${availableCount} left)`,
+                                        value: s.Id
                                     };
                                 })}
                             />
@@ -280,7 +279,7 @@ export function AssignBooking() {
                                 onChange={handleChange}
                                 error={errors.trailerId}
                                 required
-                                options={trailers.map(t => ({ label: `${t.plateNumber} - ${t.type}`, value: t.id }))}
+                                options={trailers.map(t => ({ label: `${t.PlateNumber} - ${t.Type}`, value: t.Id }))}
                             />
                         </div>
                     </div>
