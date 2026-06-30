@@ -122,7 +122,9 @@ export function AssignBooking() {
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName;
             const updatedData = {...formData, haulierId: user.companyCode};
-
+            console.log("updatedData:", updatedData);
+            console.log("timeSlotId:", updatedData.timeSlotId);
+            console.log("type:", typeof updatedData.timeSlotId);
             // 1. Register the newly assigned asset details
             await registerAssignedHaulier(updatedData);
 
