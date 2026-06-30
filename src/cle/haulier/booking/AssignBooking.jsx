@@ -122,21 +122,25 @@ export function AssignBooking() {
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName;
             const updatedData = {...formData, haulierId: user.companyCode};
+            // Get containerId from updatedData
+            const box_id = updatedData.containerId;
+            console.log("containerId:", box_id);
+            console.log("containerId:", formData.containerId);
             console.log("updatedData:", updatedData);
             console.log("timeSlotId:", updatedData.timeSlotId);
             console.log("type:", typeof updatedData.timeSlotId);
             // 1. Register the newly assigned asset details
             await registerAssignedHaulier(updatedData);
-            console.log("containerId:", id);
+           
             // 2. Update the tracking status on the corresponding container
             const updatedContainerData = {
                 ...container,
-                containerId: id,
+                containerId: box_id,
                 status: "Enroute",
                 enrouteTime: new Date().toISOString(),
                 UpdatedBy: updatedBy
             };
-            await updateContainer(id, updatedContainerData);
+            await updateContainer(formData.containerId, updatedContainerData);
 
             // 3. Find the selected slot record to securely reduce its active available count by 1
             const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
