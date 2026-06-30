@@ -73,9 +73,9 @@ export function AssignBooking() {
 
                 const user = await getUserById(localStorage.getItem("userId"));
                 const haulierId = user.companyCode
-                setDrivers(driverData.filter(x => x.HaulierId === haulierId) || []);
-                setPrimeMovers(pmData.filter(x => x.HaulierId === haulierId) || []);
-                setTrailers(trailerData.filter(x => x.HaulierId === haulierId) || []);
+                setDrivers(driverData.filter(x => x.haulierId === haulierId) || []);
+                setPrimeMovers(pmData.filter(x => x.haulierId === haulierId) || []);
+                setTrailers(trailerData.filter(x => x.haulierId === haulierId) || []);
                 setTimeSlots(slotData || []);
                 
                 const uniqueDates = [...new Set(slotData.map(s => s.Date))].sort();
@@ -215,7 +215,7 @@ export function AssignBooking() {
                                 onChange={handleChange}
                                 error={errors.driverId}
                                 required
-                                options={drivers.map(d => ({ label: d.Name, value: d.Id }))}
+                                options={drivers.map(d => ({ label: d.name, value: d.id }))}
                             />
 
                             <SelectField
@@ -226,7 +226,7 @@ export function AssignBooking() {
                                 onChange={handleChange}
                                 error={errors.pmId}
                                 required
-                                options={primeMovers.map(p => ({ label: p.PlateNumber, value: p.Id }))}
+                                options={primeMovers.map(p => ({ label: p.plateNumber, value: p.id }))}
                             />
 
                             <SelectField
@@ -282,7 +282,7 @@ export function AssignBooking() {
                                 onChange={handleChange}
                                 error={errors.trailerId}
                                 required
-                                options={trailers.map(t => ({ label: `${t.PlateNumber} - ${t.Type}`, value: t.Id }))}
+                                options={trailers.map(t => ({ label: `${t.plateNumber} - ${t.type}`, value: t.id }))}
                             />
                         </div>
                     </div>
