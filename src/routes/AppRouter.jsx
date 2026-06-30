@@ -105,6 +105,7 @@ import {ShippingLineDashboard} from "../cle/shippingLine/dashboard/ShippingLineD
 import {ShippingLineBookingList} from "../cle/shippingLine/booking/ShippingLineBookingList.jsx"
 import {ShippingLineViewBooking} from "../cle/shippingLine/booking/ShippingLineViewBooking.jsx";
 import {ShippingLineEditBooking} from "../cle/shippingLine/booking/ShippingLineEditBooking.jsx";
+import {ShippingLineEditBooking2} from "../cle/shippingLine/booking/ShippingLineEditBooking2.jsx";
 import {DepotOperationHours} from "../cle/depot/operation/DepotOperationHours.jsx";
 export default function AppRouter() {
     return (
@@ -949,6 +950,14 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <DepotOperationHours />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/shippingLine/booking/edit2/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ShippingLineEditBooking2/>
                         </ProtectedRoute>
                     }
                 />

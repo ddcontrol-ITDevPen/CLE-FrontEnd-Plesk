@@ -121,22 +121,44 @@ export function AssignBooking() {
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName;
             const updatedData = {...formData, haulierId: user.companyCode};
+
+            // 1. Register the newly assigned asset details
             await registerAssignedHaulier(updatedData);
-            const updatedContainerData = {...container, containerId: id, status: "Enroute", enrouteTime: new Date().toISOString(), UpdatedBy: updatedBy}
+
+            // 2. Update the tracking status on the corresponding container
+            const updatedContainerData = {
+                ...container,
+                containerId: id,
+                status: "Enroute",
+                enrouteTime: new Date().toISOString(),
+                UpdatedBy: updatedBy
+            };
             await updateContainer(id, updatedContainerData);
+
+            // 3. Find the selected slot record to securely reduce its active available count by 1
             const selectedSlot = timeSlots.find(s => s.id == formData.timeSlotId);
             if (selectedSlot) {
                 const updatedSlotData = {
                     id: selectedSlot.id,
                     date: selectedSlot.date,
                     time: selectedSlot.time,
-                    totalSlot: selectedSlot.totalSlot - 1,
                     depotId: selectedSlot.depotId,
+                    changeRemarks: selectedSlot.changeRemarks,
+                    isCancelled: selectedSlot.isCancelled,
+                    // Check whichever property exists on the dataset and safely calculate the capacity change
+                    pickUpTotalSlot: selectedSlot.pickUpTotalSlot !== null && selectedSlot.pickUpTotalSlot !== undefined
+                        ? selectedSlot.pickUpTotalSlot - 1
+                        : null,
+                    dropOffTotalSlot: selectedSlot.dropOffTotalSlot !== null && selectedSlot.dropOffTotalSlot !== undefined
+                        ? selectedSlot.dropOffTotalSlot - 1
+                        : null
                 };
-                await updateTimeSlot(formData.timeSlotId, updatedSlotData)
+
+                await updateTimeSlot(formData.timeSlotId, updatedSlotData);
             }
+
             toast.success("Haulier assigned successfully!");
-            setTimeout(() => navigate("/haulier/booking/accepted"), 1500);
+            setTimeout(() => navigate("/haulier/booking/"), 1500);
         } catch (error) {
             toast.error("Failed to save assignment");
             console.error(error);
@@ -215,8 +237,25 @@ export function AssignBooking() {
                                 required
                                 options={availableDates.map(d => ({ label: d, value: d }))}
                             />
-
                             <SelectField
+                                label="Time Slot"
+                                name="timeSlotId"
+                                icon={<Clock size={18}/>}
+                                value={formData.timeSlotId}
+                                onChange={handleChange}
+                                error={errors.timeSlotId}
+                                required
+                                options={timeSlots.map(s => {
+                                    // Fallback checks matching the keys from TimeSlot.cs backend model
+                                    const availableCount = s.pickUpTotalSlot ?? s.dropOffTotalSlot ?? 0;
+                                    return {
+                                        label: `${s.time} (${availableCount} left)`,
+                                        value: s.id
+                                    };
+                                })}
+                            />
+                            
+                          {/*  <SelectField
                                 label="Time Slot"
                                 name="timeSlotId"
                                 icon={<Clock size={18}/>}
@@ -231,7 +270,7 @@ export function AssignBooking() {
                                     label: `${s.time} (${s.totalSlot} left)`,
                                     value: s.id
                                 }))}
-                            />
+                            />*/}
                             
                             <SelectField
                                 label="Trailer No."

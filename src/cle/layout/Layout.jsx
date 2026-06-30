@@ -12,6 +12,7 @@ import PortNavBar from "../NavBar/PortNavBar.jsx";
 import ConsigneeNavBar from "../NavBar/ConsigneeNavBar.jsx";
 import CustomsNavBar from "../NavBar/CustomsNavBar.jsx";
 import AKPSNavBar from "../NavBar/AKPSNavBar.jsx";
+import ShippingNavBar from "../NavBar/ShippingNavBar.jsx";
 export default function Layout({ children, role }) {
 
     const navigate = useNavigate();
@@ -45,7 +46,7 @@ export default function Layout({ children, role }) {
     };
 
     const userInitial = (user?.FullName || "U")[0].toUpperCase();
-    
+    const standardRole = user?.Role ? user.Role.replace(/\s+/g, '').toLowerCase() : "";
     return (
         <div className="flex min-h-screen bg-main">
             <div className={`fixed left-0 top-0 h-full z-20 transition-all duration-300 ease-in-out w-64 shadow-lg
@@ -58,6 +59,7 @@ export default function Layout({ children, role }) {
                 {user?.Role === "consignee" && <ConsigneeNavBar />}
                 {user?.Role === "customs" && <CustomsNavBar />}
                 {user?.Role === "akps" && <AKPSNavBar />}
+                {standardRole === "shippingline" && <ShippingNavBar />}
                 {/*other roles*/}
             </div>
 

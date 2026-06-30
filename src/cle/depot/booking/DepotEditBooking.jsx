@@ -91,11 +91,29 @@ export function DepotEditBooking() {
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName;
 
+            // 1. Initialize fields with their existing values
+            let acceptedTime = currentContainer.acceptedTime;
+            let rtAcceptedTime = currentContainer.rtAcceptedTime;
+
+            //2. Temp use
+            if (statusModal.nextStatus === "Accepted") {
+                // Case 1: Both are null -> update acceptedTime first
+                if (!currentContainer.rtAcceptedTime && !currentContainer.acceptedTime) {
+                    acceptedTime = now;
+                }
+                // Case 2: 2nd round where acceptedTime is already filled -> update rtAcceptedTime
+                else if (currentContainer.acceptedTime) {
+                    rtAcceptedTime = now;
+                }
+            }
+            
             const payload = {
                 ...currentContainer,
                 toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
                 status: statusModal.nextStatus,
-                acceptedTime: statusModal.nextStatus === "Accepted" ? now : currentContainer.acceptedTime,
+                acceptedTime,
+                rtAcceptedTime,
+                //acceptedTime: statusModal.nextStatus === "Accepted" ? now : currentContainer.acceptedTime,
                 rejectedTime: statusModal.nextStatus === "Rejected" ? now : currentContainer.rejectedTime,
                 rejectedRemarks: statusModal.remarks,
                 UpdatedBy: updatedBy,
@@ -117,12 +135,25 @@ export function DepotEditBooking() {
             const currentContainer = await getContainerById(containerId);
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = `${user.fullName} - ${user.companyName}`;
+            const now = new Date().toISOString();
 
+            // Determine which Gate-In time to update
+            let gatedInTime = currentContainer.gatedInTime;
+            let rtGatedInTime = currentContainer.rtGatedInTime;
+            if (!currentContainer.gatedInTime && !currentContainer.rtGatedInTime) {
+                // First Gate-In
+                gatedInTime = now;
+            } else if (currentContainer.gatedInTime && !currentContainer.rtGatedInTime) {
+                // Return Trip Gate-In
+                rtGatedInTime = now;
+            }
             const payload = {
                 ...currentContainer,
                 toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
                 status: "Gate-In",
-                gatedInTime: new Date().toISOString(),
+                gatedInTime,
+                rtGatedInTime,
+                //gatedInTime: new Date().toISOString(),
                 UpdatedBy: updatedBy,
             };
 
@@ -143,12 +174,26 @@ export function DepotEditBooking() {
             const currentContainer = await getContainerById(containerId);
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = `${user.fullName} - ${user.companyName}`;
+            const now = new Date().toISOString();
 
+            // Determine which Gate-In time to update
+            let gatedOutTime = currentContainer.gatedOutTime;
+            let rtGatedOutTime = currentContainer.rtGatedOutTime;
+
+            if (!currentContainer.gatedOutTime && !currentContainer.rtGatedOutTime) {
+                // First Gate-In
+                gatedOutTime = now;
+            } else if (currentContainer.gatedOutTime && !currentContainer.rtGatedOutTime) {
+                // Return Trip Gate-In
+                rtGatedOutTime = now;
+            }
             const payload = {
                 ...currentContainer,
                 toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
                 status: "Gate-Out",
-                gatedOutTime: new Date().toISOString(),
+                gatedOutTime,
+                rtGatedOutTime,
+                //gatedOutTime: new Date().toISOString(),
                 UpdatedBy: updatedBy,
             };
 
@@ -303,7 +348,7 @@ export function DepotEditBooking() {
                       
                         <div className="flex justify-end gap-4 pt-4">
                             {/* Accept */}
-                            {data.status === "Enroute" && data.acceptedTime === null && (
+                            {data.status === "Enroute" && (
                                 <button
                                     onClick={() =>
                                         setStatusModal({
@@ -320,7 +365,7 @@ export function DepotEditBooking() {
                             )}
 
                             {/* Reject */}
-                            {data.status === "Enroute" && data.acceptedTime === null && (
+                            {data.status === "Enroute"  && (
                                 <button
                                     onClick={() =>
                                         setStatusModal({
@@ -338,7 +383,7 @@ export function DepotEditBooking() {
                             )}
 
                             {/* Gate In */}
-                            {data.status === "Accepted" && data.acceptedTime !== null && (
+                            {data.status === "Accepted" && (
                                 <button
                                     onClick={() => handleGatedIn(data.containerId)}
                                     className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700"
@@ -349,7 +394,7 @@ export function DepotEditBooking() {
                             )}
 
                             {/* Gate Out */}
-                            {data.status === "Gate-In" && data.gatedInTime !== null && (
+                            {data.status === "Gate-In"  && (
                                 <button
                                     onClick={() => handleGatedOut(data.containerId)}
                                     className="flex items-center gap-2 bg-orange-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-orange-700"

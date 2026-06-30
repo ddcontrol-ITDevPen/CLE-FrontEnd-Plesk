@@ -3,10 +3,17 @@ import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search, Calendar, FileDown, Eye, Edit, Trash2,
-    FileText, AlertCircle, CheckCircle2, LucideX, Check, Clock,PackageCheck,Truck
+    FileText, AlertCircle, CheckCircle2
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import {getContainers, deleteContainer, updateContainer, getContainerById} from "../../../services/containerService.js";
+import {getAllBookingsByForwarding, getAllBookingsByShippingLine} from "../../../services/bookingService.js";
+import {
+    getContainers,
+    deleteContainer,
+    updateContainer,
+    getContainerById,
+    getAllContainersByForwarding
+} from "../../../services/containerService.js";
 import {getUserById} from "../../../services/userService.js";
 import * as XLSX from 'xlsx';
 import {useNavigate} from "react-router-dom";
@@ -25,10 +32,11 @@ const STATUS_CONFIG = {
 };
 
 export function ShippingLineBookingList ()  {
+    const [bookings, setBookings] = useState([]);
     const [containers, setContainers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
-    const [statusModal, setStatusModal] = useState({ isOpen: false, id: null, nextStatus: "", remarks: "" });
+    const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null, remarks: "" });
     const [filterStatus, setFilterStatus] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
@@ -54,7 +62,7 @@ export function ShippingLineBookingList ()  {
             "Status": cont.status,
             "PickUpAssignedTime": cont.assignedTime ? new Date(cont.assignedTime).toLocaleString() : "N/A",
             "PickUpEnrouteTime": cont.enrouteTime ? new Date(cont.enrouteTime).toLocaleString() : "N/A",
-            "PickUpAcceptedTime": cont.acceptedTime  ? new Date(cont.acceptedTime).toLocaleString() : "N/A",
+            "PickUpAcceptedTime": cont.acceptedTime ? new Date(cont.acceptedTime).toLocaleString() : "N/A",
             "PickUpGated In": cont.gatedInTime  ? new Date(cont.gatedInTime).toLocaleString() : "N/A",
             "PickUpGated Out": cont.gatedOutTime  ? new Date(cont.gatedOutTime).toLocaleString() : "N/A",
             "PickUpDeliveredTime": cont.deliveredTime ? new Date(cont.deliveredTime).toLocaleString() : "N/A",
@@ -63,7 +71,7 @@ export function ShippingLineBookingList ()  {
             "DeletedTime": cont.deletedTime ? new Date(cont.deletedTime).toLocaleString() : "N/A",
             "DropOffAssignedTime": cont.rtAssignedTime ? new Date(cont.rtAssignedTime).toLocaleString() : "N/A",
             "DropOffEnrouteTime": cont.rtEnrouteTime ? new Date(cont.rtEnrouteTime).toLocaleString() : "N/A",
-            "DropOffAcceptedTime": cont.rtAcceptedTime  ? new Date(cont.rtAcceptedTime).toLocaleString() : "N/A",
+            "DropOffAcceptedTime": cont.rtAcceptedTime ? new Date(cont.rtAcceptedTime).toLocaleString() : "N/A",
             "DropOffGated In": cont.rtGatedInTime ? new Date(cont.rtGatedInTime).toLocaleString() :"N/A",
             "DropOffGated Out": cont.rtGatedOutTime ? new Date(cont.rtGatedOutTime).toLocaleString() : "N/A",
             "DropOffDeliveredTime": cont.rtDeliveredTime ? new Date(cont.rtDeliveredTime).toLocaleString() : "N/A",
@@ -102,18 +110,41 @@ export function ShippingLineBookingList ()  {
         try {
             setIsLoading(true);
             const user = await getUserById(localStorage.getItem("userId"));
-            const consigneeId = user.companyCode;
-            console.log(consigneeId);
-            const data = await getContainers();
-            const filteredData = await data
-                .filter(c => c.consigneeId === consigneeId)
-                .sort((a, b) => {
-                    const dateA = new Date(getStatusTimestamp(a) || 0);
-                    const dateB = new Date(getStatusTimestamp(b) || 0);
-                    return dateB - dateA;
-                });
-            console.log(data);
-            setContainers(filteredData);
+            const shippingId = user.companyCode;
+
+            // 1. Fetch all bookings matching this specific Shipping Line ID
+            const bookingData = await getAllBookingsByShippingLine(shippingId);
+            const safeBookings = bookingData || [];
+            setBookings(safeBookings);
+
+            // 2. Extract unique Forwarding IDs associated with these bookings
+            const linkedForwarderIds = [
+                ...new Set(
+                    safeBookings
+                        .map(b => b.forwardingId)
+                        .filter(id => id !== null && id !== undefined && id !== "")
+                )
+            ];
+
+            if (linkedForwarderIds.length > 0) {
+                // 3. Trigger concurrent API requests for each forwarder's containers
+                const containerRequests = linkedForwarderIds.map(forwarderId =>
+                    getAllContainersByForwarding(forwarderId).catch(err => {
+                        console.error(`Error loading containers for forwarder ${forwarderId}:`, err);
+                        return []; // Gracefully fallback to an empty array if one forwarder fails
+                    })
+                );
+
+                const results = await Promise.all(containerRequests);
+
+                // 4. Flatten the matrix of array results into a single flat collection
+                const flattenedContainers = results.flat();
+                setContainers(flattenedContainers || []);
+            } else {
+                setContainers([]);
+            }
+
+         
         } catch (error) {
             toast.error("Failed to fetch ROT history");
         } finally {
@@ -130,94 +161,18 @@ export function ShippingLineBookingList ()  {
     };
 
     const getStatusTimestamp = (container) => {
-        if (container.status === "Assigned") return container.rtAssignedTime || container.assignedTime;
-        if (container.status === "Enroute")  return container.rtEnrouteTime || container.enrouteTime;
-        if (container.status === "Accepted") return container.rtAcceptedTime || container.acceptedTime;
-        if (container.status === "Gate-In")  return container.rtGatedInTime || container.gatedInTime;
-        if (container.status === "Gate-Out") return container.rtGatedOutTime || container.gatedOutTime;
-        if (container.status === "Delivered") return container.rtDeliveredTime || container.deliveredTime;
-        if (container.status === "RFC") return container.rtRFCTime || container.rfcTime;
+        if (container.status === "Assigned") return container.assignedTime;
+        if (container.status === "Enroute") return container.enrouteTime;
+        if (container.status === "Accepted") return container.acceptedTime;
+        if (container.status === "Gate-In") return container.gatedInTime;
+        if (container.status === "Gate-Out") return container.gatedOutTime;
+        if (container.status === "Delivered") return container.deliveredTime;
+        if (container.status === "RFC") return container.rfcTime;
         if (container.status === "Rejected") return container.rejectedTime;
         if (container.status === "Deleted") return container.deletedTime;
         return null;
     };
 
-    const handleStatusUpdate = async () => {
-        const toastId = toast.loading(`Updating status to ${statusModal.nextStatus}...`);
-        try {
-            const currentContainer = await getContainerById(statusModal.id);
-            const now = new Date().toISOString();
-            const user = await getUserById(localStorage.getItem("userId"));
-            const updatedBy = user.fullName + " - " + user.companyName;
-
-            const payload = {
-                ...currentContainer,
-                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
-                status: statusModal.nextStatus,
-                acceptedTime: statusModal.nextStatus === "Accepted" ? now : currentContainer.acceptedTime,
-                rejectedTime: statusModal.nextStatus === "Rejected" ? now : currentContainer.rejectedTime,
-                rejectedRemarks: statusModal.remarks,
-                UpdatedBy: updatedBy,
-            };
-            await updateContainer(statusModal.id, payload);
-            toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
-            setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
-            fetchData();
-        } catch (error) {
-            toast.error("Update failed", { id: toastId });
-        }
-    };
-
-    // New function to handle Gate-In status update
-    const handleDelivered = async (containerId) => {
-        const toastId = toast.loading("Updating status to Delivered...");
-        try {
-            const currentContainer = await getContainerById(containerId);
-            const user = await getUserById(localStorage.getItem("userId"));
-            const updatedBy = `${user.fullName} - ${user.companyName}`;
-
-            const payload = {
-                ...currentContainer,
-                // Map toAddress to handle API object structure if necessary
-                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
-                status: "Delivered",
-                deliveredTime: new Date().toISOString(),
-                UpdatedBy: updatedBy,
-            };
-
-            await updateContainer(containerId, payload);
-            toast.success("Status updated to Delivered", { id: toastId });
-            fetchData(); // Refresh the table
-        } catch (error) {
-            console.error("Update Error:", error);
-            toast.error("Failed to update status", { id: toastId });
-        }
-    };
-
-    const handleRFC = async (containerId) => {
-        const toastId = toast.loading("Updating status to Ready for Collect(RFC)...");
-        try {
-            const currentContainer = await getContainerById(containerId);
-            const user = await getUserById(localStorage.getItem("userId"));
-            const updatedBy = `${user.fullName} - ${user.companyName}`;
-
-            const payload = {
-                ...currentContainer,
-                // Map toAddress to handle API object structure if necessary
-                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
-                status: "RFC",
-                rfcTime: new Date().toISOString(),
-                UpdatedBy: updatedBy,
-            };
-
-            await updateContainer(containerId, payload);
-            toast.success("Status updated to Ready for Collect(RFC)", { id: toastId });
-            fetchData(); // Refresh the table
-        } catch (error) {
-            console.error("Update Error:", error);
-            toast.error("Failed to update status", { id: toastId });
-        }
-    };
     const filteredContainers = useMemo(() => {
         let result = containers.filter(cont => {
             const matchesSearch =
@@ -329,11 +284,11 @@ export function ShippingLineBookingList ()  {
 
     const handleDelete = async () => {
         const toastId = toast.loading("Deleting record...");
-        const user = await getUserById(localStorage.getItem("userId"));
-        const updatedBy = user.fullName + " - " + user.companyName;
         try {
             const currentContainer = await getContainerById(deleteModal.id);
             console.log(currentContainer);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = user.fullName + " - " + user.companyName
             const payload = {
                 ...currentContainer,
                 toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
@@ -354,12 +309,12 @@ export function ShippingLineBookingList ()  {
     };
 
     return (
-        <Layout role="shippingLine">
+        <Layout role="shippingline">
             <Toaster richColors position="top-right" />
 
             <div className="space-y-6">
                 <div className="flex flex-col gap-0">
-                    <h1 className="text-2xl font-bold">Request for Transport (ROT) Bookings</h1>
+                    <h1 className="text-2xl font-bold">Request for Transport (ROT) History</h1>
                     <p className="text-gray-500 text-sm">Manage all your assigned ROTS here</p>
                 </div>
 
@@ -471,6 +426,14 @@ export function ShippingLineBookingList ()  {
                                     )}
                                 </div>
                             </th>
+                            <th className="p-4 border-b">
+                                <div className="flex items-center gap-1" onClick={() => handleSort('booking.haulier')}>
+                                    Haulier
+                                    {sortConfig.key === 'booking.haulier' && (
+                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                    )}
+                                </div>
+                            </th>
                             <th className="p-4 border-b w-24">
                                 <div className="flex items-center gap-1" onClick={() => handleSort('rotDate')}>
                                     ROT Date
@@ -530,9 +493,10 @@ export function ShippingLineBookingList ()  {
                                     return (
                                         <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
                                             <td className="p-4">{index + 1}</td>
-                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer" onClick={() => navigate(`/consignee/booking/view/${cont.containerId}`)}>{cont.booking.blOrBookingNumber}</td>
+                                            <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer" onClick={() => navigate(`/shippingLine/booking/view/${cont.containerId}`)}>{cont.booking.blOrBookingNumber}</td>
                                             <td className="p-4">{cont.containerNumber}</td>
                                             <td className="p-4">{cont.booking?.tripType ? `${cont.booking?.movementType} - ${cont.booking?.tripType}` : cont.booking?.movementType}</td>
+                                            <td className="p-4 whitespace-normal break-words leading-tight">{cont?.haulierName || "Unassigned"}</td>
                                             <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
                                             <td className="p-4 text-center">
                                                 {/* Status Badge using Theme Colors */}
@@ -546,30 +510,30 @@ export function ShippingLineBookingList ()  {
                                             </td>
                                             <td className="p-4">{getLocationName(cont, 'from')}</td>
                                             <td className="p-4">{getLocationName(cont, 'to')}</td>
-                                            <td className="p-4 text-left">
+                                            <td className="p-4">
                                                 {/* Horizontal Action Icons */}
-                                                <div className="flex items-center justify-start gap-3">
-                                                    {["Gate-Out"].includes(cont.status) &&  cont.gatedOutTime !== null && (
-                                                        <button
-                                                            onClick={() => handleDelivered(cont.containerId)}
-                                                            className="p-1.5 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors"
-                                                            title="Manual Delivered">
-                                                            <PackageCheck size={18} />
-                                                        </button>
-                                                    )}
-                                                    {["Delivered"].includes(cont.status) &&  cont.deliveredTime !== null && (
-                                                        <button
-                                                            onClick={() => handleRFC(cont.containerId)}
-                                                            className="p-1.5 bg-red-50 text-blue-600 rounded-full hover:bg-red-100 transition-colors"
-                                                            title="Manual RFC">
-                                                            <Truck size={18} />
-                                                        </button>
-                                                    )}
+                                                <div className="flex items-center justify-center gap-3">
                                                     <Eye size={18}
-                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/consignee/booking/view/${cont.containerId}`)}/>
+                                                         className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/shippingLine/booking/view/${cont.containerId}`)}/>
+
+                                                    {cont.status === "Rejected" &&
+                                                        <Edit size={18}
+                                                              className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/shippingLine/booking/edit/${cont.containerId}`)}/>
+
+                                                    }
+                                                    { cont.status !== "Deleted" && cont.status === "Rejected" && cont.status === "Assigned" &&
+                                                        <Trash2
+                                                            size={18}
+                                                            className="text-red-500 cursor-pointer hover:text-red-700"
+                                                            onClick={() => setDeleteModal({isOpen: true, id: cont.containerId, remarks: ""})}
+                                                        />
+                                                    }
+                                                    <FileText
+                                                        size={18}
+                                                        className="text-blue-600-600 cursor-pointer hover:text-blue-800"
+                                                        onClick={() => navigate(`/rot/view/pdf/${cont.containerId}`)}/>
                                                 </div>
                                             </td>
-
                                         </tr>
                                     );
                                 }))
@@ -610,68 +574,47 @@ export function ShippingLineBookingList ()  {
                 </div>
             </div>
 
-            {/* Accept&Reject Confirmation Modal */}
+            {/* Deletion Confirmation Modal */}
             <AnimatePresence>
-                {statusModal.isOpen && (
+                {deleteModal.isOpen && (
                     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center"
+                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center relative"
                         >
                             <div className="mb-6 flex justify-center">
-                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                                    statusModal.nextStatus === "Accepted" ? "bg-green-100 text-green-600" :
-                                        "bg-red-100 text-red-600"
-                                }`}>
-                                    {statusModal.nextStatus === "Accepted" ? <CheckCircle2 size={40} /> :
-                                        <AlertCircle size={40} />}
+                                <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+                                    <AlertCircle size={40} />
                                 </div>
                             </div>
 
-                            <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                                {statusModal.nextStatus === "Accepted" ? "Accept" :
-                                    "Confirm Rejection?"}
-                            </h2>
-
-                            <p className="text-gray-500 mb-6">
-                                {statusModal.nextStatus === "Rejected"
-                                    ? "Please provide a reason for rejecting this booking."
-                                    : "Are you sure you want to proceed with this action?"}
+                            <h2 className="text-2xl font-bold text-system-color mb-4">Deletion Confirmation</h2>
+                            <p className="text-gray-700 mb-8 leading-relaxed">
+                                Are you sure you want to delete this record? We recommend only deleting if the BL or Booking Number is incorrect.
                             </p>
 
-                            {/* REJECTION INPUT FIELD */}
-                            {statusModal.nextStatus === "Rejected" && (
-                                <div className="mb-6 text-left">
-                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
-                                        Reject Reason
-                                    </label>
-                                    <textarea
-                                        autoFocus
-                                        value={statusModal.remarks}
-                                        onChange={(e) => setStatusModal({ ...statusModal, remarks: e.target.value })}
-                                        placeholder="Type reason here..."
-                                        className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-red-500 focus:ring-0 transition-all h-28 resize-none text-sm"
-                                    />
-                                </div>
-                            )}
+                            <div className="text-left mb-6">
+                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Reason for Deletion *</label>
+                                <textarea
+                                    className="w-full mt-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm min-h-[100px]"
+                                    placeholder="e.g., Incorrect Booking Number provided by client..."
+                                    value={deleteModal.remarks}
+                                    onChange={(e) => setDeleteModal({ ...deleteModal, remarks: e.target.value })}
+                                />
+                            </div>
 
                             <div className="flex gap-4">
                                 <button
-                                    onClick={() => setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" })}
+                                    onClick={() => setDeleteModal({ isOpen: false, id: null })}
                                     className="flex-1 py-3 border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={handleStatusUpdate}
-                                    // Disable confirm if rejecting but no reason is provided
-                                    disabled={statusModal.nextStatus === "Rejected" && !statusModal.remarks?.trim()}
-                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
-                                        statusModal.nextStatus === "Accepted" ? "bg-green-600 hover:bg-green-700" :
-                                            "bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:shadow-none"
-                                    }`}
+                                    onClick={handleDelete}
+                                    className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold shadow-lg hover:bg-system-color-dark transition-all"
                                 >
                                     Confirm
                                 </button>

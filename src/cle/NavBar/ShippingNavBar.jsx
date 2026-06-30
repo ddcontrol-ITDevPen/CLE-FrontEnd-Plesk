@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import {logout} from "../../services/authService.js";
 
-export default function ShippingNavBar({ role = "shippingLine" }) {
+export default function ShippingNavBar({ role = "shippingline" }) {
     const location = useLocation();
     const navigate = useNavigate();
 
