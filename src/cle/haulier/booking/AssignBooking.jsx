@@ -254,7 +254,7 @@ export function AssignBooking() {
                                     const availableCount = s.pickUpTotalSlot ?? s.dropOffTotalSlot ?? 0;
                                     return {
                                         label: `${s.time} (${availableCount} left)`,
-                                        value: s.Id
+                                        value: s.id
                                     };
                                 })}
                             />
