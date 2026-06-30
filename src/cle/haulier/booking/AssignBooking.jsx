@@ -60,7 +60,7 @@ export function AssignBooking() {
                     getTrailers(),
                     getTimeSlots()
                 ]);
-
+                console.log("RAW DRIVERS FROM API:", driverData);
                 setFormData(prev => ({
                     ...prev,
                     blNumber: container.booking?.blOrBookingNumber || "",
@@ -72,9 +72,9 @@ export function AssignBooking() {
 
                 const user = await getUserById(localStorage.getItem("userId"));
                 const haulierId = user.companyCode
-                setDrivers(driverData.filter(x => x.haulierId === haulierId) || []);
-                setPrimeMovers(pmData.filter(x => x.haulierId === haulierId) || []);
-                setTrailers(trailerData.filter(x => x.haulierId === haulierId) || []);
+                setDrivers(driverData.filter(x => x.HaulierId === haulierId) || []);
+                setPrimeMovers(pmData.filter(x => x.HaulierId === haulierId) || []);
+                setTrailers(trailerData.filter(x => x.HaulierId === haulierId) || []);
                 setTimeSlots(slotData || []);
                 
                 const uniqueDates = [...new Set(slotData.map(s => s.date))].sort();
