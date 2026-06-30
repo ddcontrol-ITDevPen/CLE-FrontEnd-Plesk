@@ -167,9 +167,13 @@ export function ALEAssignBooking() {
         try {
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName;
+
+            // Check if container uses capitalized or lowercase properties
+            const rotNum = container.rotNumber || container.RotNumber || "";
+
             const assignmentPayload = {
-                containerId: parseInt(id),
-                rotNumber: container.rotNumber,
+                containerId: id, // Try passing the raw id string directly if your database uses UUIDs!
+                rotNumber: rotNum,
                 haulierId: user.companyCode,
                 driverId: formData.driverId,
                 pmId: formData.pmId,
@@ -180,20 +184,39 @@ export function ALEAssignBooking() {
                     ? `${formData.consigneeTimeSlot}:00`
                     : formData.consigneeTimeSlot
             };
+
+            // 1. Submit assignment payload
             await registerAleAssignedHaulier(assignmentPayload);
+
+            // 2. Container status upgrade
             const updatedContainerData = { ...container, containerId: id, status: "Enroute", enrouteTime: new Date().toISOString(), UpdatedBy: updatedBy }
             await updateAleContainer(id, updatedContainerData);
-            const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
+
+            // 3. Update slot capacity using relaxed comparison (==)
+            const selectedSlot = timeSlots.find(s => (s.id == formData.timeSlotId || s.Id == formData.timeSlotId));
             if (selectedSlot) {
+                // Handle variations between local database and production cloud case-flattening
+                const originalSlots = selectedSlot.pickUpTotalSlot !== undefined
+                    ? selectedSlot.pickUpTotalSlot
+                    : (selectedSlot.pickuptotalslot !== undefined ? selectedSlot.pickuptotalslot : selectedSlot.PickUpTotalSlot);
+
                 const updatedSlotData = {
-                    id: selectedSlot.id,
-                    date: selectedSlot.date,
-                    time: selectedSlot.time,
-                    pickUpTotalSlot: selectedSlot.pickUpTotalSlot - 1,
-                    terminalId: selectedSlot.terminalId,
+                    // Keep both casings in the object payload if you aren't sure what your backend models match
+                    Id: selectedSlot.id || selectedSlot.Id,
+                    id: selectedSlot.id || selectedSlot.Id,
+
+                    Date: selectedSlot.date || selectedSlot.Date,
+                    Time: selectedSlot.time || selectedSlot.Time,
+                    TerminalId: selectedSlot.terminalId || selectedSlot.TerminalId,
+
+                    // Avoid NaN calculation crashes
+                    PickUpTotalSlot: typeof originalSlots === 'number' ? originalSlots - 1 : null,
+                    pickUpTotalSlot: typeof originalSlots === 'number' ? originalSlots - 1 : null
                 };
-                await updateAleTimeSlot(formData.timeSlotId, updatedSlotData)
+
+                await updateAleTimeSlot(formData.timeSlotId, updatedSlotData);
             }
+
             toast.success("Haulier assigned successfully!");
             setTimeout(() => navigate("/ale/haulier/booking"), 1500);
         } catch (error) {
