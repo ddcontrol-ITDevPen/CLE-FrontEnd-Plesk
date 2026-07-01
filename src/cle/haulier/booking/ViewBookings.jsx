@@ -116,19 +116,18 @@ export function ViewBookings() {
     };
 
     // Updated Download Function
-    // Updated Download Function
+
     const handleDownload = async (filePath, fileName) => {
         if (!filePath) {
             toast.error("File path is empty");
             return;
         }
 
-        // 1. Resolve full URL pathing
+        // 1. Resolve full URL pathing (Leaves original Cloudinary URL exactly as-is)
         const downloadUrl = filePath.startsWith('http')
             ? filePath
             : `http://localhost:5173/api/uploads/${filePath}`;
 
-        // fallback filename if none is passed
         const finalFileName = fileName || downloadUrl.split('/').pop() || 'download';
 
         try {
@@ -140,7 +139,7 @@ export function ViewBookings() {
 
             const blob = await response.blob();
 
-            // 3. Create a local object URL from the blob data
+            // 3. Create a temporary local object URL from the blob data
             const blobUrl = window.URL.createObjectURL(blob);
 
             // 4. Trigger the download using a temporary hidden anchor element
@@ -158,8 +157,8 @@ export function ViewBookings() {
         } catch (error) {
             console.error("Download failed:", error);
 
-            // Fallback method: If fetch fails due to CORS restrictions on local development, 
-            // try opening the raw URL directly in a new tab as a last resort.
+            // Fallback method: If fetch fails due to CORS restrictions during local development, 
+            // open the raw URL in a new tab as an absolute last resort.
             toast.info("Attempting direct download link...", { id: "download-toast" });
             const fallbackLink = document.createElement('a');
             fallbackLink.href = downloadUrl;
@@ -178,31 +177,34 @@ export function ViewBookings() {
             return;
         }
 
-        // 1. Resolve URL (Cloudinary vs Local)
-        let fileUrl = filePath.startsWith('http')
+        // 1. Resolve full URL (Keep original Cloudinary structure intact)
+        const fileUrl = filePath.startsWith('http')
             ? filePath
             : `http://localhost:5173/api/uploads/${filePath}`;
 
-        // 2. Cloudinary raw PDF fix
-        if (fileUrl.includes('res.cloudinary.com') && fileUrl.toLowerCase().endsWith('.pdf')) {
-            fileUrl = fileUrl.replace('/upload/', '/upload/f_auto/');
-        }
-
         const ext = fileName ? fileName.split('.').pop().toLowerCase() : fileUrl.split('.').pop().toLowerCase();
 
-        // 3. Handle Microsoft Office Files (Word, Excel, PowerPoint) & CSV via Office Apps Viewer
-        const officeExtensions = ['docx', 'doc', 'xlsx', 'xls', 'pptx', 'ppt', 'csv'];
-
-        if (officeExtensions.includes(ext)) {
-            // Microsoft Office Web Viewer requires a publicly accessible URL
+        // 2. Route files to the best viewer
+        if (['xlsx', 'xls', 'docx', 'doc', 'pptx', 'ppt', 'csv'].includes(ext)) {
+            // Office files and CSVs go through Microsoft Office Viewer
             const officePreviewUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`;
             window.open(officePreviewUrl, '_blank');
         }
-        // 4. Handle Standard Native Files (PDFs and Images)
-        else if (['pdf', 'jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
+        else if (ext === 'pdf') {
+            // If it's a Cloudinary raw PDF throwing 401s, pass it to Google Docs Viewer.
+            // It bypasses the browser's strict stream checking and renders it cleanly.
+            if (fileUrl.includes('res.cloudinary.com')) {
+                const googlePreviewUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`;
+                window.open(googlePreviewUrl, '_blank');
+            } else {
+                // Local PDFs can still be opened directly
+                window.open(fileUrl, '_blank');
+            }
+        }
+        else if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
+            // Images never have rendering conflicts in raw delivery tabs
             window.open(fileUrl, '_blank');
         }
-        // 5. Fallback for unhandled types
         else {
             toast.error("Preview not supported for this file type. Downloading instead.");
             handleDownload(filePath, fileName);
