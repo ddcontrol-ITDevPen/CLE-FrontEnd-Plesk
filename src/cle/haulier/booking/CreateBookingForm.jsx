@@ -620,8 +620,41 @@ export function CreateBookingForm() {
                             <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
                                 <SelectField label="Driver Name" name="driverId" icon={<User size={18}/>} value={formData.driverId} onChange={handleChange} error={errors.driverId} required options={drivers.map(d => ({ label: d.name, value: d.id }))}/>
                                 <SelectField label="PM No. (Prime Mover)" name="pmId" icon={<Hash size={18}/>} value={formData.pmId} onChange={handleChange} error={errors.pmId} required options={primeMovers.map(p => ({ label: p.plateNumber, value: p.id }))}/>
-                                <SelectField label="Booking Date" name="bookingDate" icon={<Clock size={18}/>} value={selectedDate} onChange={handleDateChange} required options={availableDates.map(d => ({ label: d, value: d }))}/>
-                                <SelectField label="Time Slot" name="timeSlotId" icon={<Clock size={18}/>} value={formData.timeSlotId} onChange={handleChange} error={errors.timeSlotId} required disabled={!selectedDate} options={filteredSlots.filter(s => s.totalSlot > 0).map(s => ({label: `${s.time} (${s.totalSlot} left)`, value: s.id}))}/>
+                               
+                                <SelectField 
+                                    label="Booking Date" n
+                                    ame="bookingDate" 
+                                    icon={<Clock size={18}/>} 
+                                    value={selectedDate} 
+                                    onChange={handleDateChange} 
+                                    options={availableDates.map(d => ({ label: d, value: d }))}/>
+                                <SelectField
+                                    label="Time Slot"
+                                    name="timeSlotId"
+                                    icon={<Clock size={18}/>}
+                                    value={formData.timeSlotId}
+                                    onChange={handleChange}
+                                    error={errors.timeSlotId}
+                                    required disabled={!selectedDate} // Prevents clicking until a date is selected
+                                    options={filteredSlots.map(s => {
+                                        // Correctly calculates slots left using PascalCase
+                                        const availableCount = s.pickUpTotalSlot ?? s.dropOffTotalSlot ?? 0;
+                                        return {
+                                            label: `${s.time} (${availableCount} left)`,
+                                            value: s.id
+                                        };
+                                    })}
+                                />
+                                {/*<SelectField 
+                                    label="Time Slot" 
+                                    name="timeSlotId" 
+                                    icon={<Clock size={18}/>} 
+                                    value={formData.timeSlotId} 
+                                    onChange={handleChange} 
+                                    error={errors.timeSlotId} 
+                                    required disabled={!selectedDate} 
+                                    options={filteredSlots.filter(s => s.totalSlot > 0).map(s => ({label: `${s.time} (${s.totalSlot} left)`, value: s.id}))}/>*/}
+                                
                                 <SelectField label="Trailer No." name="trailerId" icon={<LucideTruck size={18}/>} value={formData.trailerId} onChange={handleChange} error={errors.trailerId} required options={trailers.map(t => ({ label: `${t.plateNumber} - ${t.type}`, value: t.id }))}/>
                             </div>
                         </div>
