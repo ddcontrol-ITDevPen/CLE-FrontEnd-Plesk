@@ -109,50 +109,103 @@ export function ViewROTDetails() {
         const ext = fileName.split('.').pop().toLowerCase();
         if (['jpg', 'jpeg', 'png'].includes(ext)) return <FileImage className="text-orange-500" />;
         if (ext === 'pdf') return <FileText className="text-red-500" />;
-        return <File className="text-blue-500" />;
+        if (['xlsx', 'xls', 'csv'].includes(ext)) return <FileText className="text-green-600" />; // Spreadsheets
+        if (['docx', 'doc'].includes(ext)) return <FileText className="text-blue-600" />; // Word documents
+        if (['pptx', 'ppt'].includes(ext)) return <FileText className="text-orange-600" />; // PowerPoint
+        return <File className="text-gray-500" />;
     };
 
     // Updated Download Function
-    const handleDownload = (filePath, fileName) => {
+    // Updated Download Function
+    const handleDownload = async (filePath, fileName) => {
         if (!filePath) {
             toast.error("File path is empty");
             return;
         }
 
-        // If it's already a full cloud link, use it directly. 
-        // Otherwise fallback to your old local API structure.
+        // 1. Resolve full URL pathing
         const downloadUrl = filePath.startsWith('http')
             ? filePath
             : `http://localhost:5173/api/uploads/${filePath}`;
 
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.setAttribute('download', fileName || 'download.xlsx');
-        link.setAttribute('target', '_blank');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // fallback filename if none is passed
+        const finalFileName = fileName || downloadUrl.split('/').pop() || 'download';
+
+        try {
+            toast.loading("Starting download...", { id: "download-toast" });
+
+            // 2. Fetch the file data as a binary blob
+            const response = await fetch(downloadUrl);
+            if (!response.ok) throw new Error("Network response was not ok");
+
+            const blob = await response.blob();
+
+            // 3. Create a local object URL from the blob data
+            const blobUrl = window.URL.createObjectURL(blob);
+
+            // 4. Trigger the download using a temporary hidden anchor element
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.setAttribute('download', finalFileName);
+            document.body.appendChild(link);
+            link.click();
+
+            // 5. Cleanup
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+
+            toast.success("Download complete!", { id: "download-toast" });
+        } catch (error) {
+            console.error("Download failed:", error);
+
+            // Fallback method: If fetch fails due to CORS restrictions on local development, 
+            // try opening the raw URL directly in a new tab as a last resort.
+            toast.info("Attempting direct download link...", { id: "download-toast" });
+            const fallbackLink = document.createElement('a');
+            fallbackLink.href = downloadUrl;
+            fallbackLink.setAttribute('download', finalFileName);
+            fallbackLink.setAttribute('target', '_blank');
+            document.body.appendChild(fallbackLink);
+            fallbackLink.click();
+            document.body.removeChild(fallbackLink);
+        }
     };
 
 // Updated Preview Function
-    const handlePreview = (filePath) => {
+    const handlePreview = (filePath, fileName) => {
         if (!filePath) {
             toast.error("File path is empty");
             return;
         }
 
-        const fileUrl = filePath.startsWith('http')
+        // 1. Resolve URL (Cloudinary vs Local)
+        let fileUrl = filePath.startsWith('http')
             ? filePath
             : `http://localhost:5173/api/uploads/${filePath}`;
 
-        // Excel files cannot be rendered natively in web browsers.
-        // We pass the Cloudinary link to Microsoft Office Viewer to load it!
-        if (fileUrl.toLowerCase().endsWith('.xlsx') || fileUrl.toLowerCase().endsWith('.xls')) {
+        // 2. Cloudinary raw PDF fix
+        if (fileUrl.includes('res.cloudinary.com') && fileUrl.toLowerCase().endsWith('.pdf')) {
+            fileUrl = fileUrl.replace('/upload/', '/upload/f_auto/');
+        }
+
+        const ext = fileName ? fileName.split('.').pop().toLowerCase() : fileUrl.split('.').pop().toLowerCase();
+
+        // 3. Handle Microsoft Office Files (Word, Excel, PowerPoint) & CSV via Office Apps Viewer
+        const officeExtensions = ['docx', 'doc', 'xlsx', 'xls', 'pptx', 'ppt', 'csv'];
+
+        if (officeExtensions.includes(ext)) {
+            // Microsoft Office Web Viewer requires a publicly accessible URL
             const officePreviewUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`;
             window.open(officePreviewUrl, '_blank');
-        } else {
-            // Images and PDFs can be opened directly in a new tab
+        }
+        // 4. Handle Standard Native Files (PDFs and Images)
+        else if (['pdf', 'jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
             window.open(fileUrl, '_blank');
+        }
+        // 5. Fallback for unhandled types
+        else {
+            toast.error("Preview not supported for this file type. Downloading instead.");
+            handleDownload(filePath, fileName);
         }
     };
 
