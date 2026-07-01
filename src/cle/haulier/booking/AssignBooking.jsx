@@ -131,39 +131,7 @@ export function AssignBooking() {
             console.log("type:", typeof updatedData.timeSlotId);
             // 1. Register the newly assigned asset details
             await registerAssignedHaulier(updatedData);
-           
-            // 2. Update the tracking status on the corresponding container
-            const updatedContainerData = {
-                ...container,
-                containerId: box_id,
-                status: "Enroute",
-                enrouteTime: new Date().toISOString(),
-                UpdatedBy: updatedBy
-            };
-            await updateContainer(formData.containerId, updatedContainerData);
-
-            // 3. Find the selected slot record to securely reduce its active available count by 1
-            const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
-            if (selectedSlot) {
-                const updatedSlotData = {
-                    id: selectedSlot.id,
-                    date: selectedSlot.date,
-                    time: selectedSlot.time,
-                    depotId: selectedSlot.depotId,
-                    changeRemarks: selectedSlot.changeRemarks,
-                    isCancelled: selectedSlot.isCancelled,
-                    // Check whichever property exists on the dataset and safely calculate the capacity change
-                    pickUpTotalSlot: selectedSlot.pickUpTotalSlot !== null && selectedSlot.pickUpTotalSlot !== undefined
-                        ? selectedSlot.pickUpTotalSlot - 1
-                        : null,
-                    dropOffTotalSlot: selectedSlot.dropOffTotalSlot !== null && selectedSlot.dropOffTotalSlot !== undefined
-                        ? selectedSlot.dropOffTotalSlot - 1
-                        : null
-                };
-
-                await updateTimeSlot(formData.timeSlotId, updatedSlotData);
-            }
-
+            
             toast.success("Haulier assigned successfully!");
             setTimeout(() => navigate("/haulier/booking/"), 1500);
         } catch (error) {
