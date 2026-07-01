@@ -3,11 +3,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { getContainerById } from "../../../services/containerService.js";
 import { motion } from "framer-motion";
-import {ArrowLeft, Clock, FileText} from "lucide-react";
+import {ArrowLeft, Clock, Download, Eye, File, FileImage, FileText} from "lucide-react";
 import ShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
 import {getCompanyById} from "../../../services/companyService.js";
 import {getAssignedHaulierByContainerId} from "../../../services/assignedHaulier.js";
-
+import {
+    deleteBookingDocument,
+    getBookingDocumentByBookingNumber,
+    updateBookingDocument
+} from "../../../services/bookingDocumentService.js";
+import {toast} from "sonner";
 export function ViewBookings() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -17,7 +22,8 @@ export function ViewBookings() {
     const [isLoading, setIsLoading] = useState(true);
     const [billingPartyName, setBillingPartyName] = useState(null);
     const [assignedHaulier, setAssignedHaulier] = useState(null);
-
+    const [documents, setDocuments] = useState([]);
+    
     useEffect(() => {
         const fetchDetails = async () => {
             try {
@@ -36,6 +42,10 @@ export function ViewBookings() {
                     } catch {
                         setBillingPartyName("N/A");
                     }
+                }
+                if (result.rotNumber) {
+                    const docs = await getBookingDocumentByBookingNumber(result.rotNumber);
+                    setDocuments(docs);
                 }
             } catch (error) {
                 console.error("Error fetching ROT details:", error);
@@ -95,6 +105,57 @@ export function ViewBookings() {
         </>
     );
 
+    const getFileIcon = (fileName) => {
+        const ext = fileName.split('.').pop().toLowerCase();
+        if (['jpg', 'jpeg', 'png'].includes(ext)) return <FileImage className="text-orange-500" />;
+        if (ext === 'pdf') return <FileText className="text-red-500" />;
+        return <File className="text-blue-500" />;
+    };
+
+    // Updated Download Function
+    const handleDownload = (filePath, fileName) => {
+        if (!filePath) {
+            toast.error("File path is empty");
+            return;
+        }
+
+        // If it's already a full cloud link, use it directly. 
+        // Otherwise fallback to your old local API structure.
+        const downloadUrl = filePath.startsWith('http')
+            ? filePath
+            : `http://localhost:5173/api/uploads/${filePath}`;
+
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.setAttribute('download', fileName || 'download.xlsx');
+        link.setAttribute('target', '_blank');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+// Updated Preview Function
+    const handlePreview = (filePath) => {
+        if (!filePath) {
+            toast.error("File path is empty");
+            return;
+        }
+
+        const fileUrl = filePath.startsWith('http')
+            ? filePath
+            : `http://localhost:5173/api/uploads/${filePath}`;
+
+        // Excel files cannot be rendered natively in web browsers.
+        // We pass the Cloudinary link to Microsoft Office Viewer to load it!
+        if (fileUrl.toLowerCase().endsWith('.xlsx') || fileUrl.toLowerCase().endsWith('.xls')) {
+            const officePreviewUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`;
+            window.open(officePreviewUrl, '_blank');
+        } else {
+            // Images and PDFs can be opened directly in a new tab
+            window.open(fileUrl, '_blank');
+        }
+    };
+    
     return (
         <Layout role="forwarder">
             <div className="space-y-6 max-w-7xl mx-auto pb-10">
@@ -213,7 +274,46 @@ export function ViewBookings() {
                     <InfoRow label="ROT Date" value={data.rotDate} />
                 </Section>
                 )}
-                
+                {/* Documents Section */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 border-b pb-2">
+                        <FileText className="text-blue-600" size={24} />
+                        <h2 className="text-xl font-bold text-gray-800">Document Vault</h2>
+                    </div>
+
+                    {documents.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {documents.map((doc) => (
+                                <div key={doc.bookingDocumentId} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group">
+                                    <div className="flex items-start gap-3">
+                                        <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50">
+                                            {getFileIcon(doc.fileName)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] font-bold text-blue-600 uppercase">{doc.documentType}</p>
+                                            <h3 className="font-semibold text-gray-800 text-sm truncate">{doc.fileName}</h3>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-start gap-4 mt-4 pt-3 border-t border-gray-50">
+                                        <div className="flex gap-4">
+                                            <button onClick={() => handlePreview(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-blue-50 text-gray-500 hover:text-blue-600 rounded-md"><Eye size={16} />Preview</button>
+                                            <button onClick={() => handleDownload(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-green-50 text-gray-500 hover:text-green-600 rounded-md"><Download size={16} />Download</button>
+                                        </div>
+                                        {/*<div className="flex gap-1">*/}
+                                        {/*    <button onClick={() => { setEditModal({ isOpen: true, doc }); setNewFileName(doc.fileName); }} className="p-1.5 hover:bg-amber-50 text-gray-500 hover:text-amber-600 rounded-md"><Edit3 size={16} /></button>*/}
+                                        {/*    <button onClick={() => setDeleteModal({ isOpen: true, docId: doc.bookingDocumentId })} className="p-1.5 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-md"><Trash2 size={16} /></button>*/}
+                                        {/*</div>*/}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="bg-gray-50 rounded-2xl border-2 border-dashed p-8 text-center">
+                            <p className="text-gray-400 text-sm">No documents attached to this container.</p>
+                        </div>
+                    )}
+                </div>
                 {/* Log of Shipment (Timeline) */}
                 {ShipmentLog(data)}
             </div>
