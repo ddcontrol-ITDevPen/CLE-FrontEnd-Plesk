@@ -131,7 +131,9 @@ export function AssignBooking() {
         
             // 1. Register the newly assigned asset details
             await registerAssignedHaulier(updatedData);
-           
+            console.log("Assigned haulier created successfully");
+
+      
             // 2. Update the tracking status on the corresponding container
             const updatedContainerData = {
                 ...container,
@@ -140,10 +142,15 @@ export function AssignBooking() {
                 enrouteTime: new Date().toISOString(),
                 UpdatedBy: updatedBy
             };
-            await updateContainer(formData.containerId, updatedContainerData);
-
+            console.log("Updating container...", updatedContainerData);
+            //await updateContainer(formData.containerId, updatedContainerData);
+            const result = await updateContainer(formData.containerId, updatedContainerData);
+            console.log("Container updated:", result);
+            
+            
             // 3. Find the selected slot record to securely reduce its active available count by 1
             const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
+            console.log("selectedSlot", selectedSlot);
             if (selectedSlot) {
                 const updatedSlotData = {
                     id: selectedSlot.id,
@@ -167,8 +174,17 @@ export function AssignBooking() {
             toast.success("Haulier assigned successfully!");
             setTimeout(() => navigate("/haulier/booking/"), 1500);
         } catch (error) {
-            toast.error("Failed to save assignment");
+            //toast.error("Failed to save assignment");
+            //console.error(error);
             console.error(error);
+
+            console.log(error.response?.data);
+
+            toast.error(
+                error.response?.data?.message ||
+                error.message ||
+                "Failed to save assignment"
+            );
         }
     };
 
