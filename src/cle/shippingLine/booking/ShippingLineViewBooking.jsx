@@ -3,20 +3,17 @@ import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { getContainerById } from "../../../services/containerService.js";
 import { motion } from "framer-motion";
-import {ArrowLeft, Clock, FileText} from "lucide-react";
+import { ArrowLeft, Clock } from "lucide-react";
 import ShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
 import {getCompanyById} from "../../../services/companyService.js";
-import {getAssignedHaulierByContainerId} from "../../../services/assignedHaulier.js";
 
 export function ShippingLineViewBooking() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [data, setData] = useState(null);
-    const [forwarding, setForwarding] = useState(null);
     const [companyDetails, setCompanyDetails] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [billingPartyName, setBillingPartyName] = useState(null);
-    const [assignedHaulier, setAssignedHaulier] = useState(null);
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -24,11 +21,6 @@ export function ShippingLineViewBooking() {
                 const result = await getContainerById(id);
                 console.log(result);
                 setData(result);
-                const forwardingId = result.booking?.forwardingId;
-                const forwardingInfo = await getCompanyById(forwardingId);
-                setForwarding(forwardingInfo);
-                const assignedHaulierData = await getAssignedHaulierByContainerId(id);
-                setAssignedHaulier(assignedHaulierData);
                 if (result.booking?.billingParty) {
                     try {
                         const company = await getCompanyById(result.booking.billingParty);
@@ -96,34 +88,16 @@ export function ShippingLineViewBooking() {
     );
 
     return (
-        <Layout role="shippingLine">
+        <Layout role="shippingline">
             <div className="space-y-6 max-w-7xl mx-auto pb-10">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold">View ROT</h1>
-                    <div className="flex items-center gap-4 ">
-                        <button className="flex items-center bg-system-color text-white font-bold rounded-lg px-4 py-2 gap-3 cursor-pointer"
-                                onClick={() => navigate(`/rot/view/pdf/${data.containerId}`)}>
-                            <FileText
-                                size={20}
-                                className="text-blue-600-600 cursor-pointer hover:text-blue-800"/>
-                            <p>e-ROT</p>
-                        </button>
-                        {data.status !== "Assigned" &&
-                            <button className="flex items-center bg-system-color text-white font-bold rounded-lg px-4 py-2 gap-3 cursor-pointer"
-                                    onClick={() => navigate(`/haulier/booking/view/eCSN/${data.containerId}`)}>
-                                <FileText
-                                    size={20}
-                                    className="text-blue-600-600 cursor-pointer hover:text-blue-800" />
-                                <p>e-CSN</p>
-                            </button>
-                        }
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold transition-all cursor-pointer"
-                        >
-                            <ArrowLeft size={18} /> Back
-                        </button>
-                    </div>
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold transition-all"
+                    >
+                        <ArrowLeft size={18} /> Back
+                    </button>
                 </div>
 
                 {/* General Information */}
@@ -172,12 +146,12 @@ export function ShippingLineViewBooking() {
                         <InfoRow label="Trailer Type" value={data.trailerType} />
                     </Section>
 
-                    <Section title="Forwarding Information">
-                        <InfoRow label="Name" value={forwarding.companyName} />
-                        <InfoRow label="Address" value={forwarding.address} />
-                        <InfoRow label="PIC Name" value={forwarding.picName} />
-                        <InfoRow label="PIC Number" value={forwarding.handphoneNumber} />
-                        <InfoRow label="PIC Email" value={forwarding.emailAddress} />
+                    <Section title="Haulier Information">
+                        <InfoRow label="Name" value={data.haulierName} />
+                        <InfoRow label="Address" value={data.haulier?.address} />
+                        <InfoRow label="PIC Name" value={data.haulier?.picName} />
+                        <InfoRow label="PIC Number" value={data.haulier?.handphoneNumber} />
+                        <InfoRow label="PIC Email" value={data.haulier?.emailAddress} />
                     </Section>
 
                     <Section title="Consignee Information">
@@ -204,15 +178,6 @@ export function ShippingLineViewBooking() {
                         <InfoRow label="PIC Email" value={data.depot?.emailAddress} />
                     </Section>
                 </div>
-                {(data.status !== "Assigned" && data.status !== "Deleted" && data.status !== "Rejected") && (
-                    <Section title="Enroute Information">
-                        <InfoRow label="Driver" value={`${assignedHaulier?.driver?.name} (${assignedHaulier?.driver?.mobileNumber} / ${assignedHaulier?.driver?.emailAddress})`} />
-                        <InfoRow label="PM Number" value={assignedHaulier.primeMover?.plateNumber} />
-                        <InfoRow label="Trailer Number" value={`${assignedHaulier.trailer?.plateNumber} - ${assignedHaulier.trailer?.type}`} />
-                        <InfoRow label="Time Slot" value={`${assignedHaulier?.timeSlot?.date} @ ${assignedHaulier?.timeSlot?.time}`} />
-                        <InfoRow label="ROT Date" value={data.rotDate} />
-                    </Section>
-                )}
 
                 {/* Log of Shipment (Timeline) */}
                 {ShipmentLog(data)}

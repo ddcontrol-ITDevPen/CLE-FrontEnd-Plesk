@@ -63,11 +63,18 @@ export default function LoginPage() {
             setIsSuccess(true);
 
             const dbAccess = userData.access || "";
-
+            // 👉 1. Create a sanitized role string (strips spaces and converts to lowercase)
+            const sanitizedRole = userData.role.replace(/\s+/g, '').toLowerCase();
+            // This turns "Shipping Line" into "shippingline"
+            
             if (access === 'CLE' && dbAccess.includes('CLE')) {
                 setTimeout(() => {
-                    navigate(`/${userData.role.toLowerCase()}/dashboard`);
+                    // 👉 2. Update this to use the sanitized string instead
+                    navigate(`/${sanitizedRole}/dashboard`);
                 }, 2000);
+             /*   setTimeout(() => {
+                    navigate(`/${userData.role.toLowerCase()}/dashboard`);
+                }, 2000);*/
             } else if (access === 'ALE' && dbAccess.includes('ALE')) {
                 setTimeout(() => {
                     navigate(`/ale/${userData.role.toLowerCase() === "booking agent" ? "bookingAgent" : userData.role.toLowerCase()}/dashboard`);

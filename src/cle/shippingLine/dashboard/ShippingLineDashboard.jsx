@@ -1,259 +1,288 @@
-﻿import React, { useState, useEffect, useMemo } from "react";
+﻿import React, {useState, useEffect, useMemo} from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import {
+    LayoutDashboard,
+    PlusCircle,
     Truck,
-    LogIn,
-    LogOut,
-    Timer,
-    CheckCircle,
-    AlertCircle,
-    ArrowRightLeft,
-    User
+    ClipboardCheck,
+    Clock,
+    History,
+    ArrowUpRight,
+    UserCircle
 } from "lucide-react";
 import {
-    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
-import { getAllContainersByDepot } from "../../../services/containerService.js";
-import { getUserById } from "../../../services/userService.js";
-import { toast } from "sonner";
+import {getAllBookingsByForwarding, getAllBookingsByShippingLine} from "../../../services/bookingService.js";
+import {getAllContainersByForwarding} from "../../../services/containerService.js";
+import {toast} from "sonner";
+import {getUserById} from "../../../services/userService.js";
 
 export function ShippingLineDashboard() {
     const navigate = useNavigate();
     const userName = localStorage.getItem("userName");
     const userId = localStorage.getItem("userId");
-
+    const [bookings, setBookings] = useState([]);
     const [containers, setContainers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [chartView, setChartView] = useState("Weekly");
+    const recentContainers = [...containers]
+        .sort((a, b) => new Date(b.assignedTime) - new Date(a.assignedTime))
+        .slice(0, 3);
 
-    useEffect(() => {
+    const chartData = useMemo(() => {
+        if (chartView === "Weekly") {
+            // Weekly Logic (Mon-Sun)
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const counts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+
+            containers.forEach(cont => {
+                if (!cont.assignedTime) return;
+                const dayName = days[new Date(cont.assignedTime).getDay()];
+                if (counts[dayName] !== undefined) counts[dayName]++;
+            });
+
+            return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => ({
+                name: day,
+                value: counts[day]
+            }));
+        } else {
+            // Monthly Logic (Jan-Dec)
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const counts = {};
+            months.forEach(m => counts[m] = 0);
+
+            containers.forEach(cont => {
+                if (!cont.assignedTime) return;
+                const monthName = months[new Date(cont.assignedTime).getMonth()];
+                counts[monthName]++;
+            });
+
+            return months.map(month => ({
+                name: month,
+                value: counts[month]
+            }));
+        }
+    }, [containers, chartView]);
+
+    useEffect( () => {
+        if (!userId) {
+            console.error("No user ID found, redirecting...");
+            navigate("/login");
+            return;
+        }
+
         const fetchData = async () => {
+            setIsLoading(true);
             try {
                 const userData = await getUserById(userId);
-                const depotId = userData?.companyCode;
+                const shippingId = userData?.companyCode;
+                console.log(shippingId);
 
-                if (depotId) {
-                    const containerData = await getAllContainersByDepot(depotId);
-                    setContainers(containerData || []);
+                if (!shippingId) {
+                    console.warn("User has no associated shippingId");
+                    setIsLoading(false);
+                    return;
                 }
+                // 1. Fetch all bookings matching this specific Shipping Line ID
+                const bookingData = await getAllBookingsByShippingLine(shippingId);
+                const safeBookings = bookingData || [];
+                setBookings(safeBookings);
+
+                // 2. Extract unique Forwarding IDs associated with these bookings
+                const linkedForwarderIds = [
+                    ...new Set(
+                        safeBookings
+                            .map(b => b.forwardingId)
+                            .filter(id => id !== null && id !== undefined && id !== "")
+                    )
+                ];
+                if (linkedForwarderIds.length > 0) {
+                    // 3. Trigger concurrent API requests for each forwarder's containers
+                    const containerRequests = linkedForwarderIds.map(forwarderId =>
+                        getAllContainersByForwarding(forwarderId).catch(err => {
+                            console.error(`Error loading containers for forwarder ${forwarderId}:`, err);
+                            return []; // Gracefully fallback to an empty array if one forwarder fails
+                        })
+                    );
+
+                    const results = await Promise.all(containerRequests);
+
+                    // 4. Flatten the matrix of array results into a single flat collection
+                    const flattenedContainers = results.flat();
+                    setContainers(flattenedContainers || []);
+                } else {
+                    setContainers([]);
+                }
+                
+              
+              
             } catch (error) {
-                toast.error("Failed to sync fleet data");
+                console.error("Dashboard Fetch Error:", error);
+                toast.error("Failed to load dashboard data");
             } finally {
                 setIsLoading(false);
             }
-        };
+        }
         fetchData();
-    }, [userId]);
+    }, [userId, navigate]);
 
-    // Metric Calculations
-    const stats = useMemo(() => {
-        let totalTurnAround = 0;
-        let tatCount = 0;
-        let activeCount = 0;
-        let inDepotCount = 0;
-        let completedTodayCount = 0;
-        let currentWeekTAT = [];
-        let previousWeekTAT = [];
-        const now = new Date();
-        const today = now.toDateString();
-        const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-
-        containers.forEach(c => {
-            const status = c.status || "";
-            const statusLower = status.toLowerCase();
-
-            if (["enroute", "gatedin", "gatedout"].includes(statusLower)) activeCount++;
-            if (statusLower === "gatedin") inDepotCount++;
-            if (status === "Completed" && c.deliveredTime) {
-                if (new Date(c.deliveredTime).toDateString() === today) completedTodayCount++;
-            }
-            if (c.turnAroundTime > 0) {
-                totalTurnAround += c.turnAroundTime;
-                tatCount++;
-            }
-            if (c.turnAroundTime > 0 && c.deliveredTime) {
-                const deliveryDate = new Date(c.deliveredTime);
-                if (deliveryDate >= oneWeekAgo) {
-                    currentWeekTAT.push(c.turnAroundTime);
-                } else if (deliveryDate >= twoWeeksAgo && deliveryDate < oneWeekAgo) {
-                    previousWeekTAT.push(c.turnAroundTime);
-                }
-            }
-        });
-
-        const currentAvg = currentWeekTAT.length > 0
-            ? currentWeekTAT.reduce((a, b) => a + b, 0) / currentWeekTAT.length
-            : 0;
-
-        const previousAvg = previousWeekTAT.length > 0
-            ? previousWeekTAT.reduce((a, b) => a + b, 0) / previousWeekTAT.length
-            : 0;
-
-        let efficiencyGap = 0;
-        if (previousAvg > 0) efficiencyGap = ((previousAvg - currentAvg) / previousAvg) * 100;
-
-        const result = {
-            totalActive: activeCount,
-            inDepot: inDepotCount,
-            completedToday: completedTodayCount,
-            avgTat: tatCount > 0 ? (totalTurnAround / tatCount).toFixed(1) : "0.0",
-            efficiency: Math.abs(efficiencyGap).toFixed(1),
-            isImproving: efficiencyGap >= 0,
-        };
-        return result;
-    }, [containers]);
-
-    const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group">
-            <div className={`absolute right-0 top-0 h-full w-1 ${color}`} />
-            <div className="flex justify-between items-start">
-                <div>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{title}</p>
-                    <h3 className="text-3xl font-black mt-2 text-gray-800">{value}</h3>
-                    <p className="text-[10px] text-gray-500 mt-1 font-medium">{subtext}</p>
-                </div>
-                <div className={`p-3 rounded-xl bg-gray-50 group-hover:scale-110 transition-transform`}>
-                    <Icon size={24} className={color.replace('bg-', 'text-')} />
-                </div>
+    const StatCard = ({ title, value, icon: Icon, colorClass, borderClass }) => (
+        <div className={`bg-white p-6 rounded-xl shadow-sm border-l-4 ${borderClass} flex justify-between items-start hover:shadow-md transition-shadow`}>
+            <div>
+                <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">{title}</p>
+                <h3 className="text-2xl font-bold mt-1 text-gray-800">{value}</h3>
+            </div>
+            <div className={`p-3 rounded-lg ${colorClass}`}>
+                <Icon size={24} className="text-white" />
             </div>
         </div>
     );
 
-    const chartData = useMemo(() => {
-        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        const counts = {
-            Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0
-        };
-
-        containers.forEach(cont => {
-            if (!cont.gatedInTime) return;
-            const date = new Date(cont.gatedInTime);
-            const dayName = days[date.getDay() === 0 ? 6 : date.getDay() - 1];
-
-            if (counts[dayName] !== undefined) {
-                counts[dayName]++;
-            }
-        });
-
-        return days.map(day => ({
-            name: day,
-            value: counts[day]
-        }));
-    }, [containers]);
-
     return (
-        <Layout role="shippingLine">
+        <Layout role="shippingline">
             <div className="p-6 space-y-8 max-w-7xl mx-auto">
 
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="h-14 w-14 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
-                            <Truck size={30} className="text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-black text-gray-800">Fleet Operations</h1>
-                            <p className="text-gray-500 text-sm font-medium">Monitoring {stats.totalActive} active containers across the network.</p>
-                        </div>
+                {/* Greeting Section */}
+                <div className="flex items-center gap-4">
+                    <div className="bg-blue-100 p-3 rounded-full">
+                        <UserCircle size={40} className="text-blue-600" />
                     </div>
-                    {/*<div className="flex gap-2">*/}
-                    {/*    <button className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 transition-colors">*/}
-                    {/*        <ArrowRightLeft size={16} /> Gate Logs*/}
-                    {/*    </button>*/}
-                    {/*</div>*/}
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-800">Welcome back, {userName}!</h1>
+                        <p className="text-gray-500 text-sm">Here is what's happening with your shipments today.</p>
+                    </div>
                 </div>
 
-                {/* Logistics Stats */}
+                {/* Stat Cards - Bright Left Border Style */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <StatCard
-                        title="Live Fleet"
-                        value={stats.totalActive}
+                        title="Total ROT"
+                        value={containers.length}
+                        icon={LayoutDashboard}
+                        colorClass="bg-orange-600"
+                        borderClass="border-orange-600"
+                    />
+                    <StatCard
+                        title="Pending"
+                        value={containers.filter(c => c.status === "Assigned").length}
+                        icon={Clock}
+                        colorClass="bg-amber-500"
+                        borderClass="border-amber-500"
+                    />
+                    <StatCard
+                        title="Enroute"
+                        value={containers.filter(c => c.status === "Enroute").length}
                         icon={Truck}
-                        color="bg-blue-600"
-                        subtext="Containers on road"
+                        colorClass="bg-indigo-500"
+                        borderClass="border-indigo-500"
                     />
                     <StatCard
-                        title="Gate In"
-                        value={stats.inDepot}
-                        icon={LogIn}
-                        color="bg-amber-500"
-                        subtext="Currently at Depot"
-                    />
-                    <StatCard
-                        title="Avg TAT"
-                        value={`${stats.avgTat}h`}
-                        icon={Timer}
-                        color="bg-purple-600"
-                        subtext="Turn Around Time"
-                    />
-                    <StatCard
-                        title="Delivered"
-                        value={stats.completedToday}
-                        icon={CheckCircle}
-                        color="bg-emerald-500"
-                        subtext="Completed Today"
+                        title="Completed"
+                        value={containers.filter(c => c.status === "Completed").length}
+                        icon={ClipboardCheck}
+                        colorClass="bg-emerald-500"
+                        borderClass="border-emerald-500"
                     />
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* TAT Performance Graph */}
-                    <div className="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                        <div className="flex justify-between items-center mb-8">
-                            <h3 className="text-lg font-bold text-gray-800">Performance Efficiency</h3>
-                            <div className="flex gap-2">
-                                <span className={`flex items-center gap-1 text-xs font-bold ${stats.isImproving ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50'} px-2 py-1 rounded-md`}>
-                                   {stats.isImproving ? `+${stats.efficiency}%` : `${stats.efficiency}%`} Efficiency
-                                </span>
+
+                    {/* Quick Actions & Recent History */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                                <PlusCircle size={20} className="text-blue-600" /> Quick Actions
+                            </h3>
+                            <button
+                                onClick={() => navigate("/forwarding/rot/add/form1")}
+                                className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02]"
+                            >
+                                <PlusCircle size={22} />
+                                Create New ROT
+                            </button>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-bold flex items-center gap-2">
+                                    <History size={20} className="text-gray-600" /> Recent Activity
+                                </h3>
+                                <button className="text-system-color text-xs font-bold hover:underline" onClick={() => navigate("/forwarding/rot/history")}>View All</button>
+                            </div>
+                            <div className="space-y-4">
+                                {isLoading ? (
+                                    <p className="text-sm text-gray-400 text-center py-4">Loading...</p>
+                                ) : recentContainers.length > 0 ? (
+                                    recentContainers.map((cont) => (
+                                        <div
+                                            key={cont.containerId}
+                                            onClick={() => navigate(`/forwarding/rot/view/${cont.containerId}`)}
+                                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group cursor-pointer hover:bg-gray-100 transition-colors"
+                                        >
+                                            <div className="overflow-hidden">
+                                                <p className="text-sm font-bold text-gray-700 truncate">
+                                                    {cont.containerNumber || cont.booking.blOrBookingNumber}
+                                                </p>
+                                                <p className="text-xs text-gray-400">
+                                                    {cont.assignedTime ? new Date(cont.assignedTime).toLocaleDateString() : 'Just now'}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                                                    cont.status === 'Assigned' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-system-color'
+                                                }`}>
+                                                    {cont.status}
+                                                </span>
+                                                <ArrowUpRight size={16} className="text-gray-300 group-hover:text-blue-500 transition-colors" />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-6">
+                                        <p className="text-sm text-gray-400 italic">No recent activity found.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
-                        <div className="h-[300px]">
+                    </div>
+
+                    {/* Shipment Trend Graph */}
+                    <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <div className="flex justify-between items-center mb-6">
+                            <div>
+                                <h3 className="text-lg font-bold">Shipment Volume</h3>
+                                <p className="text-sm text-gray-400">Total containers moved {chartView === "Weekly" ? "this week" : "this year"}</p>
+                            </div>
+                            <select value={chartView} onChange={(e) => setChartView(e.target.value)} className="text-xs border-none bg-gray-100 p-2 rounded-lg font-semibold outline-none cursor-pointer">
+                                <option>Weekly</option>
+                                <option>Monthly</option>
+                            </select>
+                        </div>
+                        <div className="h-[300px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={chartData}>
-                                    <defs>
-                                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
-                                            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 600}} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12}} />
-                                    <Tooltip />
-                                    <Area type="monotone" dataKey="value" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
-                                </AreaChart>
+                                <BarChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#9ca3af'}} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#9ca3af'}} />
+                                    <Tooltip
+                                        cursor={{fill: '#f3f4f6'}}
+                                        contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
+                                    />
+                                    <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={chartView === "Weekly" ? 40 : 25}>
+                                        {chartData.map((entry, index) => {
+                                            const isCurrent = chartView === "Weekly"
+                                                ? index === (new Date().getDay() === 0 ? 6 : new Date().getDay() - 1)
+                                                : index === new Date().getMonth();
+                                            return <Cell key={`cell-${index}`} fill={isCurrent ? '#2563eb' : '#93c5fd'} />
+                                        })}
+                                    </Bar>
+                                </BarChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
 
-                    {/* Critical Alerts / Priority Movement */}
-                    <div className="bg-gray-900 rounded-3xl p-6 text-white shadow-xl">
-                        <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                            <AlertCircle size={20} className="text-amber-400" /> Critical Gate Alerts
-                        </h3>
-                        <div className="space-y-4">
-                            {containers.filter(c => c.timeStatus === "Urgent").slice(0, 4).map((c, i) => (
-                                <div key={i} className="bg-white/10 p-4 rounded-2xl border border-white/5 hover:bg-white/20 transition-all cursor-pointer">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className="text-[10px] font-black uppercase bg-amber-500 text-black px-2 py-0.5 rounded">Urgent</span>
-                                        <span className="text-[10px] text-gray-400 font-bold">{c.containerNumber}</span>
-                                    </div>
-                                    <p className="text-sm font-bold truncate">{c.booking?.blOrBookingNumber}</p>
-                                    <div className="flex items-center gap-2 mt-3 text-[11px] text-gray-300 font-medium">
-                                        <Timer size={14} /> Delayed in Gate: {c.turnAroundTime} mins
-                                    </div>
-                                </div>
-                            ))}
-                            {containers.filter(c => c.timeStatus === "Urgent").length === 0 && (
-                                <div className="text-center py-10">
-                                    <div className="bg-white/5 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <CheckCircle className="text-emerald-400" size={24} />
-                                    </div>
-                                    <p className="text-xs text-gray-400">All fleet movements are within TAT limits.</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
                 </div>
             </div>
         </Layout>

@@ -3,11 +3,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { getContainerById } from "../../../services/containerService.js";
 import { motion } from "framer-motion";
-import {ArrowLeft, Clock, FileText} from "lucide-react";
+import {ArrowLeft, Clock, Download, Eye, File, FileImage, FileText} from "lucide-react";
 import ShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
 import {getCompanyById} from "../../../services/companyService.js";
 import {getAssignedHaulierByContainerId} from "../../../services/assignedHaulier.js";
-
+import {
+    deleteBookingDocument,
+    getBookingDocumentByBookingNumber,
+    updateBookingDocument
+} from "../../../services/bookingDocumentService.js";
+import {toast} from "sonner";
 export function ViewBookings() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -17,7 +22,8 @@ export function ViewBookings() {
     const [isLoading, setIsLoading] = useState(true);
     const [billingPartyName, setBillingPartyName] = useState(null);
     const [assignedHaulier, setAssignedHaulier] = useState(null);
-
+    const [documents, setDocuments] = useState([]);
+    
     useEffect(() => {
         const fetchDetails = async () => {
             try {
@@ -36,6 +42,10 @@ export function ViewBookings() {
                     } catch {
                         setBillingPartyName("N/A");
                     }
+                }
+                if (result.rotNumber) {
+                    const docs = await getBookingDocumentByBookingNumber(result.rotNumber);
+                    setDocuments(docs);
                 }
             } catch (error) {
                 console.error("Error fetching ROT details:", error);
@@ -95,6 +105,112 @@ export function ViewBookings() {
         </>
     );
 
+    const getFileIcon = (fileName) => {
+        const ext = fileName.split('.').pop().toLowerCase();
+        if (['jpg', 'jpeg', 'png'].includes(ext)) return <FileImage className="text-orange-500" />;
+        if (ext === 'pdf') return <FileText className="text-red-500" />;
+        if (['xlsx', 'xls', 'csv'].includes(ext)) return <FileText className="text-green-600" />; // Spreadsheets
+        if (['docx', 'doc'].includes(ext)) return <FileText className="text-blue-600" />; // Word documents
+        if (['pptx', 'ppt'].includes(ext)) return <FileText className="text-orange-600" />; // PowerPoint
+        return <File className="text-gray-500" />;
+    };
+
+    // Updated Download Function
+
+    const handleDownload = async (filePath, fileName) => {
+        if (!filePath) {
+            toast.error("File path is empty");
+            return;
+        }
+
+        // 1. Resolve full URL pathing (Leaves original Cloudinary URL exactly as-is)
+        const downloadUrl = filePath.startsWith('http')
+            ? filePath
+            : `http://localhost:5173/api/uploads/${filePath}`;
+
+        const finalFileName = fileName || downloadUrl.split('/').pop() || 'download';
+
+        try {
+            toast.loading("Starting download...", { id: "download-toast" });
+
+            // 2. Fetch the file data as a binary blob
+            const response = await fetch(downloadUrl);
+            if (!response.ok) throw new Error("Network response was not ok");
+
+            const blob = await response.blob();
+
+            // 3. Create a temporary local object URL from the blob data
+            const blobUrl = window.URL.createObjectURL(blob);
+
+            // 4. Trigger the download using a temporary hidden anchor element
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.setAttribute('download', finalFileName);
+            document.body.appendChild(link);
+            link.click();
+
+            // 5. Cleanup
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+
+            toast.success("Download complete!", { id: "download-toast" });
+        } catch (error) {
+            console.error("Download failed:", error);
+
+            // Fallback method: If fetch fails due to CORS restrictions during local development, 
+            // open the raw URL in a new tab as an absolute last resort.
+            toast.info("Attempting direct download link...", { id: "download-toast" });
+            const fallbackLink = document.createElement('a');
+            fallbackLink.href = downloadUrl;
+            fallbackLink.setAttribute('download', finalFileName);
+            fallbackLink.setAttribute('target', '_blank');
+            document.body.appendChild(fallbackLink);
+            fallbackLink.click();
+            document.body.removeChild(fallbackLink);
+        }
+    };
+
+// Updated Preview Function
+    const handlePreview = (filePath, fileName) => {
+        if (!filePath) {
+            toast.error("File path is empty");
+            return;
+        }
+
+        // 1. Resolve full URL (Keep original Cloudinary structure intact)
+        const fileUrl = filePath.startsWith('http')
+            ? filePath
+            : `http://localhost:5173/api/uploads/${filePath}`;
+
+        const ext = fileName ? fileName.split('.').pop().toLowerCase() : fileUrl.split('.').pop().toLowerCase();
+
+        // 2. Route files to the best viewer
+        if (['xlsx', 'xls', 'docx', 'doc', 'pptx', 'ppt', 'csv'].includes(ext)) {
+            // Office files and CSVs go through Microsoft Office Viewer
+            const officePreviewUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`;
+            window.open(officePreviewUrl, '_blank');
+        }
+        else if (ext === 'pdf') {
+            // If it's a Cloudinary raw PDF throwing 401s, pass it to Google Docs Viewer.
+            // It bypasses the browser's strict stream checking and renders it cleanly.
+            if (fileUrl.includes('res.cloudinary.com')) {
+                const googlePreviewUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`;
+                window.open(googlePreviewUrl, '_blank');
+            } else {
+                // Local PDFs can still be opened directly
+                window.open(fileUrl, '_blank');
+            }
+        }
+        else if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
+            // Images never have rendering conflicts in raw delivery tabs
+            window.open(fileUrl, '_blank');
+        }
+        else {
+            toast.error("Preview not supported for this file type. Downloading instead.");
+            handleDownload(filePath, fileName);
+        }
+    };
+    
     return (
         <Layout role="forwarder">
             <div className="space-y-6 max-w-7xl mx-auto pb-10">
@@ -213,7 +329,46 @@ export function ViewBookings() {
                     <InfoRow label="ROT Date" value={data.rotDate} />
                 </Section>
                 )}
-                
+                {/* Documents Section */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 border-b pb-2">
+                        <FileText className="text-blue-600" size={24} />
+                        <h2 className="text-xl font-bold text-gray-800">Document Vault</h2>
+                    </div>
+
+                    {documents.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {documents.map((doc) => (
+                                <div key={doc.bookingDocumentId} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group">
+                                    <div className="flex items-start gap-3">
+                                        <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50">
+                                            {getFileIcon(doc.fileName)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] font-bold text-blue-600 uppercase">{doc.documentType}</p>
+                                            <h3 className="font-semibold text-gray-800 text-sm truncate">{doc.fileName}</h3>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-start gap-4 mt-4 pt-3 border-t border-gray-50">
+                                        <div className="flex gap-4">
+                                            <button onClick={() => handlePreview(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-blue-50 text-gray-500 hover:text-blue-600 rounded-md"><Eye size={16} />Preview</button>
+                                            <button onClick={() => handleDownload(doc.filePath, doc.fileName)} className="flex items-center gap-1 text-sm font-mediump-1.5 hover:bg-green-50 text-gray-500 hover:text-green-600 rounded-md"><Download size={16} />Download</button>
+                                        </div>
+                                        {/*<div className="flex gap-1">*/}
+                                        {/*    <button onClick={() => { setEditModal({ isOpen: true, doc }); setNewFileName(doc.fileName); }} className="p-1.5 hover:bg-amber-50 text-gray-500 hover:text-amber-600 rounded-md"><Edit3 size={16} /></button>*/}
+                                        {/*    <button onClick={() => setDeleteModal({ isOpen: true, docId: doc.bookingDocumentId })} className="p-1.5 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-md"><Trash2 size={16} /></button>*/}
+                                        {/*</div>*/}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="bg-gray-50 rounded-2xl border-2 border-dashed p-8 text-center">
+                            <p className="text-gray-400 text-sm">No documents attached to this container.</p>
+                        </div>
+                    )}
+                </div>
                 {/* Log of Shipment (Timeline) */}
                 {ShipmentLog(data)}
             </div>

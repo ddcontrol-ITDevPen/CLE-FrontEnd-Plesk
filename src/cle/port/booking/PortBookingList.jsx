@@ -148,12 +148,41 @@ export function PortBookingList ()  {
             const now = new Date().toISOString();
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName;
+            const isExport = currentContainer.booking?.movementType === "Export";
 
+            // 1. Initialize fields with their existing values
+            let acceptedTime = currentContainer.acceptedTime;
+            let rtAcceptedTime = currentContainer.rtAcceptedTime;
+
+            // 2. Explicitly apply the business logic based on Movement Type
+           /* if (statusModal.nextStatus === "Accepted") {
+                if (isExport) {
+                    rtAcceptedTime = now;
+                } else {
+                    acceptedTime = now;
+                }
+            }*/
+            
+            //2. Temp use
+            if (statusModal.nextStatus === "Accepted") {
+                // Case 1: Both are null -> update acceptedTime first
+                if (!currentContainer.rtAcceptedTime && !currentContainer.acceptedTime) {
+                    acceptedTime = now;
+                }
+                // Case 2: 2nd round where acceptedTime is already filled -> update rtAcceptedTime
+                else if (currentContainer.acceptedTime) {
+                    rtAcceptedTime = now;
+                }
+               
+            }
+            
             const payload = {
                 ...currentContainer,
                 toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
                 status: statusModal.nextStatus,
-                enrouteTime: statusModal.nextStatus === "Enroute" ? now : currentContainer.enrouteTime,
+                acceptedTime,
+                rtAcceptedTime,
+                //enrouteTime: statusModal.nextStatus === "Enroute" ? now : currentContainer.enrouteTime,
                 rejectedTime: statusModal.nextStatus === "Rejected" ? now : currentContainer.rejectedTime,
                 rejectedRemarks: statusModal.remarks,
                 UpdatedBy: updatedBy,
@@ -166,7 +195,160 @@ export function PortBookingList ()  {
             toast.error("Update failed", { id: toastId });
         }
     };
+    const handleGatedInExport = async (containerId) => {
+        const toastId = toast.loading("Updating status to Gate-In...");
 
+        try {
+            const currentContainer = await getContainerById(containerId);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = `${user.fullName} - ${user.companyName}`;
+            const now = new Date().toISOString();
+
+            // Determine which Gate-In time to update
+            let gatedInTime = currentContainer.gatedInTime;
+            let rtGatedInTime = currentContainer.rtGatedInTime;
+            if (!currentContainer.gatedInTime && !currentContainer.rtGatedInTime) {
+                // First Gate-In
+                gatedInTime = now;
+            } else if (currentContainer.gatedInTime && !currentContainer.rtGatedInTime) {
+                // Return Trip Gate-In
+                rtGatedInTime = now;
+            }
+
+            const payload = {
+                ...currentContainer,
+                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
+                status: "Gate-In",
+                gatedInTime,
+                rtGatedInTime,
+                //rtGatedInTime: new Date().toISOString(),
+                UpdatedBy: updatedBy,
+            };
+
+            await updateContainer(containerId, payload);
+            toast.success("Status updated to Gate-In", { id: toastId });
+            fetchData();
+        } catch (error) {
+            console.error("Update Error:", error);
+            toast.error("Failed to update status", { id: toastId });
+        }
+    };
+    const handleGatedInImport = async (containerId) => {
+        const toastId = toast.loading("Updating status to Gate-In...");
+
+        try {
+            const currentContainer = await getContainerById(containerId);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = `${user.fullName} - ${user.companyName}`;
+            const now = new Date().toISOString();
+
+            // Determine which Gate-In time to update
+            let gatedInTime = currentContainer.gatedInTime;
+            let rtGatedInTime = currentContainer.rtGatedInTime;
+            if (!currentContainer.gatedInTime && !currentContainer.rtGatedInTime) {
+                // First Gate-In
+                gatedInTime = now;
+            } else if (currentContainer.gatedInTime && !currentContainer.rtGatedInTime) {
+                // Return Trip Gate-In
+                rtGatedInTime = now;
+            }
+            
+            const payload = {
+                ...currentContainer,
+                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
+                status: "Gate-In",
+                gatedInTime,
+                rtGatedInTime,
+                //gatedInTime: new Date().toISOString(),
+                UpdatedBy: updatedBy,
+            };
+
+            await updateContainer(containerId, payload);
+            toast.success("Status updated to Gate-In", { id: toastId });
+            fetchData();
+        } catch (error) {
+            console.error("Update Error:", error);
+            toast.error("Failed to update status", { id: toastId });
+        }
+    };
+
+    const handleGatedOutExport = async (containerId) => {
+        const toastId = toast.loading("Updating status to Gate-Out...");
+        try {
+            const currentContainer = await getContainerById(containerId);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = `${user.fullName} - ${user.companyName}`;
+            const now = new Date().toISOString();
+
+            // Determine which Gate-In time to update
+            let gatedOutTime = currentContainer.gatedOutTime;
+            let rtGatedOutTime = currentContainer.rtGatedOutTime;
+            
+            if (!currentContainer.gatedOutTime && !currentContainer.rtGatedOutTime) {
+                // First Gate-In
+                gatedOutTime = now;
+            } else if (currentContainer.gatedOutTime && !currentContainer.rtGatedOutTime) {
+                // Return Trip Gate-In
+                rtGatedOutTime = now;
+            }
+            const payload = {
+                ...currentContainer,
+                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
+                status: "Gate-Out",
+                gatedOutTime,
+                rtGatedOutTime,
+                //rtGatedOutTime: new Date().toISOString(),
+                UpdatedBy: updatedBy,
+            };
+
+            await updateContainer(containerId, payload);
+            toast.success("Status updated to Gate-Out", { id: toastId });
+            fetchData();
+        } catch (error) {
+            console.error("Update Error:", error);
+            toast.error("Failed to update status", { id: toastId });
+        }
+    };
+
+    const handleGatedOutImport = async (containerId) => {
+        const toastId = toast.loading("Updating status to Gate-Out...");
+        try {
+            const currentContainer = await getContainerById(containerId);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = `${user.fullName} - ${user.companyName}`;
+            const now = new Date().toISOString();
+
+            // Determine which Gate-In time to update
+            let gatedOutTime = currentContainer.gatedOutTime;
+            let rtGatedOutTime = currentContainer.rtGatedOutTime;
+
+            if (!currentContainer.gatedOutTime && !currentContainer.rtGatedOutTime) {
+                // First Gate-In
+                gatedOutTime = now;
+            } else if (currentContainer.gatedOutTime && !currentContainer.rtGatedOutTime) {
+                // Return Trip Gate-In
+                rtGatedOutTime = now;
+            }
+            
+            const payload = {
+                ...currentContainer,
+                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
+                status: "Gate-Out",
+                gatedOutTime,
+                rtGatedOutTime,
+                //gatedOutTime: new Date().toISOString(),
+                UpdatedBy: updatedBy,
+            };
+
+            await updateContainer(containerId, payload);
+            toast.success("Status updated to Gate-Out", { id: toastId });
+            fetchData();
+        } catch (error) {
+            console.error("Update Error:", error);
+            toast.error("Failed to update status", { id: toastId });
+        }
+    };
+    
     const filteredContainers = useMemo(() => {
         let result = containers.filter(cont => {
             const matchesSearch =
@@ -476,6 +658,8 @@ export function PortBookingList ()  {
                         ) : filteredContainers.length > 0 ? (
                                 filteredContainers.map((cont, index) => {
                                     const theme = STATUS_CONFIG[cont.status] || {bg: "bg-gray-100", text: "text-gray-700"};
+                                    const isExport = cont.booking?.movementType === 'Export';
+                                    const isImport = cont.booking?.movementType === 'Import';
                                     return (
                                         <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
                                             <td className="p-4">{index + 1}</td>
@@ -498,42 +682,96 @@ export function PortBookingList ()  {
                                             <td className="p-4">
                                                 {/* Horizontal Action Icons */}
                                                 <div className="flex items-center justify-center gap-3">
-                                                    {["Enroute"].includes(cont.status) && cont.acceptedTime === null && (
-                                                        <button
-                                                            onClick={() => setStatusModal({
-                                                                isOpen: true,
-                                                                id: cont.containerId,
-                                                                nextStatus: "Rejected",
-                                                                remarks: ""
-                                                            })}
-                                                            className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
-                                                            title="Reject"
-                                                        >
-                                                            <LucideX size={18} />
-                                                        </button>
+                                                    {/* ========================================== */}
+                                                    {/* EXPORT WORKFLOW BUTTONS                   */}
+                                                    {/* ========================================== */}
+                                                    {isExport && (
+                                                        <>
+                                                            {/* Step 1: Port actions when Haulier is Enroute to Port */}
+                                                            {cont.status === "Enroute" && cont.acceptedTime === null && (
+                                                                <>
+                                                                    <button
+                                                                        onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Accepted" })}
+                                                                        className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept">
+                                                                        <Check size={18} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Rejected", remarks: "" })}
+                                                                        className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors" title="Reject">
+                                                                        <LucideX size={18} />
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                            {/* Step 2: Port Manual Gate In after Acceptance */}
+                                                            {cont.status === "Accepted" && cont.acceptedTime !== null && (
+                                                                <button
+                                                                    onClick={() => handleGatedInExport(cont.containerId)}
+                                                                    className="p-1.5 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors" title="Manual Gate In">
+                                                                    <Clock size={18} />
+                                                                </button>
+                                                            )}
+                                                            {/* Step 3: Depot Manual Gate Out after Gated-In */}
+                                                            {cont.status === "Gate-In" && cont.gatedInTime !== null && (
+                                                                <button
+                                                                    onClick={() => handleGatedOutExport(cont.containerId)}
+                                                                    className="p-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors" title="Manual Gate Out">
+                                                                    <Clock size={18} />
+                                                                </button>
+                                                            )}
+                                                        </>
                                                     )}
-                                                    {["Accepted"].includes(cont.status) && cont.acceptedTime !== null && (
-                                                        <button
-                                                            onClick={() => handleGatedIn(cont.containerId)}
-                                                            className="p-1.5 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors"
-                                                            title="Manual Gate In"
-                                                        >
-                                                            <Clock size={18} />
-                                                        </button>
+
+                                                    {/* ========================================== */}
+                                                    {/* IMPORT WORKFLOW BUTTONS                   */}
+                                                    {/* ========================================== */}
+                                                    {isImport && (
+                                                        <>
+                                                            {/* Step 2: Depot actions when Haulier is Enroute to Depot (Second leg of Import) */}
+                                                            {/* Explicitly checking if port milestones are complete or assuming status cycles back to Enroute */}
+                                                            {cont.status === "Enroute" && (cont.rtAcceptedTime === null || cont.acceptedTime === null) && (
+                                                                <>
+                                                                    <button
+                                                                        onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Accepted" })}
+                                                                        className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors" title="Accept">
+                                                                        <Check size={18} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Rejected", remarks: "" })}
+                                                                        className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors" title="Reject">
+                                                                        <LucideX size={18} />
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                            {/* Step 3: Depot Manual Gate In after Acceptance */}
+                                                            {cont.status === "Accepted" && (cont.rtAcceptedTime === null || cont.acceptedTime === null) && (
+                                                                <button
+                                                                    onClick={() => handleGatedInImport(cont.containerId)}
+                                                                    className="p-1.5 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors" title="Manual Gate In">
+                                                                    <Clock size={18} />
+                                                                </button>
+                                                            )}
+                                                            {/* Step 4: Depot Manual Gate Out after Gated-In */}
+                                                            {cont.status === "Gate-In" && (cont.gatedInTime === null || cont.rtGatedInTime === null) && (
+                                                                <button
+                                                                    onClick={() => handleGatedOutImport(cont.containerId)}
+                                                                    className="p-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors" title="Manual Gate Out">
+                                                                    <Clock size={18} />
+                                                                </button>
+                                                            )}
+                                                        </>
                                                     )}
-                                                    {["Gate-In"].includes(cont.status) && cont.gatedInTime !== null && (
-                                                        <button
-                                                            onClick={() => handleGatedOut(cont.containerId)}
-                                                            className="p-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors"
-                                                            title="Manual Gate Out"
-                                                        >
-                                                            <Clock size={18} />
-                                                        </button>
-                                                    )}
+
                                                     <Eye size={18}
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/port/booking/view/${cont.containerId}`)}/>
-                                                    <Edit size={18}
-                                                          className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/port/booking/edit/${cont.containerId}`)}/>
+                                                    {/* Replace your old <Edit /> icon with this conditional block */}
+                                                    {!["Gate-Out", "Delivered", "RFC","Rejected","Assigned"].includes(cont.status) && (
+                                                        <Edit
+                                                            size={18}
+                                                            className="text-green-600 cursor-pointer hover:text-green-800"
+                                                            onClick={() => navigate(`/port/booking/edit/${cont.containerId}`)}
+                                                        />
+                                                    )}
+                                              
                                                 </div>
                                             </td>
                                         </tr>

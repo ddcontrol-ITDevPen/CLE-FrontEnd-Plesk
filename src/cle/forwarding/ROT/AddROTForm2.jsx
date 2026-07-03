@@ -315,6 +315,13 @@ export function AddROTForm2() {
                 [type]: file
             }));
         }
+        if (errors[type]) {
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[type];
+                return newErrors;
+            });
+        }
     };
 
     const date = new Date();

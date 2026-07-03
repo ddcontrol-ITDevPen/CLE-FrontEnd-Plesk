@@ -35,3 +35,7 @@ export const getAllBookingsByHaulier = async (id) => {
     const res = await api.get(`${BASE_URL}/all/haulier/${id}`);
     return res.data;
 }
+export const getAllBookingsByShippingLine = async (id) => {
+    const res = await api.get(`${BASE_URL}/all/shippingLine/${id}`);
+    return res.data;
+}

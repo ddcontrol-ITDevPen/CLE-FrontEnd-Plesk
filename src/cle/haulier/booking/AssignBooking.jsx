@@ -54,13 +54,14 @@ export function AssignBooking() {
                 setIsLoading(true);
                 const container = await getContainerById(id);
                 setContainer(container);
+                // AssignBooking.jsx - Inside your useEffect block
                 const [driverData, pmData, trailerData, slotData] = await Promise.all([
-                    getDrivers(),
-                    getPrimeMovers(),
-                    getTrailers(),
-                    getTimeSlots()
+                    getDrivers().catch(err => { console.error("Drivers failed:", err); return []; }),
+                    getPrimeMovers().catch(err => { console.error("PM failed:", err); return []; }),
+                    getTrailers().catch(err => { console.error("Trailers failed:", err); return []; }),
+                    getTimeSlots().catch(err => { console.error("Time slots failed:", err); return []; })
                 ]);
-
+                console.log("RAW DRIVERS FROM API:", driverData);
                 setFormData(prev => ({
                     ...prev,
                     blNumber: container.booking?.blOrBookingNumber || "",
@@ -121,25 +122,69 @@ export function AssignBooking() {
             const user = await getUserById(localStorage.getItem("userId"));
             const updatedBy = user.fullName + " - " + user.companyName;
             const updatedData = {...formData, haulierId: user.companyCode};
+            // Get containerId from updatedData
+            const box_id = updatedData.containerId;
+         
+            console.log("containerId:", formData.containerId);
+            console.log("updatedData:", updatedData);
+            console.log("timeSlotId:", updatedData.timeSlotId);
+        
+            // 1. Register the newly assigned asset details
             await registerAssignedHaulier(updatedData);
-            const updatedContainerData = {...container, containerId: id, status: "Enroute", enrouteTime: new Date().toISOString(), UpdatedBy: updatedBy}
-            await updateContainer(id, updatedContainerData);
-            const selectedSlot = timeSlots.find(s => s.id == formData.timeSlotId);
+            console.log("Assigned haulier created successfully");
+
+      
+            // 2. Update the tracking status on the corresponding container
+            const updatedContainerData = {
+                ...container,
+                containerId: box_id,
+                status: "Enroute",
+                enrouteTime: new Date().toISOString(),
+                UpdatedBy: updatedBy
+            };
+            console.log("Updating container...", updatedContainerData);
+            //await updateContainer(formData.containerId, updatedContainerData);
+            const result = await updateContainer(formData.containerId, updatedContainerData);
+            console.log("Container updated:", result);
+            
+            
+            // 3. Find the selected slot record to securely reduce its active available count by 1
+            const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
+            console.log("selectedSlot", selectedSlot);
             if (selectedSlot) {
                 const updatedSlotData = {
                     id: selectedSlot.id,
                     date: selectedSlot.date,
                     time: selectedSlot.time,
-                    totalSlot: selectedSlot.totalSlot - 1,
                     depotId: selectedSlot.depotId,
+                    changeRemarks: selectedSlot.changeRemarks,
+                    isCancelled: selectedSlot.isCancelled,
+                    // Check whichever property exists on the dataset and safely calculate the capacity change
+                    pickUpTotalSlot: selectedSlot.pickUpTotalSlot !== null && selectedSlot.pickUpTotalSlot !== undefined
+                        ? selectedSlot.pickUpTotalSlot - 1
+                        : null,
+                    dropOffTotalSlot: selectedSlot.dropOffTotalSlot !== null && selectedSlot.dropOffTotalSlot !== undefined
+                        ? selectedSlot.dropOffTotalSlot - 1
+                        : null
                 };
-                await updateTimeSlot(formData.timeSlotId, updatedSlotData)
+
+                await updateTimeSlot(formData.timeSlotId, updatedSlotData);
             }
+
             toast.success("Haulier assigned successfully!");
-            setTimeout(() => navigate("/haulier/booking/accepted"), 1500);
+            setTimeout(() => navigate("/haulier/booking/"), 1500);
         } catch (error) {
-            toast.error("Failed to save assignment");
+            //toast.error("Failed to save assignment");
+            //console.error(error);
             console.error(error);
+
+            console.log(error.response?.data);
+
+            toast.error(
+                error.response?.data?.message ||
+                error.message ||
+                "Failed to save assignment"
+            );
         }
     };
 
@@ -215,8 +260,26 @@ export function AssignBooking() {
                                 required
                                 options={availableDates.map(d => ({ label: d, value: d }))}
                             />
-
                             <SelectField
+                                label="Time Slot"
+                                name="timeSlotId"
+                                icon={<Clock size={18}/>}
+                                value={formData.timeSlotId}
+                                onChange={handleChange}
+                                error={errors.timeSlotId}
+                                required
+                                disabled={!selectedDate} // Prevents clicking until a date is selected
+                                options={filteredSlots.map(s => {
+                                    // Correctly calculates slots left using PascalCase
+                                    const availableCount = s.pickUpTotalSlot ?? s.dropOffTotalSlot ?? 0;
+                                    return {
+                                        label: `${s.time} (${availableCount} left)`,
+                                        value: s.id
+                                    };
+                                })}
+                            />
+                            
+                          {/*  <SelectField
                                 label="Time Slot"
                                 name="timeSlotId"
                                 icon={<Clock size={18}/>}
@@ -231,7 +294,7 @@ export function AssignBooking() {
                                     label: `${s.time} (${s.totalSlot} left)`,
                                     value: s.id
                                 }))}
-                            />
+                            />*/}
                             
                             <SelectField
                                 label="Trailer No."
