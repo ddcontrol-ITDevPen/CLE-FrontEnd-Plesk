@@ -24,6 +24,7 @@ const STATUS_CONFIG = {
     "Deleted":  { bg: "bg-red-100",    text: "text-red-900",    border: "border-red-200" }
 };
 
+
 export function YourBookings ()  {
     const [containers, setContainers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -142,6 +143,9 @@ export function YourBookings ()  {
         return null;
     };
 
+     // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
     const handleStatusUpdate = async () => {
         const toastId = toast.loading(`Updating status to ${statusModal.nextStatus}...`);
         try {
@@ -247,6 +251,12 @@ export function YourBookings ()  {
         return result;
     }, [containers, searchTerm, filterStatus, startDate, endDate, sortConfig]);
 
+    // Paginated Sliced Computation
+    const paginatedContainers = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredContainers.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredContainers, currentPage]);
+    
     const getLocationName = (cont, type) => {
         const { movementType, tripType } = cont.booking || {};
 
@@ -474,12 +484,13 @@ export function YourBookings ()  {
                                     </div>
                                 </td>
                             </tr>
-                        ) : filteredContainers.length > 0 ? (
-                                filteredContainers.map((cont, index) => {
+                        ) : paginatedContainers.length > 0 ? (
+                                paginatedContainers.map((cont, index) => {
+                                    const recordNumber = (currentPage - 1) * itemsPerPage + index + 1;
                                     const theme = STATUS_CONFIG[cont.status] || {bg: "bg-gray-100", text: "text-gray-700"};
                                     return (
                                         <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
-                                            <td className="p-4">{index + 1}</td>
+                                            <td className="p-4 text-center">{recordNumber}</td>
                                             <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer" onClick={() => navigate(`/haulier/booking/view/${cont.containerId}`)}>{cont.booking.blOrBookingNumber}</td>
                                             <td className="p-4">{cont.containerNumber}</td>
                                             <td className="p-4">{cont.booking?.tripType ? `${cont.booking?.movementType} - ${cont.booking?.tripType}` : cont.booking?.movementType}</td>
@@ -511,8 +522,12 @@ export function YourBookings ()  {
                                                     )}
                                                     <Eye size={18}
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/haulier/booking/view/${cont.containerId}`)}/>
-                                                    <Edit size={18}
-                                                          className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/haulier/booking/edit/form1/${cont.containerId}`)}/>
+                                                    {["Assigned", "Enroute"].includes(cont.status) && (
+                                                        <Edit size={18}
+                                                              className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/haulier/booking/edit1/${cont.containerId}`)}/>
+                                                       /* <Edit size={18}
+                                                              className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/haulier/booking/edit/form1/${cont.containerId}`)}/>*/
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -553,6 +568,66 @@ export function YourBookings ()  {
                         </tbody>
                     </table>
                 </div>
+                {/* Added Pagination Controls Interface */}
+                {filteredContainers.length > 0 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 rounded-xl border border-gray-100 mt-4 shadow-sm">
+                        <div className="text-sm text-gray-500 font-medium">
+                            Showing{" "}
+                            <span className="font-semibold text-gray-800">
+                                {Math.min((currentPage - 1) * itemsPerPage + 1, filteredContainers.length)}
+                            </span>{" "}
+                            to{" "}
+                            <span className="font-semibold text-gray-800">
+                                {Math.min(currentPage * itemsPerPage, filteredContainers.length)}
+                            </span>{" "}
+                            of{" "}
+                            <span className="font-semibold text-gray-800">{filteredContainers.length}</span>{" "}
+                            records
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 text-sm font-bold bg-white text-gray-600 border border-gray-200 rounded-lg shadow-sm transition-all hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
+                            >
+                                Previous
+                            </button>
+
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: Math.ceil(filteredContainers.length / itemsPerPage) }).map((_, idx) => {
+                                    const pageNum = idx + 1;
+                                    if (Math.abs(currentPage - pageNum) <= 1 || pageNum === 1 || pageNum === Math.ceil(filteredContainers.length / itemsPerPage)) {
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => setCurrentPage(pageNum)}
+                                                className={`w-9 h-9 text-sm font-bold rounded-lg transition-all ${currentPage === pageNum
+                                                    ? "bg-blue-600 text-white shadow-md shadow-blue-100"
+                                                    : "bg-white text-gray-600 hover:bg-gray-50 border border-transparent"
+                                                }`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    }
+                                    if (pageNum === 2 || pageNum === Math.ceil(filteredContainers.length / itemsPerPage) - 1) {
+                                        return <span key={pageNum} className="text-gray-400 px-1">...</span>;
+                                    }
+                                    return null;
+                                })}
+                            </div>
+
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredContainers.length / itemsPerPage)))}
+                                disabled={currentPage === Math.ceil(filteredContainers.length / itemsPerPage)}
+                                className="px-4 py-2 text-sm font-bold bg-white text-gray-600 border border-gray-200 rounded-lg shadow-sm transition-all hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <AnimatePresence>

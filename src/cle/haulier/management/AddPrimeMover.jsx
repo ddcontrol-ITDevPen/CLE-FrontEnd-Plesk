@@ -17,6 +17,7 @@ import {
 import { registerPrimeMover } from "../../../services/primeMoverService.js"; 
 import { toast, Toaster } from "sonner";
 import * as XLSX from "xlsx";
+import {getUserById} from "../../../services/userService.js";
 
 export function AddPrimeMover() {
     const navigate = useNavigate();
@@ -80,10 +81,16 @@ export function AddPrimeMover() {
                     toast.error("No valid prime mover data found (rows are empty or missing names)");
                     return;
                 }
-
+                const user = await getUserById(localStorage.getItem("userId"));
+                const currentHaulierCode = user.companyCode;
                 setIsSubmitting(true);
                 for (const pm of formattedData) {
-                    await registerPrimeMover(pm);
+                    //await registerPrimeMover(pm);
+                    // 💡 Updated: Added haulierId property to Excel uploads
+                    await registerPrimeMover({
+                        ...pm,
+                        haulierId: currentHaulierCode
+                    });
                 }
                 toast.success(`Successfully imported ${data.length} prime movers!`);
                 setTimeout(() => navigate("/haulier/manage/prime-movers"), 1500);
@@ -128,7 +135,18 @@ export function AddPrimeMover() {
 
         setIsSubmitting(true);
         try {
-            await registerPrimeMover(formData);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const currentHaulierCode = user.companyCode;
+            // 💡 Added: Retrieve logged-in user profile data and extract Haulier ID
+
+            console.log("HaulierID: ", currentHaulierCode);
+
+            // 💡 Updated: Combined your form entries with the system's haulierId property
+            const payload = {
+                ...formData,
+                haulierId: currentHaulierCode
+            };
+            await registerPrimeMover(payload);
             toast.success("Prime Mover registered successfully!");
             setTimeout(() => navigate("/haulier/manage/prime-movers"), 1500);
         } catch (error) {

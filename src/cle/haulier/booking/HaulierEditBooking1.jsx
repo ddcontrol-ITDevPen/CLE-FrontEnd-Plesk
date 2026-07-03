@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,7 +9,7 @@ import { updateBooking } from "../../../services/bookingService.js";
 import { getUserById } from "../../../services/userService.js";
 import { toast } from "sonner";
 
-export function EditROTForm() {
+export function HaulierEditBooking1() {
     const navigate = useNavigate();
     const { id } = useParams();
     const [isLoading, setIsLoading] = useState(true);
@@ -149,7 +149,7 @@ export function EditROTForm() {
 
             localStorage.setItem("updatedROT", JSON.stringify(payload));
             await updateBooking(formData.rotNumber, payload);
-            navigate(`/forwarding/rot/edit/form2/${id}`);
+            navigate(`/haulier/booking/edit2/${id}`);
         } catch (err) {
             toast.error("Update failed");
         }
@@ -251,7 +251,7 @@ export function EditROTForm() {
                                     <InputField label="Quantity" name="containerQuantity" value={formData.containerQuantity} readOnly />
                                     <SelectField label="Type" name="containerType" options={["GP", "RF", "HC"]} value={formData.containerType} onChange={handleChange} />
                                     <SelectField label="Size" name="containerSize" options={["20", "40", "45"]} value={formData.containerSize} onChange={handleChange} />
-                                 {/*   <InputField label="VGM" name="vgm" value={formData.vgm} onChange={handleChange} />*/}
+                                    {/*   <InputField label="VGM" name="vgm" value={formData.vgm} onChange={handleChange} />*/}
                                     <SelectField label="Trailer" name="trailerType" options={["2-Axle","3-Axle","Flatbed","Gooseneck","ISO Tank","Lowbed","Normal","Reefer","Side Loader", "Skeletal"]} value={formData.trailerType} onChange={handleChange} />
                                     <InputField label="ROT Date" name="rotDate" type="date" value={formData.rotDate} onChange={handleChange} required />
                                 </div>

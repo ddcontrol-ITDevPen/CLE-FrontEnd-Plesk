@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,7 +9,7 @@ import { getContainerById, updateContainer } from "../../../services/containerSe
 import { registerBookingDocument } from "../../../services/bookingDocumentService.js";
 import {getUserById} from "../../../services/userService.js";
 
-export function EditROTForm2() {
+export function HaulierEditBooking2() {
     const navigate = useNavigate();
     const { id } = useParams();
     const [isLoading, setIsLoading] = useState(true);
@@ -93,7 +93,7 @@ export function EditROTForm2() {
                             ? container.toAddress.map(a => a.address)
                             : [""],
                         rotNumber: container.rotNumber || "",
-                        status: container.status || "Assigned", 
+                        status: container.status || "Assigned",
                         assignedTime: container.assignedTime,
                         enrouteTime: container.enrouteTime || null,
                         acceptedTime: container.acceptedTime || null,
@@ -197,7 +197,7 @@ export function EditROTForm2() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = {};
-       /* if (!containerData.containerNo) newErrors.containerNo = "Required";*/
+        /* if (!containerData.containerNo) newErrors.containerNo = "Required";*/
         if (!containerData.consignee) newErrors.consignee = "Required";
         if (!containerData.rotDate) newErrors.rotDate = "Required";
 
@@ -262,7 +262,7 @@ export function EditROTForm2() {
 
             toast.success("Record updated successfully");
             localStorage.removeItem("updatedROT");
-            setTimeout(() => navigate("/forwarding/rot/history"), 1500);
+            setTimeout(() => navigate("/haulier/booking"), 1500);
         } catch (error) {
             toast.error("Update failed");
             setIsSubmitting(false);
@@ -292,7 +292,7 @@ export function EditROTForm2() {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                             <InputField label="Container No." value={containerData.containerNo} onChange={(e) => handleInputChange("containerNo", e.target.value)} error={errors.containerNo} />
                             <SelectField label="Container Type" required options={["GP", "RF", "HC"]} value={containerData.containerType} onChange={(e) => handleInputChange("containerType", e.target.value)} />
-                           {/* <SelectField label="Container Size" required options={["20", "40", "45"]} value={containerData.containerSize} onChange={(e) => handleInputChange("containerSize", e.target.value)} />*/}
+                            {/* <SelectField label="Container Size" required options={["20", "40", "45"]} value={containerData.containerSize} onChange={(e) => handleInputChange("containerSize", e.target.value)} />*/}
                             <SelectField
                                 label="Container Size"
                                 required
@@ -323,7 +323,7 @@ export function EditROTForm2() {
                                 readOnly
                                 className="bg-gray-100 font-bold"
                             />
-                           {/* <InputField label="VGM" value={containerData.vgm} onChange={(e) => handleInputChange("vgm", e.target.value)} />
+                            {/* <InputField label="VGM" value={containerData.vgm} onChange={(e) => handleInputChange("vgm", e.target.value)} />
 */}
                             <SelectField label="Trailer Type" options={["Normal", "Tipper", "Air", "SL"]} value={containerData.trailerType} onChange={(e) => handleInputChange("trailerType", e.target.value)} />
                             <SelectField label="Consignee/Shipper" required options={consignees} value={containerData.consignee} onChange={(e) => handleInputChange("consignee", e.target.value)} error={errors.consignee} />
@@ -331,7 +331,7 @@ export function EditROTForm2() {
                             <SelectField label="Depot" required options={depots} value={containerData.depot} onChange={(e) => handleInputChange("depot", e.target.value)} />
 
                             <InputField label="Port" value={allCompanies.find(c => c.companyCode === containerData.port)?.companyName || containerData.port} readOnly />
-                          
+
                         </div>
 
                         <div className="mt-6 space-y-4">

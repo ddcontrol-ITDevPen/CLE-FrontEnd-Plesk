@@ -37,7 +37,7 @@ export function DepotBookingList() {
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 20;
+    const itemsPerPage = 10;
 
     useEffect(() => {
         fetchData();
@@ -647,6 +647,7 @@ export function DepotBookingList() {
                                     <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
                                         <td className="p-4 text-center">{recordNumber}</td>
                                         <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer" onClick={() => navigate(`/depot/booking/view/${cont.containerId}`)}>{cont.booking.blOrBookingNumber}</td>
+                                        
                                         <td className="p-4">{cont.containerNumber}</td>
                                         <td className="p-4">{cont.booking?.tripType ? `${cont.booking?.movementType} - ${cont.booking?.tripType}` : cont.booking?.movementType}</td>
                                         <td className="p-4 whitespace-nowrap">{cont.rotDate}</td>
@@ -668,7 +669,7 @@ export function DepotBookingList() {
                                                 {isExport && (
                                                     <>
                                                         {/* Step 1: Depot actions when Haulier is Enroute to Depot */}
-                                                        {cont.status === "Enroute" && cont.acceptedTime === null && (
+                                                        {cont.status === "Enroute" && (
                                                             <>
                                                                 <button
                                                                     onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Accepted" })}
@@ -683,7 +684,7 @@ export function DepotBookingList() {
                                                             </>
                                                         )}
                                                         {/* Step 2: Depot Manual Gate In after Acceptance */}
-                                                        {cont.status === "Accepted" && cont.acceptedTime !== null && (
+                                                        {cont.status === "Accepted" && (
                                                             <button
                                                                 onClick={() => handleGatedInExport(cont.containerId)}
                                                                 className="p-1.5 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors" title="Manual Gate In">
@@ -691,7 +692,7 @@ export function DepotBookingList() {
                                                             </button>
                                                         )}
                                                         {/* Step 3: Depot Manual Gate Out after Gated-In */}
-                                                        {cont.status === "Gate-In" && cont.gatedInTime !== null && (
+                                                        {cont.status === "Gate-In" && (
                                                             <button
                                                                 onClick={() => handleGatedOutExport(cont.containerId)}
                                                                 className="p-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors" title="Manual Gate Out">
@@ -708,7 +709,7 @@ export function DepotBookingList() {
                                                     <>
                                                         {/* Step 2: Depot actions when Haulier is Enroute to Depot (Second leg of Import) */}
                                                         {/* Explicitly checking if port milestones are complete or assuming status cycles back to Enroute */}
-                                                        {cont.status === "Enroute" && cont.rtAcceptedTime === null && cont.acceptedTime !== null && (
+                                                        {cont.status === "Enroute" && (
                                                             <>
                                                                 <button
                                                                     onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Accepted" })}
@@ -723,7 +724,7 @@ export function DepotBookingList() {
                                                             </>
                                                         )}
                                                         {/* Step 3: Depot Manual Gate In after Acceptance */}
-                                                        {cont.status === "Accepted" && cont.rtAcceptedTime !== null && (
+                                                        {cont.status === "Accepted" && (
                                                             <button
                                                                 onClick={() => handleGatedInImport(cont.containerId)}
                                                                 className="p-1.5 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors" title="Manual Gate In">
@@ -731,7 +732,7 @@ export function DepotBookingList() {
                                                             </button>
                                                         )}
                                                         {/* Step 4: Depot Manual Gate Out after Gated-In */}
-                                                        {cont.status === "Gate-In" && cont.rtGatedInTime !== null && (
+                                                        {cont.status === "Gate-In" && (
                                                             <button
                                                                 onClick={() => handleGatedOutImport(cont.containerId)}
                                                                 className="p-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors" title="Manual Gate Out">

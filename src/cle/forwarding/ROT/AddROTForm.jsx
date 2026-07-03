@@ -92,16 +92,84 @@ export function AddROTForm() {
             setIsLoadingPorts(true);``
             try {
                 const data = await getCompanies();
+
                 if (Array.isArray(data)) {
-                    const portLocations = data.filter(c => c.role === "Port").map(c => ({companyName: c.companyName, companyCode: c.companyCode}));
-                    const haulier = data.filter(h => h.role === "Haulier").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
-                    const shippingAgent = data.filter(h => h.role === "Shipping Line").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
-                    const currentForwardingName = localStorage.getItem("companyName") || "Forwarding";
+
+                    // Get logged-in user
                     const user = await getUserById(localStorage.getItem("userId"));
                     const currentForwardingCode = user.companyCode;
-                    const consignees = data.filter(h => h.role === "Consignee").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
-                    const billingParty = [{companyName: currentForwardingName, companyCode: currentForwardingCode}, ...consignees];
-                    const depots = data.filter(h => h.role === "Depot").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
+
+                    // Find user's company
+                    const userCompany = data.find(
+                        c => c.companyCode === currentForwardingCode
+                    );
+
+                    // Get user's allowed region codes
+                    const userRegionCodes = userCompany?.region?.map(r => r.regionCode) || [];
+
+                    console.log("Logged In User:", user);
+                    console.log("User Company:", userCompany);
+                    console.log("User Regions:", userRegionCodes);
+
+                    // Filter Port based on matching Region
+                    const portLocations = data
+                        .filter(company => {
+                            if (company.role !== "Port") return false;
+
+                            const portRegions = company.region || [];
+
+                            return portRegions.some(region =>
+                                userRegionCodes.includes(region.regionCode)
+                            );
+                        })
+                        .map(company => ({
+                            companyName: company.companyName,
+                            companyCode: company.companyCode
+                        }));
+
+                    console.log("Filtered Ports:", portLocations);
+
+                    // Other company lists
+                    const haulier = data
+                        .filter(c => c.role === "Haulier")
+                        .map(c => ({
+                            companyName: c.companyName,
+                            companyCode: c.companyCode
+                        }));
+
+                    const shippingAgent = data
+                        .filter(c => c.role === "Shipping Line")
+                        .map(c => ({
+                            companyName: c.companyName,
+                            companyCode: c.companyCode
+                        }));
+
+                    const consignees = data
+                        .filter(c => c.role === "Consignee")
+                        .map(c => ({
+                            companyName: c.companyName,
+                            companyCode: c.companyCode
+                        }));
+
+                    const depots = data
+                        .filter(c => c.role === "Depot")
+                        .map(c => ({
+                            companyName: c.companyName,
+                            companyCode: c.companyCode
+                        }));
+
+                    const currentForwardingName =
+                        userCompany?.companyName || localStorage.getItem("companyName") || "";
+
+                    const billingParty = [
+                        {
+                            companyName: currentForwardingName,
+                            companyCode: currentForwardingCode
+                        },
+                        ...consignees
+                    ];
+
+                    // Set states
                     setPorts(portLocations);
                     setHauliers(haulier);
                     setShippingAgents(shippingAgent);
@@ -109,8 +177,10 @@ export function AddROTForm() {
                     setConsignees(consignees);
                     setDepots(depots);
                 }
+
                 const bookings = await getBookings();
                 setBookings(bookings || []);
+
             } catch (error) {
                 console.error("Failed to load ports:", error);
                 setPorts([]);
@@ -132,6 +202,8 @@ export function AddROTForm() {
             const newData = { ...prev, [name]: value };
             if (name === "haulierChoice" && value === "Multiple") newData.haulier = "";
             if (name === "depotChoice" && value === "Multiple") newData.depot = "";
+            // Clear houseBLNumber if user switches to Export
+            if (name === "movementType" && value === "Export") newData.houseBLNumber = "";
             return newData;
         });
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
@@ -146,7 +218,7 @@ export function AddROTForm() {
         const portLabel = formData.movementType === "Import" ? "POD" : "POL";
         
         if (!formData.bookingNumber) newErrors.bookingNumber = `${refLabel} is required!`;
-        if (!formData.houseBLNumber) newErrors.houseBLNumber = "House BL Number is required!";
+        //if (!formData.houseBLNumber) newErrors.houseBLNumber = "House BL Number is required!";
         if (!formData.scn) newErrors.scn = "Ship Call Number is required!";
         if (!formData.portLocation) newErrors.portLocation = `${portLabel} is required!`;
         if (!formData.eta) newErrors.eta = "ETA is required!";
@@ -258,11 +330,23 @@ export function AddROTForm() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <InputField label={formData.movementType === "Import" ? "BL No." : "Booking No."} name="bookingNumber" value={formData.bookingNumber} onChange={handleChange} error={errors.bookingNumber} required />
-                                    <InputField label="House BL No." name="houseBLNumber" value={formData.houseBLNumber} onChange={handleChange} error={errors.houseBLNumber} required/>
+                                    {/* Only show House BL No. if the movement type is NOT Export */}
+                                    {formData.movementType !== "Export" && (
+                                        <InputField
+                                            label="House BL No."
+                                            name="houseBLNumber"
+                                            value={formData.houseBLNumber}
+                                            onChange={handleChange}
+                                            error={errors.houseBLNumber}
+                                        />
+                                    )}
+                                    
                                     <InputField label="SCN" name="scn" value={formData.scn} onChange={handleChange} error={errors.scn} required />
+                                   
                                     <SelectField label={formData.movementType === "Import" ? "POD" : "POL"} name="portLocation" value={formData.portLocation} onChange={handleChange} error={errors.portLocation} required options={ports.map(p => ({label: p.companyName, value: p.companyCode}))} />
+                                    
                                     <SelectField label="Shipping Agent" name="shippingAgent" value={formData.shippingAgent} onChange={handleChange} error={errors.shippingAgent} required options={shippingAgents.map(s => ({label: s.companyName, value: s.companyCode}))} />
-                                    <SelectField label="Billing Party" name="billingParty" value={formData.billingParty} onChange={handleChange} error={errors.billingParty} required options={billingParties.map(b => ({label: b.companyName, value: b.companyCode}))} />
+                                   
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -298,6 +382,7 @@ export function AddROTForm() {
                                         </div>
                                     </div>
                                     <SelectField label="Consignee/Shipper" name="consignee" required options={consignees.map(t => ({label: t.companyName, value: t.companyCode}))} value={formData.consignee} onChange={handleChange} error={errors.consignee}/>
+                                    <SelectField label="Billing Party" name="billingParty" value={formData.billingParty} onChange={handleChange} error={errors.billingParty} required options={billingParties.map(b => ({label: b.companyName, value: b.companyCode}))} />
                                     <InputField label="Forwarding Remarks" name="forwardingRemarks" value={formData.forwardingRemarks} onChange={handleChange} placeholder="* Commodity/Special Handling/Others *" />
                                 </div>
                             </div>
@@ -319,8 +404,8 @@ export function AddROTForm() {
                                     <InputField label="Quantity" name="containerQuantity" value={formData.containerQuantity} onChange={handleChange} error={errors.containerQuantity} required />
                                     <SelectField label="Type" name="containerType" required options={["GP", "RF", "HC"]} value={formData.containerType} onChange={handleChange} error={errors.containerType} />
                                     <SelectField label="Size" name="containerSize" required options={["20", "40", "45"]} value={formData.containerSize} onChange={handleChange} error={errors.containerSize} />
-                                    <InputField label="VGM" subLabel="Optional" name="vgm" value={formData.vgm} onChange={handleChange} />
-                                    <SelectField label="Trailer" name="trailerType" options={["Normal", "Tipper", "Air", "SL"]} value={formData.trailerType} onChange={handleChange} />
+                                   {/* <InputField label="VGM" subLabel="Optional" name="vgm" value={formData.vgm} onChange={handleChange} />*/}
+                                    <SelectField label="Trailer" name="trailerType" options={["2-Axle","3-Axle","Flatbed","Gooseneck","ISO Tank","Lowbed","Normal","Reefer","Side Loader", "Skeletal"]} value={formData.trailerType} onChange={handleChange} />
                                     <InputField label="ROT Date" name="rotDate" type="date" value={formData.rotDate} onChange={handleChange} error={errors.rotDate} required />
                                 </div>
                             </div>

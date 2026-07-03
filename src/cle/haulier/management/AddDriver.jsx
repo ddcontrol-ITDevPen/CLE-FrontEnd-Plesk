@@ -6,10 +6,13 @@ import { User, IdCard, Mail, Phone, ArrowLeft, UserPlus, CheckCircle2, FileDown,
 import { registerDriver } from "../../../services/driverService.js";
 import { toast, Toaster } from "sonner";
 import * as XLSX from "xlsx";
+import {getUserById} from "../../../services/userService.js";
 
 export function AddDriver() {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
+
+   
     const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
         name: "",
@@ -66,10 +69,15 @@ export function AddDriver() {
                     toast.error("No valid driver data found (rows are empty or missing names)");
                     return;
                 }
-
+                const user = await getUserById(localStorage.getItem("userId"));
+                const currentHaulierCode = user.companyCode;
                 setIsSubmitting(true);
                 for (const driver of formattedData) {
-                    await registerDriver(driver);
+                    // 💡 Updated: Added haulierId property to Excel uploads
+                    await registerDriver({
+                        ...driver,
+                        haulierId: currentHaulierCode
+                    });
                 }
                 toast.success(`Successfully imported ${data.length} drivers!`);
                 setTimeout(() => navigate("/haulier/manage/drivers"), 1500);
@@ -133,7 +141,20 @@ export function AddDriver() {
     
         setIsSubmitting(true);
         try {
-            await registerDriver(formData);
+
+            const user = await getUserById(localStorage.getItem("userId"));
+            const currentHaulierCode = user.companyCode;
+
+            // 💡 Added: Retrieve logged-in user profile data and extract Haulier ID
+           
+            console.log("HaulierID: ", currentHaulierCode);
+            
+            // 💡 Updated: Combined your form entries with the system's haulierId property
+            const payload = {
+                ...formData,
+                haulierId: currentHaulierCode
+            };
+            await registerDriver(payload);
             toast.success("Driver registered successfully!");
             setTimeout(() => navigate("/haulier/manage/drivers"), 1500);
         } catch (error) {

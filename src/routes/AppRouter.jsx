@@ -107,6 +107,9 @@ import {ShippingLineViewBooking} from "../cle/shippingLine/booking/ShippingLineV
 import {ShippingLineEditBooking} from "../cle/shippingLine/booking/ShippingLineEditBooking.jsx";
 import {ShippingLineEditBooking2} from "../cle/shippingLine/booking/ShippingLineEditBooking2.jsx";
 import {DepotOperationHours} from "../cle/depot/operation/DepotOperationHours.jsx";
+import {HaulierEditBooking1} from "../cle/haulier/booking/HaulierEditBooking1.jsx";
+import {HaulierEditBooking2} from "../cle/haulier/booking/HaulierEditBooking2.jsx";
+
 export default function AppRouter() {
     return (
         <BrowserRouter>
@@ -958,6 +961,22 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <ShippingLineEditBooking2/>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/booking/edit1/:id"
+                    element={
+                        <ProtectedRoute>
+                            <HaulierEditBooking1/>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/haulier/booking/edit2/:id"
+                    element={
+                        <ProtectedRoute>
+                            <HaulierEditBooking2/>
                         </ProtectedRoute>
                     }
                 />

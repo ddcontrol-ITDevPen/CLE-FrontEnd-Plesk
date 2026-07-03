@@ -16,6 +16,8 @@ import {
 import { registerTrailer } from "../../../services/trailerService.js"; // Ensure this service exists
 import { toast, Toaster } from "sonner";
 import * as XLSX from "xlsx";
+import {getUserById} from "../../../services/userService.js";
+import {registerDriver} from "../../../services/driverService.js";
 
 export function AddTrailer() {
     const navigate = useNavigate();
@@ -75,10 +77,16 @@ export function AddTrailer() {
                     toast.error("No valid trailer data found");
                     return;
                 }
-
+                const user = await getUserById(localStorage.getItem("userId"));
+                const currentHaulierCode = user.companyCode;
                 setIsSubmitting(true);
                 for (const trailer of formattedData) {
-                    await registerTrailer(trailer);
+                    // 💡 Updated: Added haulierId property to Excel uploads
+                    await registerDriver({
+                        ...trailer,
+                        haulierId: currentHaulierCode
+                    });
+                   
                 }
                 toast.success(`Successfully imported ${formattedData.length} trailers!`);
                 setTimeout(() => navigate("/haulier/manage/trailers"), 1500);
@@ -124,7 +132,20 @@ export function AddTrailer() {
 
         setIsSubmitting(true);
         try {
-            await registerTrailer(formData);
+            const user = await getUserById(localStorage.getItem("userId"));
+            const currentHaulierCode = user.companyCode;
+
+            // 💡 Added: Retrieve logged-in user profile data and extract Haulier ID
+
+            console.log("HaulierID: ", currentHaulierCode);
+
+            // 💡 Updated: Combined your form entries with the system's haulierId property
+            const payload = {
+                ...formData,
+                haulierId: currentHaulierCode
+            };
+            
+            await registerTrailer(payload);
             toast.success("Trailer registered successfully!");
             setTimeout(() => navigate("/haulier/manage/trailers"), 1500);
         } catch (error) {

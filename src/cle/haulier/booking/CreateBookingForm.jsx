@@ -138,15 +138,83 @@ export function CreateBookingForm() {
                 const data = await getCompanies();
                 setAllCompanies(data);
                 if (Array.isArray(data)) {
-                    const portLocations = data.filter(c => c.role === "Port").map(c => ({companyName: c.companyName, companyCode: c.companyCode}));
-                    const depots = data.filter(h => h.role === "Depot").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
-                    const shippingAgent = data.filter(h => h.role === "Shipping Line").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
-                    const currentForwardingName = localStorage.getItem("companyName") || "Forwarding";
+
+                    // Get logged-in user
                     const user = await getUserById(localStorage.getItem("userId"));
                     const currentForwardingCode = user.companyCode;
-                    const consignees = data.filter(h => h.role === "Consignee").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
+
+                    // Find user's company
+                    const userCompany = data.find(
+                        c => c.companyCode === currentForwardingCode
+                    );
+
+                    // Get user's allowed region codes
+                    const userRegionCodes = userCompany?.region?.map(r => r.regionCode) || [];
+
+                    console.log("Logged In User:", user);
+                    console.log("User Company:", userCompany);
+                    console.log("User Regions:", userRegionCodes);
+
+                    // Filter Port based on matching Region
+                    const portLocations = data
+                        .filter(company => {
+                            if (company.role !== "Port") return false;
+
+                            const portRegions = company.region || [];
+
+                            return portRegions.some(region =>
+                                userRegionCodes.includes(region.regionCode)
+                            );
+                        })
+                        .map(company => ({
+                            companyName: company.companyName,
+                            companyCode: company.companyCode
+                        }));
+
+                    console.log("Filtered Ports:", portLocations);
+
+                    // Other company lists
+                    const haulier = data
+                        .filter(c => c.role === "Haulier")
+                        .map(c => ({
+                            companyName: c.companyName,
+                            companyCode: c.companyCode
+                        }));
+
+                    const shippingAgent = data
+                        .filter(c => c.role === "Shipping Line")
+                        .map(c => ({
+                            companyName: c.companyName,
+                            companyCode: c.companyCode
+                        }));
+
+                    const consignees = data
+                        .filter(c => c.role === "Consignee")
+                        .map(c => ({
+                            companyName: c.companyName,
+                            companyCode: c.companyCode
+                        }));
+
+                    const depots = data
+                        .filter(c => c.role === "Depot")
+                        .map(c => ({
+                            companyName: c.companyName,
+                            companyCode: c.companyCode
+                        }));
+
+                    const currentForwardingName =
+                        userCompany?.companyName || localStorage.getItem("companyName") || "";
+
+                    const billingParty = [
+                        {
+                            companyName: currentForwardingName,
+                            companyCode: currentForwardingCode
+                        },
+                        ...consignees
+                    ];
+
                     const forwardings = data.filter(h => h.role === "Forwarding").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
-                    const billingParty = [...forwardings, ...consignees];
+
                     setPorts(portLocations);
                     setDepots(depots);
                     setShippingAgents(shippingAgent);
@@ -252,8 +320,49 @@ export function CreateBookingForm() {
         return 0;
     };
 
+    const handleContainerTypeChange = (index, size, type) => {
+        // Define tare weights based on selected container size
+        let automaticTare = "";
+        if (size === "20") {
+            automaticTare = "20000";
+        } else if (size === "40") {
+            automaticTare = "40000";
+        } else if (size === "45") {
+            automaticTare = "45000";
+        }
+
+        const tare = parseFloat(automaticTare) || 0;
+        const cargo = parseFloat(formData.cargoWeight) || 0;
+        const calculatedVgm = (tare + cargo > 0) ? (tare + cargo).toString() : "";
+
+        setFormData(prev => ({
+            ...prev,
+            containerSize: size,
+            containerType: type || prev.containerType,
+            tareWeight: automaticTare,
+            vgm: calculatedVgm
+        }));
+    };
+
+    const handleAutoChange = (index, field, value) => {
+        setFormData(prev => {
+            const newData = { ...prev, [field]: value };
+
+            // Auto-calculate VGM when weight fields change
+            const tare = parseFloat(newData.tareWeight) || 0;
+            const cargo = parseFloat(newData.cargoWeight) || 0;
+            newData.vgm = (tare + cargo > 0) ? (tare + cargo).toString() : "";
+
+            return newData;
+        });
+    };
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // 🛑 GUARD: Exit early if a submission is already in progress!
+        if (isSubmitting) return;
+        
         const newErrors = {};
 
         if (!formData.movementType) newErrors.movementType = `Movement Type is required!`;
@@ -261,7 +370,7 @@ export function CreateBookingForm() {
         const portLabel = formData.movementType === "Import" ? "POD" : "POL";
 
         if (!formData.bookingNumber) newErrors.bookingNumber = `${refLabel} is required!`;
-        if (!formData.houseBLNumber) newErrors.houseBLNumber = "House BL Number is required!";
+        // if (!formData.houseBLNumber) newErrors.houseBLNumber = "House BL Number is required!";
         if (!formData.scn) newErrors.scn = "Ship Call Number is required!";
         if (!formData.portLocation) newErrors.portLocation = `${portLabel} is required!`;
         if (!formData.eta) newErrors.eta = "ETA is required!";
@@ -506,7 +615,7 @@ export function CreateBookingForm() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <InputField label={formData.movementType === "Import" ? "BL No." : "Booking No."} name="bookingNumber" value={formData.bookingNumber} onChange={handleChange} error={errors.bookingNumber} required />
-                                    <InputField label="House BL No." name="houseBLNumber" value={formData.houseBLNumber} onChange={handleChange} error={errors.houseBLNumber} required/>
+                                    <InputField label="House BL No." name="houseBLNumber" value={formData.houseBLNumber} onChange={handleChange} error={errors.houseBLNumber}/>
                                     <InputField label="SCN" name="scn" value={formData.scn} onChange={handleChange} error={errors.scn} required />
                                     <SelectField label={formData.movementType === "Import" ? "POD" : "POL"} name="portLocation" value={formData.portLocation} onChange={handleChange} error={errors.portLocation} required options={ports.map(p => ({label: p.companyName, value: p.companyCode}))} />
                                     <SelectField label="Shipping Agent" name="shippingAgent" value={formData.shippingAgent} onChange={handleChange} error={errors.shippingAgent} required options={shippingAgents.map(s => ({label: s.companyName, value: s.companyCode}))} />
@@ -567,10 +676,45 @@ export function CreateBookingForm() {
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                     <InputField label="Container No." name="containerNo" value={formData.containerNo} onChange={handleChange} error={errors.containerNo} required />
                                     <SelectField label="Type" name="containerType" required options={["GP", "RF", "HC"]} value={formData.containerType} onChange={handleChange} error={errors.containerType} />
-                                    <SelectField label="Size" name="containerSize" required options={["20", "40", "45"]} value={formData.containerSize} onChange={handleChange} error={errors.containerSize} />
-                                    <InputField label="VGM" subLabel="Optional" name="vgm" value={formData.vgm} onChange={handleChange} />
-                                    <SelectField label="Trailer" name="trailerType" options={["Normal", "Tipper", "Air", "SL"]} value={formData.trailerType} onChange={handleChange} />
+                                    {/*<SelectField label="Size" name="containerSize" required options={["20", "40", "45"]} value={formData.containerSize} onChange={handleChange} error={errors.containerSize} />*/}
+                                    <SelectField
+                                        label="Container Size"
+                                        name="containerSize"
+                                        required
+                                        options={["20", "40", "45"]}
+                                        value={formData.containerSize}
+                                        onChange={(e) => {
+                                            // Call your change handler using the explicit field name
+                                            handleChange(e);
+                                            // Trigger your weight layout calculations based on the selected value
+                                            handleContainerTypeChange(0, e.target.value, formData.containerType);
+                                        }}
+                                        error={errors.containerSize}
+                                    />
                                     <InputField label="ROT Date" name="rotDate" type="date" value={formData.rotDate} onChange={handleChange} error={errors.rotDate} required />
+                                    <InputField
+                                        label="Container Tare Weight (kg)"
+                                        type="number"
+                                        value={formData.tareWeight || ""}
+                                        readOnly
+                                    />
+                                    <InputField
+                                        label="Cargo Weight (kg)"
+                                        type="number"
+                                        value={formData.cargoWeight || ""}
+                                        onChange={(e) => handleAutoChange(0, "cargoWeight", e.target.value)}
+                                    />
+                                    <InputField
+                                        label="VGM (kg)"
+                                        type="number"
+                                        value={formData.vgm || ""}
+                                        readOnly
+                                        className="bg-gray-100 font-bold"
+                                    />
+                                    {/*<InputField label="VGM" subLabel="Optional" name="vgm" value={formData.vgm} onChange={handleChange} />*/}
+
+                                    <SelectField label="Trailer" name="trailerType" options={["2-Axle", "3-Axle", "Flatbed", "Gooseneck", "ISO Tank", "Lowbed", "Normal", "Reefer", "Side Loader", "Skeletal"]} value={formData.trailerType} onChange={handleChange} />
+
                                     {/*<SelectField label="" name="haulier" value={formData.haulier} onChange={handleChange} error={errors.haulier} options={hauliers.map(h => ({label: h.companyName, value: h.companyCode}))} />*/}
                                     <SelectField label="Depot" name="depot" value={formData.depot} onChange={handleChange} options={depots.map(d => ({label: d.companyName, value: d.companyCode}))} error={errors.depot} />
                                     <SelectField label="Consignee/Shipper" name="consignee" required options={consignees.map(t => ({label: t.companyName, value: t.companyCode}))} value={formData.consignee} onChange={handleChange} error={errors.consignee}/>
@@ -620,13 +764,13 @@ export function CreateBookingForm() {
                             <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
                                 <SelectField label="Driver Name" name="driverId" icon={<User size={18}/>} value={formData.driverId} onChange={handleChange} error={errors.driverId} required options={drivers.map(d => ({ label: d.name, value: d.id }))}/>
                                 <SelectField label="PM No. (Prime Mover)" name="pmId" icon={<Hash size={18}/>} value={formData.pmId} onChange={handleChange} error={errors.pmId} required options={primeMovers.map(p => ({ label: p.plateNumber, value: p.id }))}/>
-                               
-                                <SelectField 
+
+                                <SelectField
                                     label="Booking Date" n
-                                    ame="bookingDate" 
-                                    icon={<Clock size={18}/>} 
-                                    value={selectedDate} 
-                                    onChange={handleDateChange} 
+                                    ame="bookingDate"
+                                    icon={<Clock size={18}/>}
+                                    value={selectedDate}
+                                    onChange={handleDateChange}
                                     options={availableDates.map(d => ({ label: d, value: d }))}/>
                                 <SelectField
                                     label="Time Slot"
@@ -654,7 +798,7 @@ export function CreateBookingForm() {
                                     error={errors.timeSlotId} 
                                     required disabled={!selectedDate} 
                                     options={filteredSlots.filter(s => s.totalSlot > 0).map(s => ({label: `${s.time} (${s.totalSlot} left)`, value: s.id}))}/>*/}
-                                
+
                                 <SelectField label="Trailer No." name="trailerId" icon={<LucideTruck size={18}/>} value={formData.trailerId} onChange={handleChange} error={errors.trailerId} required options={trailers.map(t => ({ label: `${t.plateNumber} - ${t.type}`, value: t.id }))}/>
                             </div>
                         </div>
@@ -705,10 +849,21 @@ export function CreateBookingForm() {
                     </section>
 
                     <div className="flex justify-end pt-4">
-                        <button type="submit" className="group flex items-center gap-3 bg-system-color text-white px-12 py-4 rounded-lg font-bold shadow-xl hover:bg-system-color-dark hover:-translate-y-1 transition-all active:scale-95">
+                        <button
+                            type="submit"
+                            disabled={isSubmitting} // 🛑 Prevents clicks during network requests
+                            className={`group flex items-center gap-3 bg-system-color text-white px-12 py-4 rounded-lg font-bold shadow-xl transition-all active:scale-95 ${
+                                isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-system-color-dark hover:-translate-y-1'
+                            }`}
+                        >
+                            {isSubmitting ? "Submitting Booking..." : "Submit Booking"}
+                            {!isSubmitting && <LucideArrowBigRightDash size={24} className="group-hover:translate-x-1 transition-transform" />}
+                        </button>
+                       {/* <button 
+                            type="submit" className="group flex items-center gap-3 bg-system-color text-white px-12 py-4 rounded-lg font-bold shadow-xl hover:bg-system-color-dark hover:-translate-y-1 transition-all active:scale-95">
                             Submit Booking
                             <LucideArrowBigRightDash size={24} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
+                        </button>*/}
                     </div>
                 </form>
             </div>

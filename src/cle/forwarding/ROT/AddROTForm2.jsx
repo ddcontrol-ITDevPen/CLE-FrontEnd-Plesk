@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,6 +28,8 @@ export function AddROTForm2() {
         containerNo: "",
         containerType: "",
         containerSize: "",
+        tareWeight:"",
+        cargoWeight:"",
         vgm: "",
         trailerType: "",
         consignee: "",
@@ -55,10 +57,22 @@ export function AddROTForm2() {
             const initialHaulier = savedData.haulierChoice === "Single" ? savedData.haulier : "";
             const initialDepot = savedData.depotChoice === "Single" ? savedData.depot : "";
 
+            // 1. DYNAMICALLY CAPTURE TARE WEIGHT FROM PAGE 1 SELECTION
+            let autoTare = "";
+            const savedSize = savedData.containerSize || "";
+            if (savedSize === "20") {
+                autoTare = "20000";
+            } else if (savedSize === "40") {
+                autoTare = "40000";
+            } else if (savedSize === "45") {
+                autoTare = "45000";
+            }
             const initialContainerData = {
                 containerNo: "",
                 containerType: savedData.containerType || "",
                 containerSize: savedData.containerSize || "",
+                tareWeight: autoTare,    // <-- Set pre-captured tare weight here
+                cargoWeight: "",         // <-- Initialize empty cargo weight
                 vgm: savedData.vgm || "",
                 trailerType: savedData.trailerType || "",
                 consignee: savedData.consignee || "",
@@ -161,9 +175,62 @@ export function AddROTForm2() {
                 newContainers[contIndex].addresses[0] = "";
             }
         }
+
+        // NEW LOGIC: Calculate VGM dynamically when Cargo Weight changes
+        if (field === "cargoWeight" || field === "tareWeight") {
+            const tare = parseFloat(newContainers[contIndex].tareWeight) || 0;
+            const cargo = parseFloat(newContainers[contIndex].cargoWeight) || 0;
+            newContainers[contIndex].vgm = (tare + cargo > 0) ? (tare + cargo).toString() : "";
+        }
         setContainers(newContainers);
     };
+    const handleAutoChange = (index, field, value) => {
+        setContainers(prev => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], [field]: value };
 
+            // Auto-calculate VGM when weight fields are changed
+            if (field === "tareWeight" || field === "cargoWeight") {
+                const tare = parseFloat(updated[index].tareWeight) || 0;
+                const cargo = parseFloat(updated[index].cargoWeight) || 0;
+
+                // Calculate sum and store as string (or empty if both are empty)
+                updated[index].vgm = (tare + cargo > 0) ? (tare + cargo).toString() : "";
+            }
+
+            return updated;
+        });
+    };
+
+    const handleContainerTypeChange = (index, size, type) => {
+        setContainers(prev => {
+            const updated = [...prev];
+
+            // Define tare weights based on selected container size
+            let automaticTare = "";
+            if (size === "20") {
+                automaticTare = "20000";
+            } else if (size === "40") {
+                automaticTare = "40000";
+            } else if (size === "45") {
+                automaticTare = "45000";
+            }
+
+            updated[index] = {
+                ...updated[index],
+                containerSize: size,
+                containerType: type,
+                tareWeight: automaticTare
+            };
+
+            // Re-calculate VGM instantly using the newly assigned tare weight
+            const tare = parseFloat(automaticTare) || 0;
+            const cargo = parseFloat(updated[index].cargoWeight) || 0;
+            updated[index].vgm = (tare + cargo > 0) ? (tare + cargo).toString() : "";
+
+            return updated;
+        });
+    };
     const handleAddressChange = (contIndex, addrIndex, value) => {
         const newContainers = [...containers];
         newContainers[contIndex].addresses[addrIndex] = value;
@@ -175,10 +242,8 @@ export function AddROTForm2() {
         const newErrors = {};
 
         containers.forEach((container, index) => {
-            if (!container.containerNo) {
-                newErrors[`${index}-containerNo`] = "Container number is required";
-            }
-            if (container.containerNo.length > 12) {
+
+            if (container.containerNo && container.containerNo.length > 12) {
                 newErrors[`${index}-containerNo`] = "Container number cannot be more than 12 characters";
             }
             if (!container.containerType) {
@@ -261,13 +326,15 @@ export function AddROTForm2() {
             for (const cont of containers) {
                 const formattedRotDate = cont.rotDate ? new Date(cont.rotDate).toISOString().split('T')[0] : null;
                 const containerPayload = {
-                    ContainerNumber: cont.containerNo,
+                    ContainerNumber: cont.containerNo.trim() === "" ? null : cont.containerNo,
                     ContainerType: cont.containerType,
                     ContainerSize: cont.containerSize,
                     VGM: cont.vgm === "" ? null : cont.vgm,
+                    TareWeight : cont.tareWeight || 0,
+                    CargoWeight : cont.cargoWeight || 0,
                     TrailerType: cont.trailerType || null,
                     ConsigneeId: cont.consignee,
-                    DepotId: cont.depot || null,
+                    DepotId: cont.depot || null, 
                     PortId: cont.port || null,
                     HaulierId: cont.haulier || null,
                     ROTDate: formattedRotDate,
@@ -354,13 +421,41 @@ export function AddROTForm2() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                <InputField label="Container No." subLabel="4 alphabets & 7 numbers" required value={container.containerNo} onChange={(e) => handleInputChange(cIdx, "containerNo", e.target.value)} error={errors[`${cIdx}-containerNo`]} />
+                                <InputField label="Container No." subLabel="4 alphabets & 7 numbers" value={container.containerNo} onChange={(e) => handleInputChange(cIdx, "containerNo", e.target.value)} error={errors[`${cIdx}-containerNo`]} />
                                 <SelectField label="Container Type" required options={["GP", "RF", "HC"]} value={container.containerType} onChange={(e) => handleInputChange(cIdx, "containerType", e.target.value)} error={errors[`${cIdx}-containerType`]} />
-                                <SelectField label="Container Size" required options={["20", "40", "45"]} value={container.containerSize} onChange={(e) => handleInputChange(cIdx, "containerSize", e.target.value)} error={errors[`${cIdx}-containerSize`]} />
-                                <InputField label="VGM" value={container.vgm} onChange={(e) => handleInputChange(cIdx, "vgm", e.target.value)} />
-
-                                <SelectField label="Trailer Type" options={["Normal", "Tipper", "Air", "SL"]} value={container.trailerType} onChange={(e) => handleInputChange(cIdx, "trailerType", e.target.value)} />
-
+                                <SelectField 
+                                    label="Container Size" 
+                                    required options={["20", "40", "45"]} 
+                                    value={container.containerSize}
+                                    onChange={(e) => {
+                                        // Call the type change function to auto-calculate tareWeight and VGM!
+                                        handleContainerTypeChange(cIdx, e.target.value, container.containerType);
+                                    }}
+                                    error={errors[`${cIdx}-containerSize`]} 
+                                />
+                                <InputField label="ROT Date" name="rotDate" type="date" value={container.rotDate} onChange={(e) => handleInputChange(cIdx, "rotDate", e.target.value)} error={errors[`${cIdx}-rotDate`]} required placeholder="(DD/MM/YYYY)" min={yesterday} max="2099-12-31" />
+                                <InputField
+                                    label="Container Tare Weight (kg)"
+                                    type="number"
+                                    value={container.tareWeight || ""}
+                                    readOnly
+                                />
+                                <InputField
+                                    label="Cargo Weight (kg)"
+                                    type="number"
+                                    value={container.cargoWeight || ""}
+                                    onChange={(e) => handleAutoChange(cIdx, "cargoWeight", e.target.value)}
+                                />
+                                <InputField
+                                    label="VGM (kg)"
+                                    type="number"
+                                    value={container.vgm || ""}
+                                    readOnly 
+                                    className="bg-gray-100 font-bold"
+                                />
+                               {/* <InputField label="VGM(Kg)" value={container.vgm} onChange={(e) => handleInputChange(cIdx, "vgm", e.target.value)} />*/}
+                                <SelectField label="Trailer Type" options={["2-Axle", "3-Axle", "Flatbed", "Gooseneck", "ISO Tank", "Lowbed", "Normal", "Reefer", "Side Loader", "Skeletal"]} value={container.trailerType} onChange={(e) => handleInputChange(cIdx, "trailerType", e.target.value)} />
+                                
                                 <SelectField
                                     label="Consignee/Shipper"
                                     required
@@ -381,7 +476,7 @@ export function AddROTForm2() {
                                 
                                 <SelectField label="Depot" name="depot" value={container.depot} onChange={(e) => handleInputChange(cIdx, "depot", e.target.value)} options={depots.map(d => ({label: d.companyName, value: d.companyCode}))} error={errors[`${cIdx}-depot`]} required />
                                 <InputField label="Port" required value={allCompanies.find(c => c.companyCode === container.port)?.companyName || container.port || ""} onChange={(e) => handleInputChange(cIdx, "port", e.target.value)} readOnly/>
-                                <InputField label="ROT Date" name="rotDate" type="date" value={container.rotDate} onChange={(e) => handleInputChange(cIdx, "rotDate", e.target.value)} error={errors[`${cIdx}-rotDate`]} required placeholder="(DD/MM/YYYY)" min={yesterday} max="2099-12-31" />
+                                
                             </div>
 
                             <div className="mt-6 space-y-4">

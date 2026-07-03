@@ -132,6 +132,7 @@ export function PortBookingList ()  {
     const getStatusTimestamp = (container) => {
         if (container.status === "Assigned") return container.rtAssignedTime || container.assignedTime;
         if (container.status === "Enroute")  return container.rtEnrouteTime || container.enrouteTime;
+        if (container.status === "Accepted") return container.rtAcceptedTime || container.acceptedTime;
         if (container.status === "Gate-In")  return container.rtGatedInTime || container.gatedInTime;
         if (container.status === "Gate-Out") return container.rtGatedOutTime || container.gatedOutTime;
         if (container.status === "Delivered") return container.rtDeliveredTime || container.deliveredTime;
@@ -688,7 +689,7 @@ export function PortBookingList ()  {
                                                     {isExport && (
                                                         <>
                                                             {/* Step 1: Port actions when Haulier is Enroute to Port */}
-                                                            {cont.status === "Enroute" && cont.acceptedTime === null && (
+                                                            {cont.status === "Enroute" && (
                                                                 <>
                                                                     <button
                                                                         onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Accepted" })}
@@ -703,7 +704,7 @@ export function PortBookingList ()  {
                                                                 </>
                                                             )}
                                                             {/* Step 2: Port Manual Gate In after Acceptance */}
-                                                            {cont.status === "Accepted" && cont.acceptedTime !== null && (
+                                                            {cont.status === "Accepted" && (
                                                                 <button
                                                                     onClick={() => handleGatedInExport(cont.containerId)}
                                                                     className="p-1.5 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors" title="Manual Gate In">
@@ -711,7 +712,7 @@ export function PortBookingList ()  {
                                                                 </button>
                                                             )}
                                                             {/* Step 3: Depot Manual Gate Out after Gated-In */}
-                                                            {cont.status === "Gate-In" && cont.gatedInTime !== null && (
+                                                            {cont.status === "Gate-In" && (
                                                                 <button
                                                                     onClick={() => handleGatedOutExport(cont.containerId)}
                                                                     className="p-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors" title="Manual Gate Out">
@@ -728,7 +729,7 @@ export function PortBookingList ()  {
                                                         <>
                                                             {/* Step 2: Depot actions when Haulier is Enroute to Depot (Second leg of Import) */}
                                                             {/* Explicitly checking if port milestones are complete or assuming status cycles back to Enroute */}
-                                                            {cont.status === "Enroute" && (cont.rtAcceptedTime === null || cont.acceptedTime === null) && (
+                                                            {cont.status === "Enroute"  && (
                                                                 <>
                                                                     <button
                                                                         onClick={() => setStatusModal({ isOpen: true, id: cont.containerId, nextStatus: "Accepted" })}
@@ -743,7 +744,7 @@ export function PortBookingList ()  {
                                                                 </>
                                                             )}
                                                             {/* Step 3: Depot Manual Gate In after Acceptance */}
-                                                            {cont.status === "Accepted" && (cont.rtAcceptedTime === null || cont.acceptedTime === null) && (
+                                                            {cont.status === "Accepted" && (
                                                                 <button
                                                                     onClick={() => handleGatedInImport(cont.containerId)}
                                                                     className="p-1.5 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors" title="Manual Gate In">
@@ -751,7 +752,7 @@ export function PortBookingList ()  {
                                                                 </button>
                                                             )}
                                                             {/* Step 4: Depot Manual Gate Out after Gated-In */}
-                                                            {cont.status === "Gate-In" && (cont.gatedInTime === null || cont.rtGatedInTime === null) && (
+                                                            {cont.status === "Gate-In" && (
                                                                 <button
                                                                     onClick={() => handleGatedOutImport(cont.containerId)}
                                                                     className="p-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors" title="Manual Gate Out">
@@ -813,7 +814,7 @@ export function PortBookingList ()  {
                     </table>
                 </div>
             </div>
-
+            {/* Accept&Reject Confirmation Modal */}
             <AnimatePresence>
                 {statusModal.isOpen && (
                     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -824,31 +825,35 @@ export function PortBookingList ()  {
                             className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center"
                         >
                             <div className="mb-6 flex justify-center">
-                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                                    statusModal.nextStatus === "Enroute" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-                                }`}>
-                                    {statusModal.nextStatus === "Enroute" ? <CheckCircle2 size={40} /> : <AlertCircle size={40} />}
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${statusModal.nextStatus === "Accepted" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
+                                    {statusModal.nextStatus === "Accepted" ? <CheckCircle2 size={40} /> : <AlertCircle size={40} />}
                                 </div>
                             </div>
 
                             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                                {statusModal.nextStatus === "Enroute" ? "Accept Job?" : "Reject Job?"}
+                                {statusModal.nextStatus === "Accepted" ? "Accept" : "Confirm Rejection?"}
                             </h2>
-                            <p className="text-gray-600 mb-8">
-                                {statusModal.nextStatus === "Enroute"
-                                    ? "Confirming this will set the container status to Enroute."
-                                    : "Are you sure you want to reject this assigned job?"}
+
+                            <p className="text-gray-500 mb-6">
+                                {statusModal.nextStatus === "Rejected"
+                                    ? "Please provide a reason for rejecting this booking."
+                                    : "Are you sure you want to proceed with this action?"}
                             </p>
 
-                            <div className="text-left mb-6">
-                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Reason for Rejection *</label>
-                                <textarea
-                                    className="w-full mt-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all text-sm min-h-[100px]"
-                                    placeholder="e.g., Incorrect Booking Number provided by client..."
-                                    value={statusModal.remarks}
-                                    onChange={(e) => setStatusModal({ ...statusModal, remarks: e.target.value })}
-                                />
-                            </div>
+                            {statusModal.nextStatus === "Rejected" && (
+                                <div className="mb-6 text-left">
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                                        Reject Reason
+                                    </label>
+                                    <textarea
+                                        autoFocus
+                                        value={statusModal.remarks}
+                                        onChange={(e) => setStatusModal({ ...statusModal, remarks: e.target.value })}
+                                        placeholder="Type reason here..."
+                                        className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-red-500 focus:ring-0 transition-all h-28 resize-none text-sm"
+                                    />
+                                </div>
+                            )}
 
                             <div className="flex gap-4">
                                 <button
@@ -859,9 +864,8 @@ export function PortBookingList ()  {
                                 </button>
                                 <button
                                     onClick={handleStatusUpdate}
-                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${
-                                        statusModal.nextStatus === "Enroute" ? "bg-green-600 hover:bg-green-700" : "bg-red-500 hover:bg-red-600"
-                                    }`}
+                                    disabled={statusModal.nextStatus === "Rejected" && !statusModal.remarks?.trim()}
+                                    className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${statusModal.nextStatus === "Accepted" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:shadow-none"}`}
                                 >
                                     Confirm
                                 </button>
@@ -870,6 +874,7 @@ export function PortBookingList ()  {
                     </div>
                 )}
             </AnimatePresence>
+           
         </Layout>
     );
 };
