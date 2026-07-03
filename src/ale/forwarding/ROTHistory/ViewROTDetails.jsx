@@ -300,7 +300,7 @@ export function ALEViewROTDetails() {
                         <InfoRow label="Address" value={data.toAddress?.map(a => a.address).join(", ") || data.externalConsigneeAddress} />
                         <InfoRow label="PIC Name" value={data.consignee?.picName} />
                         <InfoRow label="PIC Number" value={data.consignee?.handphoneNumber || data.externalConsigneeContact} />
-                        <InfoRow label="PIC Email" value={data.consignee?.emailAddress} />
+                        <InfoRow label="PIC Email" value={data.consignee?.emailAddress || data.aleBooking?.externalConsigneeEmail} />
                     </Section>
 
                     <Section title="Terminal Information">
