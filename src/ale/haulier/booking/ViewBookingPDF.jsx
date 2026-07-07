@@ -9,7 +9,7 @@ import html2canvas from "html2canvas-pro";
 import { getAleAssignedHaulierByContainerId, getAleAssignedHaulierById } from "../../../services/aleAssignedHaulierService.js";
 import { getUserById } from "../../../services/userService.js";
 
-export function ALEViewECsnPDF() {
+export function ViewBookingPDF() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [data, setData] = useState(null);

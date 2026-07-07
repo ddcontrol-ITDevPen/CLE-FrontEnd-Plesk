@@ -147,7 +147,7 @@ export function ViewROTPDF() {
                         <PDFRow label="SCN" value={booking.scn} />
                         <PDFRow label="POD/POL" value={booking.portLocation} />
                         <PDFRow label="ETA" value={booking.eta?.split('T')[0]} />
-                        <PDFRow label="Seal No." value={booking.sealNumber} />
+                        <PDFRow label="Seal No." value={data.sealNumber} />
                         <PDFRow label="Forwarder Remarks" value={booking.forwarderRemarks} />
                     </div>
 

@@ -11,7 +11,7 @@ import {
     Save,
     ArrowLeft
 } from "lucide-react";
-import {getContainerById, updateContainer} from "../../../services/containerService.js";
+import {getContainerById, updateContainerToEnroute} from "../../../services/containerService.js";
 import { toast, Toaster } from "sonner";
 import { getDrivers } from "../../../services/driverService.js";
 import { getPrimeMovers } from "../../../services/primeMoverService.js";
@@ -123,30 +123,20 @@ export function AssignBooking() {
             const updatedBy = user.fullName + " - " + user.companyName;
             const updatedData = {...formData, haulierId: user.companyCode};
             // Get containerId from updatedData
-            const box_id = updatedData.containerId;
-         
-            console.log("containerId:", formData.containerId);
-            console.log("updatedData:", updatedData);
-            console.log("timeSlotId:", updatedData.timeSlotId);
-        
+            const box_id = formData.containerId;
+
             // 1. Register the newly assigned asset details
             await registerAssignedHaulier(updatedData);
             console.log("Assigned haulier created successfully");
 
-      
-            // 2. Update the tracking status on the corresponding container
-            const updatedContainerData = {
-                ...container,
-                containerId: box_id,
-                status: "Enroute",
+            // 2. NEW FIX: Safely update ONLY the Enroute fields via the new partial endpoint
+            const enroutePayload = {
                 enrouteTime: new Date().toISOString(),
-                UpdatedBy: updatedBy
+                updatedBy: updatedBy
             };
-            console.log("Updating container...", updatedContainerData);
-            //await updateContainer(formData.containerId, updatedContainerData);
-            const result = await updateContainer(formData.containerId, updatedContainerData);
-            console.log("Container updated:", result);
-            
+
+            console.log("Sending partial enroute update for container ID:", formData.containerId);
+            await updateContainerToEnroute(formData.containerId, enroutePayload);
             
             // 3. Find the selected slot record to securely reduce its active available count by 1
             const selectedSlot = timeSlots.find(s => s.id === formData.timeSlotId);
@@ -174,17 +164,9 @@ export function AssignBooking() {
             toast.success("Haulier assigned successfully!");
             setTimeout(() => navigate("/haulier/booking/"), 1500);
         } catch (error) {
-            //toast.error("Failed to save assignment");
-            //console.error(error);
+            toast.error("Failed to save assignment");
             console.error(error);
-
-            console.log(error.response?.data);
-
-            toast.error(
-                error.response?.data?.message ||
-                error.message ||
-                "Failed to save assignment"
-            );
+           
         }
     };
 

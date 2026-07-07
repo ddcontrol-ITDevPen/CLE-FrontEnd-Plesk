@@ -402,7 +402,7 @@ export function CreateBookingForm() {
         //     newErrors.depot = "Please select a Depot!";
         // }
 
-        if (!formData.containerNo) newErrors.containerNo = "Container Number is required!";
+        //if (!formData.containerNo) newErrors.containerNo = "Container Number is required!";
         if (!formData.consignee) newErrors.consignee = "Please select a Consignee!";
         if (!formData.rotDate) newErrors.rotDate = "ROT Date is required!";
 
@@ -674,7 +674,7 @@ export function CreateBookingForm() {
                             </div>
                             <div className="p-8">
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                    <InputField label="Container No." name="containerNo" value={formData.containerNo} onChange={handleChange} error={errors.containerNo} required />
+                                    <InputField label="Container No." name="containerNo" value={formData.containerNo} onChange={handleChange} error={errors.containerNo} />
                                     <SelectField label="Type" name="containerType" required options={["GP", "RF", "HC"]} value={formData.containerType} onChange={handleChange} error={errors.containerType} />
                                     {/*<SelectField label="Size" name="containerSize" required options={["20", "40", "45"]} value={formData.containerSize} onChange={handleChange} error={errors.containerSize} />*/}
                                     <SelectField

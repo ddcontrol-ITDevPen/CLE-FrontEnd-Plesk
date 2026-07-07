@@ -32,7 +32,8 @@ export function DepotViewBooking() {
                 const forwardingId = result.booking?.forwardingId;
                 const forwardingInfo = await getCompanyById(forwardingId);
                 setForwarding(forwardingInfo);
-                const assignedHaulierData = await getAssignedHaulierByContainerId(id);
+                const assignedHaulierData = await getAssignedHaulierByContainerId(id)
+                console.log("Haulier Debug Data:", assignedHaulierData); // 👈 Add this temporarily to check object properties
                 setAssignedHaulier(assignedHaulierData);
                 if (result.booking?.billingParty) {
                     try {
@@ -254,7 +255,7 @@ export function DepotViewBooking() {
                             <div className="flex justify-between"><span className="text-gray-500">Type of Trip</span> <span className="font-bold">{data.booking?.tripType || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">ETA</span> <span className="font-bold">{data.booking?.eta || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">POD/POL</span> <span className="font-bold">{data.booking?.portLocation || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Seal No.</span> <span className="font-bold">{data.booking?.sealNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Seal No.</span> <span className="font-bold">{data.booking?.sealNumber || data.sealNumber || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Forwarding Remarks</span> <span className="font-bold italic">{data.booking?.forwardingRemarks || "N/A"}</span></div>
                         </div>
                         <div className="space-y-3">
@@ -317,13 +318,28 @@ export function DepotViewBooking() {
                         <InfoRow label="PIC Email" value={data.depot?.emailAddress} />
                     </Section>
                 </div>
-                {(data.status !== "Assigned" && data.status !== "Deleted" && data.status !== "Rejected") && (
+                {data.status !== "Assigned" && data.status !== "Deleted" && data.status !== "Rejected" && assignedHaulier && (
                     <Section title="Enroute Information">
-                        <InfoRow label="Driver" value={`${assignedHaulier?.driver?.name} (${assignedHaulier?.driver?.mobileNumber} / ${assignedHaulier?.driver?.emailAddress})`} />
-                        <InfoRow label="PM Number" value={assignedHaulier.primeMover?.plateNumber} />
-                        <InfoRow label="Trailer Number" value={`${assignedHaulier.trailer?.plateNumber} - ${assignedHaulier.trailer?.type}`} />
-                        <InfoRow label="Time Slot" value={`${assignedHaulier?.timeSlot?.date} @ ${assignedHaulier?.timeSlot?.time}`} />
-                        <InfoRow label="ROT Date" value={data.rotDate} />
+                        <InfoRow
+                            label="Driver"
+                            value={assignedHaulier?.driverName || "N/A"}
+                        />
+                        <InfoRow
+                            label="PM Number"
+                            value={assignedHaulier?.primeMoverPlate || "N/A"}
+                        />
+                        <InfoRow
+                            label="Trailer Number"
+                            value={assignedHaulier?.trailerPlate || "N/A"}
+                        />
+                        <InfoRow
+                            label="Time Slot"
+                            value={assignedHaulier?.timeSlotDate ? `${assignedHaulier.timeSlotDate} @ ${assignedHaulier.timeSlotTime}` : "N/A"}
+                        />
+                        <InfoRow
+                            label="ROT Date"
+                            value={data.rotDate || "N/A"}
+                        />
                     </Section>
                 )}
                 {/* Documents Section */}

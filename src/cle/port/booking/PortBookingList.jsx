@@ -32,8 +32,13 @@ export function PortBookingList ()  {
     const [filterStatus, setFilterStatus] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'status', direction: 'asc' });
     const navigate = useNavigate();
+
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+    
     useEffect(() => {
         fetchData();
     }, []);
@@ -412,7 +417,26 @@ export function PortBookingList ()  {
 
                     return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
                 }
+                // --- ADDED CUSTOM STATUS SORTING HERE ---
+                if (sortConfig.key === 'status') {
+                    const statusOrder = {
+                        "Enroute": 1,
+                        "Accepted": 2,
+                        "Gate-In": 3,
+                        "Gate-Out": 4,
+                        "Assigned": 5,
+                        "Delivered": 6,
+                        "RFC": 7,
+                        "Rejected": 8
+                    };
 
+                    // Default to a high number (like 9) if an unexpected status appears
+                    const rankA = statusOrder[a.status] || 9;
+                    const rankB = statusOrder[b.status] || 9;
+
+                    return sortConfig.direction === 'asc' ? rankA - rankB : rankB - rankA;
+                }
+                // --- END OF CUSTOM STATUS SORTING ---
                 const getVal = (obj, path) => path.split('.').reduce((o, i) => o?.[i], obj);
                 let aValue = getVal(a, sortConfig.key) || "";
                 let bValue = getVal(b, sortConfig.key) || "";
@@ -428,7 +452,12 @@ export function PortBookingList ()  {
 
         return result;
     }, [containers, searchTerm, filterStatus, startDate, endDate, sortConfig]);
-
+    
+    // Paginated Sliced Computation
+    const paginatedContainers = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredContainers.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredContainers, currentPage]);
     const getLocationName = (cont, type) => {
         const { movementType, tripType } = cont.booking || {};
 
@@ -812,6 +841,98 @@ export function PortBookingList ()  {
                             )}
                         </tbody>
                     </table>
+                </div>
+                {/* Added Pagination Controls Interface */}
+                {filteredContainers.length > 0 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-6 py-4 rounded-xl border border-gray-100 mt-4 shadow-sm">
+                        <div className="text-sm text-gray-500 font-medium">
+                            Showing{" "}
+                            <span className="font-semibold text-gray-800">
+                                {Math.min((currentPage - 1) * itemsPerPage + 1, filteredContainers.length)}
+                            </span>{" "}
+                            to{" "}
+                            <span className="font-semibold text-gray-800">
+                                {Math.min(currentPage * itemsPerPage, filteredContainers.length)}
+                            </span>{" "}
+                            of{" "}
+                            <span className="font-semibold text-gray-800">{filteredContainers.length}</span>{" "}
+                            records
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 text-sm font-bold bg-white text-gray-600 border border-gray-200 rounded-lg shadow-sm transition-all hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
+                            >
+                                Previous
+                            </button>
+
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: Math.ceil(filteredContainers.length / itemsPerPage) }).map((_, idx) => {
+                                    const pageNum = idx + 1;
+                                    if (Math.abs(currentPage - pageNum) <= 1 || pageNum === 1 || pageNum === Math.ceil(filteredContainers.length / itemsPerPage)) {
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => setCurrentPage(pageNum)}
+                                                className={`w-9 h-9 text-sm font-bold rounded-lg transition-all ${currentPage === pageNum
+                                                    ? "bg-blue-600 text-white shadow-md shadow-blue-100"
+                                                    : "bg-white text-gray-600 hover:bg-gray-50 border border-transparent"
+                                                }`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    }
+                                    if (pageNum === 2 || pageNum === Math.ceil(filteredContainers.length / itemsPerPage) - 1) {
+                                        return <span key={pageNum} className="text-gray-400 px-1">...</span>;
+                                    }
+                                    return null;
+                                })}
+                            </div>
+
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredContainers.length / itemsPerPage)))}
+                                disabled={currentPage === Math.ceil(filteredContainers.length / itemsPerPage)}
+                                className="px-4 py-2 text-sm font-bold bg-white text-gray-600 border border-gray-200 rounded-lg shadow-sm transition-all hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex flex-wrap items-center gap-6 px-2 pt-2">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><Check size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Accept</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-red-50 rounded-md text-red-500"><LucideX size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Reject</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-600"><Eye size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">View Details</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><Clock size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Gate In</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-red-50 rounded-md text-red-600"><Clock size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Gate Out</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-blue-50 rounded-md text-green-600"><Edit size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Action</span>
+                    </div>
                 </div>
             </div>
             {/* Accept&Reject Confirmation Modal */}

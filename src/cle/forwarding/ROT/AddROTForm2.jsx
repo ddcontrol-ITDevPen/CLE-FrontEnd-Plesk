@@ -73,7 +73,7 @@ export function AddROTForm2() {
                 containerSize: savedData.containerSize || "",
                 tareWeight: autoTare,    // <-- Set pre-captured tare weight here
                 cargoWeight: "",         // <-- Initialize empty cargo weight
-                vgm: savedData.vgm || "",
+                vgm: savedData.vgm || autoTare || "",
                 trailerType: savedData.trailerType || "",
                 consignee: savedData.consignee || "",
                 depot: initialDepot,

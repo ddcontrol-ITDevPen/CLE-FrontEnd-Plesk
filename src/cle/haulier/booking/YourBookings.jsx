@@ -33,7 +33,7 @@ export function YourBookings ()  {
     const [filterStatus, setFilterStatus] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'status', direction: 'asc' });
     const navigate = useNavigate();
     useEffect(() => {
         fetchData();
@@ -234,7 +234,26 @@ export function YourBookings ()  {
 
                     return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
                 }
+                // --- ADDED CUSTOM STATUS SORTING HERE ---
+                if (sortConfig.key === 'status') {
+                    const statusOrder = {
+                        "Assigned": 1,
+                        "Enroute": 2,
+                        "Accepted": 3,
+                        "Gate-In": 4,
+                        "Gate-Out": 5,
+                        "Delivered": 6,
+                        "RFC": 7,
+                        "Rejected": 8
+                    };
 
+                    // Default to a high number (like 9) if an unexpected status appears
+                    const rankA = statusOrder[a.status] || 9;
+                    const rankB = statusOrder[b.status] || 9;
+
+                    return sortConfig.direction === 'asc' ? rankA - rankB : rankB - rankA;
+                }
+                // --- END OF CUSTOM STATUS SORTING ---
                 const getVal = (obj, path) => path.split('.').reduce((o, i) => o?.[i], obj);
                 let aValue = getVal(a, sortConfig.key) || "";
                 let bValue = getVal(b, sortConfig.key) || "";
@@ -628,6 +647,29 @@ export function YourBookings ()  {
                         </div>
                     </div>
                 )}
+
+                <div className="flex flex-wrap items-center gap-6 px-2 pt-2">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><Check size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Assign</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-red-50 rounded-md text-red-500"><LucideX size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Reject</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-600"><Eye size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">View Details</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-blue-50 rounded-md text-green-600"><Edit size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Action</span>
+                    </div>
+                  
+
+
+                </div>
             </div>
 
             <AnimatePresence>

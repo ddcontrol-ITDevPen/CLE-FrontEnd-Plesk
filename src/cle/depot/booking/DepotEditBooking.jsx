@@ -1,9 +1,9 @@
 ﻿import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
-import {getContainerById, updateContainer} from "../../../services/containerService.js";
+import {getContainerById, updateContainer, updateContainerDepotGateOut} from "../../../services/containerService.js";
 import {AnimatePresence, motion} from "framer-motion";
-import {AlertCircle, ArrowLeft, Check, CheckCircle2, Clock, FileText, Save, XCircle} from "lucide-react";
+import {AlertCircle, ArrowLeft, Check, CheckCircle2, Clock, FileText, LucideX, Save, XCircle} from "lucide-react";
 import ShipmentLog from "../../ROTComponents/ROTShipmentLog.jsx";
 import {getCompanyById} from "../../../services/companyService.js";
 import {getAssignedHaulierByContainerId} from "../../../services/assignedHaulier.js";
@@ -22,6 +22,14 @@ export function DepotEditBooking() {
     const [assignedHaulier, setAssignedHaulier] = useState(null);
     const [isRejecting, setIsRejecting] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
+    const [gateOutModal, setGateOutModal] = useState({
+        isOpen: false,
+        containerId: null,
+        movementType: "",
+        containerNumber: "",
+        sealNumber: ""
+    });
+    
     useEffect(() => {
         const fetchDetails = async () => {
             try {
@@ -49,7 +57,15 @@ export function DepotEditBooking() {
         };
         fetchDetails();
     }, [id]);
-
+    // Trigger modal view state assignment 
+    const handleOpenGateOutModal = (container) => {
+        setGateOutModal({
+            isOpen: true,
+            containerId: container.containerId,
+            containerNumber: container.containerNumber || "",
+            sealNumber: container.sealNumber || ""
+        });
+    };
     const getLocationName = (cont, type) => {
         const { movementType, tripType } = cont.booking || {};
 
@@ -165,6 +181,37 @@ export function DepotEditBooking() {
         } catch (error) {
             console.error("Update Error:", error);
             toast.error("Failed to update status", { id: toastId });
+        }
+    };
+    // Dispatch validated form action using patch endpoint
+    const handleConfirmGateOut = async () => {
+        if (!gateOutModal.containerNumber.trim() || !gateOutModal.sealNumber.trim()) {
+            toast.error("Both Container Number and Seal Number are required to proceed.");
+            return;
+        }
+
+        const toastId = toast.loading("Updating status to Gate-Out...");
+        try {
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = `${user.fullName} - ${user.companyName}`;
+
+            const patchPayload = {
+                containerNumber: gateOutModal.containerNumber,
+                sealNumber: gateOutModal.sealNumber,
+                updatedBy: updatedBy
+            };
+
+            // Call the new targeted endpoint directly
+            await updateContainerDepotGateOut(gateOutModal.containerId, patchPayload);
+
+            toast.success("Status updated to Gate-Out successfully", { id: toastId });
+            setGateOutModal({ isOpen: false, containerId: null, containerNumber: "", sealNumber: "" });
+            setTimeout(() => {
+                navigate(-1);
+            }, 1000);
+        } catch (error) {
+            console.error("Gate Out Error:", error);
+            toast.error(error.response?.data?.message || "Failed to finalize Gate-Out status.", { id: toastId });
         }
     };
 
@@ -334,10 +381,10 @@ export function DepotEditBooking() {
                 </div>
                 {(data.status !== "Assigned" && data.status !== "Deleted" && data.status !== "Rejected") && (
                     <Section title="Enroute Information">
-                        <InfoRow label="Driver" value={`${assignedHaulier?.driver?.name} (${assignedHaulier?.driver?.mobileNumber} / ${assignedHaulier?.driver?.emailAddress})`} />
-                        <InfoRow label="PM Number" value={assignedHaulier.primeMover?.plateNumber} />
-                        <InfoRow label="Trailer Number" value={`${assignedHaulier.trailer?.plateNumber} - ${assignedHaulier.trailer?.type}`} />
-                        <InfoRow label="Time Slot" value={`${assignedHaulier?.timeSlot?.date} @ ${assignedHaulier?.timeSlot?.time}`} />
+                        <InfoRow label="Driver" value={assignedHaulier?.driverName || "N/A"} />
+                        <InfoRow label="PM Number" value={assignedHaulier?.primeMoverPlate || "N/A"} />
+                        <InfoRow label="Trailer Number" value={assignedHaulier?.trailerPlate || "N/A"} />
+                        <InfoRow label="Time Slot" value={assignedHaulier?.timeSlotDate ? `${assignedHaulier.timeSlotDate} @ ${assignedHaulier.timeSlotTime}` : "N/A"} />
                         <InfoRow label="ROT Date" value={data.rotDate} />
                     </Section>
                 )}
@@ -396,7 +443,7 @@ export function DepotEditBooking() {
                             {/* Gate Out */}
                             {data.status === "Gate-In"  && (
                                 <button
-                                    onClick={() => handleGatedOut(data.containerId)}
+                                    onClick={() => handleOpenGateOutModal(data)} // Pass the whole object 'cont'
                                     className="flex items-center gap-2 bg-orange-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-orange-700"
                                 >
                                     <Clock size={18} />
@@ -463,6 +510,70 @@ export function DepotEditBooking() {
                                     className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${statusModal.nextStatus === "Accepted" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:shadow-none"}`}
                                 >
                                     Confirm
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+                {gateOutModal.isOpen && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 text-left"
+                        >
+                            <div className="flex justify-between items-center border-b pb-2">
+                                <h3 className="text-lg font-bold text-gray-900">Gate-Out Verification</h3>
+                                <button
+                                    onClick={() => setGateOutModal(prev => ({ ...prev, isOpen: false }))}
+                                    className="text-gray-400 hover:text-gray-600"
+                                >
+                                    <LucideX size={20} />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4 py-2">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                        Container Number <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. MSKU1234567"
+                                        value={gateOutModal.containerNumber}
+                                        onChange={(e) => setGateOutModal(prev => ({ ...prev, containerNumber: e.target.value.toUpperCase() }))}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-blue-500 transition-all text-sm"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                        Seal Number <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter seal number"
+                                        value={gateOutModal.sealNumber}
+                                        onChange={(e) => setGateOutModal(prev => ({ ...prev, sealNumber: e.target.value.toUpperCase() }))}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-blue-500 transition-all text-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 pt-2">
+                                <button
+                                    onClick={() => setGateOutModal(prev => ({ ...prev, isOpen: false }))}
+                                    className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirmGateOut}
+                                    disabled={!gateOutModal.containerNumber.trim() || !gateOutModal.sealNumber.trim()}
+                                    className="flex-1 py-2.5 text-sm bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-xl font-bold transition-all shadow-md"
+                                >
+                                    Confirm Gate-Out
                                 </button>
                             </div>
                         </motion.div>

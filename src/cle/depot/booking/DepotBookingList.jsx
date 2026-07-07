@@ -6,7 +6,7 @@ import {
     FileText, AlertCircle, CheckCircle2, LucideX, Check, Clock
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import { getContainers, deleteContainer, updateContainer, getContainerById } from "../../../services/containerService.js";
+import { getContainers, deleteContainer, updateContainerDepotStatus, updateContainerDepotGateIn,updateContainerDepotGateOut,getContainerById } from "../../../services/containerService.js";
 import { getUserById } from "../../../services/userService.js";
 import * as XLSX from 'xlsx';
 import { useNavigate } from "react-router-dom";
@@ -32,13 +32,19 @@ export function DepotBookingList() {
     const [filterStatus, setFilterStatus] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'status', direction: 'asc' });
     const navigate = useNavigate();
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
-
+    const [gateOutModal, setGateOutModal] = useState({
+        isOpen: false,
+        containerId: null,
+        movementType: "",
+        containerNumber: "",
+        sealNumber: ""
+    });
     useEffect(() => {
         fetchData();
     }, []);
@@ -148,7 +154,26 @@ export function DepotBookingList() {
         if (container.status === "Deleted") return container.deletedTime;
         return null;
     };
+    const calculateTurnAroundTime = (gatedIn, gatedOut) => {
+        if (!gatedIn || !gatedOut) return "-";
 
+        const inTime = new Date(gatedIn);
+        const outTime = new Date(gatedOut);
+
+        // Difference in milliseconds
+        const diffMs = outTime - inTime;
+
+        if (diffMs < 0) return "-"; // Handle edge cases where data might be malformed
+
+        // Calculate duration in minutes and round to integer
+        const diffMinutes = Math.round(diffMs / (1000 * 60));
+
+        return `${diffMinutes} mins`;
+
+        // ALTERNATIVE: If you prefer hours, uncomment below:
+        // const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+        // return `${diffHours} hrs`;
+    };
     const handleStatusUpdate = async () => {
         const toastId = toast.loading(`Updating status to ${statusModal.nextStatus}...`);
         try {
@@ -195,7 +220,7 @@ export function DepotBookingList() {
                 rejectedRemarks: statusModal.remarks,
                 UpdatedBy: updatedBy,
             };
-            await updateContainer(statusModal.id, payload);
+            await updateContainerDepotStatus(statusModal.id, payload);
             toast.success(`Container ${statusModal.nextStatus} successfully`, { id: toastId });
             setStatusModal({ isOpen: false, id: null, nextStatus: "", remarks: "" });
             fetchData();
@@ -225,15 +250,16 @@ export function DepotBookingList() {
             }
             const payload = {
                 ...currentContainer,
-                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
                 status: "Gate-In",
                 gatedInTime,
                 rtGatedInTime,
                 //gatedInTime: new Date().toISOString(),
                 UpdatedBy: updatedBy,
             };
-
-            await updateContainer(containerId, payload);
+            console.log("container ID:", statusModal.id);
+            console.log("container details", payload);
+            //await updateContainer(containerId, payload);
+            await updateContainerDepotGateIn(containerId, payload);
             toast.success("Status updated to Gate-In", { id: toastId });
             fetchData();
         } catch (error) {
@@ -263,7 +289,6 @@ export function DepotBookingList() {
             
             const payload = {
                 ...currentContainer,
-                toAddress: currentContainer.toAddress?.map(addr => ({ address: addr.address })) || [],
                 status: "Gate-In",
                 gatedInTime,
                 rtGatedInTime,
@@ -271,7 +296,8 @@ export function DepotBookingList() {
                 UpdatedBy: updatedBy,
             };
 
-            await updateContainer(containerId, payload);
+            //await updateContainer(containerId, payload);
+            await updateContainerDepotGateIn(containerId, payload);
             toast.success("Status updated to Gate-In", { id: toastId });
             fetchData();
         } catch (error) {
@@ -279,7 +305,45 @@ export function DepotBookingList() {
             toast.error("Failed to update status", { id: toastId });
         }
     };
+    // Trigger modal view state assignment 
+    const handleOpenGateOutModal = (container) => {
+        setGateOutModal({
+            isOpen: true,
+            containerId: container.containerId,
+            containerNumber: container.containerNumber || "",
+            sealNumber: container.sealNumber || ""
+        });
+    };
 
+    // Dispatch validated form action using patch endpoint
+    const handleConfirmGateOut = async () => {
+        if (!gateOutModal.containerNumber.trim() || !gateOutModal.sealNumber.trim()) {
+            toast.error("Both Container Number and Seal Number are required to proceed.");
+            return;
+        }
+
+        const toastId = toast.loading("Updating status to Gate-Out...");
+        try {
+            const user = await getUserById(localStorage.getItem("userId"));
+            const updatedBy = `${user.fullName} - ${user.companyName}`;
+
+            const patchPayload = {
+                containerNumber: gateOutModal.containerNumber,
+                sealNumber: gateOutModal.sealNumber,
+                updatedBy: updatedBy
+            };
+
+            // Call the new targeted endpoint directly
+            await updateContainerDepotGateOut(gateOutModal.containerId, patchPayload);
+
+            toast.success("Status updated to Gate-Out successfully", { id: toastId });
+            setGateOutModal({ isOpen: false, containerId: null, containerNumber: "", sealNumber: "" });
+            fetchData();
+        } catch (error) {
+            console.error("Gate Out Error:", error);
+            toast.error(error.response?.data?.message || "Failed to finalize Gate-Out status.", { id: toastId });
+        }
+    };
     const handleGatedOutExport = async (containerId) => {
         const toastId = toast.loading("Updating status to Gate-Out...");
         try {
@@ -413,7 +477,36 @@ export function DepotBookingList() {
                     const dateB = b.rotDate ? new Date(b.rotDate).getTime() : 0;
                     return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
                 }
+                if (sortConfig.key === 'turnaroundtime') {
+                    const getDuration = (cont) => {
+                        if (!cont.gatedInTime || !cont.gatedOutTime) return 0;
+                        return new Date(cont.gatedOutTime) - new Date(cont.gatedInTime);
+                    };
+                    const durA = getDuration(a);
+                    const durB = getDuration(b);
+                    return sortConfig.direction === 'asc' ? durA - durB : durB - durA;
+                }
 
+                // --- ADDED CUSTOM STATUS SORTING HERE ---
+                if (sortConfig.key === 'status') {
+                    const statusOrder = {
+                        "Enroute": 1,
+                        "Accepted": 2,
+                        "Gate-In": 3,
+                        "Gate-Out": 4,
+                        "Assigned": 5,
+                        "Delivered": 6,
+                        "RFC": 7,
+                        "Rejected": 8
+                    };
+
+                    // Default to a high number (like 9) if an unexpected status appears
+                    const rankA = statusOrder[a.status] || 9;
+                    const rankB = statusOrder[b.status] || 9;
+
+                    return sortConfig.direction === 'asc' ? rankA - rankB : rankB - rankA;
+                }
+                // --- END OF CUSTOM STATUS SORTING ---
                 const getVal = (obj, path) => path.split('.').reduce((o, i) => o?.[i], obj);
                 let aValue = getVal(a, sortConfig.key) || "";
                 let bValue = getVal(b, sortConfig.key) || "";
@@ -608,6 +701,30 @@ export function DepotBookingList() {
                                     )}
                                 </div>
                             </th>
+                            <th className="p-4 border-b w-36">
+                                <div className="flex items-center gap-1" onClick={() => handleSort('gatein')}>
+                                    Gate In
+                                    {sortConfig.key === 'gatein' && (
+                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                    )}
+                                </div>
+                            </th>
+                            <th className="p-4 border-b w-36">
+                                <div className="flex items-center gap-1" onClick={() => handleSort('gateout')}>
+                                    Gate Out
+                                    {sortConfig.key === 'gateout' && (
+                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                    )}
+                                </div>
+                            </th>
+                            <th className="p-4 border-b w-36">
+                                <div className="flex items-center gap-1" onClick={() => handleSort('turnaroundtime')}>
+                                    Turn Around Time
+                                    {sortConfig.key === 'turnaroundtime' && (
+                                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                                    )}
+                                </div>
+                            </th>
                             <th className="p-4 border-b">
                                 <div className="flex items-center gap-1" onClick={() => handleSort('booking.from')}>
                                     From
@@ -659,6 +776,20 @@ export function DepotBookingList() {
                                         <td className="p-4 text-[12px] whitespace-normal break-words leading-tight text-gray-600">
                                             {getStatusTimestamp(cont) ? new Date(getStatusTimestamp(cont)).toLocaleString() : "-"}
                                         </td>
+                                        <td className="p-4 text-[12px] whitespace-normal break-words leading-tight text-green-600 font-semibold">
+                                            {cont.gatedInTime
+                                                ? new Date(cont.gatedInTime).toLocaleString()
+                                                : "-"}
+                                        </td>
+                                        <td className="p-4 text-[12px] whitespace-normal break-words leading-tight text-red-600 font-semibold">
+                                            {cont.gatedOutTime
+                                                ? new Date(cont.gatedOutTime).toLocaleString()
+                                                : "-"}
+                                        </td>
+                                        {/* Replace your empty <td></td> with this: */}
+                                        <td className="p-4 text-[12px] font-medium text-gray-700">
+                                            {calculateTurnAroundTime(cont.gatedInTime, cont.gatedOutTime)}
+                                        </td>
                                         <td className="p-4">{getLocationName(cont, 'from')}</td>
                                         <td className="p-4">{getLocationName(cont, 'to')}</td>
                                         <td className="p-4 text-left">
@@ -693,11 +824,14 @@ export function DepotBookingList() {
                                                         )}
                                                         {/* Step 3: Depot Manual Gate Out after Gated-In */}
                                                         {cont.status === "Gate-In" && (
+                                                          
                                                             <button
-                                                                onClick={() => handleGatedOutExport(cont.containerId)}
-                                                                className="p-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors" title="Manual Gate Out">
-                                                                <Clock size={18} />
-                                                            </button>
+                                                            onClick={() => handleOpenGateOutModal(cont)} // Pass the whole object 'cont'
+                                                        className="p-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors"
+                                                        title="Manual Gate Out"
+                                                        >
+                                                    <Clock size={18} />
+                                                    </button>
                                                         )}
                                                     </>
                                                 )}
@@ -734,7 +868,7 @@ export function DepotBookingList() {
                                                         {/* Step 4: Depot Manual Gate Out after Gated-In */}
                                                         {cont.status === "Gate-In" && (
                                                             <button
-                                                                onClick={() => handleGatedOutImport(cont.containerId)}
+                                                                onClick={() => handleOpenGateOutModal(cont.containerId)}
                                                                 className="p-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors" title="Manual Gate Out">
                                                                 <Clock size={18} />
                                                             </button>
@@ -856,6 +990,38 @@ export function DepotBookingList() {
                         </div>
                     </div>
                 )}
+
+                <div className="flex flex-wrap items-center gap-6 px-2 pt-2">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><Check size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Accept</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-red-50 rounded-md text-red-500"><LucideX size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Reject</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-gray-100 rounded-md text-gray-600"><Eye size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">View Details</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-green-50 rounded-md text-green-600"><Clock size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Gate In</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-red-50 rounded-md text-red-600"><Clock size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Gate Out</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-blue-50 rounded-md text-blue-600"><FileText size={14} /></div>
+                        <span className="text-[14px] font-medium text-gray-500">Action</span>
+                    </div>
+                </div>
             </div>
 
             {/* Accept&Reject Confirmation Modal */}
@@ -912,6 +1078,70 @@ export function DepotBookingList() {
                                     className={`flex-1 py-3 text-white rounded-xl font-bold shadow-lg transition-all ${statusModal.nextStatus === "Accepted" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:shadow-none"}`}
                                 >
                                     Confirm
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+                {gateOutModal.isOpen && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 text-left"
+                        >
+                            <div className="flex justify-between items-center border-b pb-2">
+                                <h3 className="text-lg font-bold text-gray-900">Gate-Out Verification</h3>
+                                <button
+                                    onClick={() => setGateOutModal(prev => ({ ...prev, isOpen: false }))}
+                                    className="text-gray-400 hover:text-gray-600"
+                                >
+                                    <LucideX size={20} />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4 py-2">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                        Container Number <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. MSKU1234567"
+                                        value={gateOutModal.containerNumber}
+                                        onChange={(e) => setGateOutModal(prev => ({ ...prev, containerNumber: e.target.value.toUpperCase() }))}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-blue-500 transition-all text-sm"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                        Seal Number <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter seal number"
+                                        value={gateOutModal.sealNumber}
+                                        onChange={(e) => setGateOutModal(prev => ({ ...prev, sealNumber: e.target.value.toUpperCase() }))}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-blue-500 transition-all text-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 pt-2">
+                                <button
+                                    onClick={() => setGateOutModal(prev => ({ ...prev, isOpen: false }))}
+                                    className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirmGateOut}
+                                    disabled={!gateOutModal.containerNumber.trim() || !gateOutModal.sealNumber.trim()}
+                                    className="flex-1 py-2.5 text-sm bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-xl font-bold transition-all shadow-md"
+                                >
+                                    Confirm Gate-Out
                                 </button>
                             </div>
                         </motion.div>

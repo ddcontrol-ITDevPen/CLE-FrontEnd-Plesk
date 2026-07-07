@@ -110,7 +110,7 @@ export function ConsigneeViewBooking() {
                         </button>
                         {data.status !== "Assigned" &&
                             <button className="flex items-center bg-system-color text-white font-bold rounded-lg px-4 py-2 gap-3 cursor-pointer"
-                                    onClick={() => navigate(`/haulier/booking/view/eCSN/${data.containerId}`)}>
+                                    onClick={() => navigate(`/cle/view/eCSN/${data.containerId}`)}>
                                 <FileText
                                     size={20}
                                     className="text-blue-600-600 cursor-pointer hover:text-blue-800" />
@@ -141,7 +141,7 @@ export function ConsigneeViewBooking() {
                             <div className="flex justify-between"><span className="text-gray-500">Type of Trip</span> <span className="font-bold">{data.booking?.tripType || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">ETA</span> <span className="font-bold">{data.booking?.eta || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">POD/POL</span> <span className="font-bold">{data.booking?.portLocation || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Seal No.</span> <span className="font-bold">{data.booking?.sealNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Seal No.</span> <span className="font-bold">{data.booking?.sealNumber || data.sealNumber || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Forwarding Remarks</span> <span className="font-bold italic">{data.booking?.forwardingRemarks || "N/A"}</span></div>
                         </div>
                         <div className="space-y-3">

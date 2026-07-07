@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import {Printer, Download, ArrowLeft, MapPinned, Phone, Mail} from "lucide-react";
@@ -9,7 +9,7 @@ import html2canvas from "html2canvas-pro";
 import {getAssignedHaulierByContainerId, getAssignedHaulierById} from "../../../services/assignedHaulier.js";
 import {getUserById} from "../../../services/userService.js";
 
-export function ViewECsnPDF() {
+export function CLEViewBookingPDF() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [data, setData] = useState(null);
@@ -107,7 +107,7 @@ export function ViewECsnPDF() {
     const booking = data.booking || {};
 
     return (
-        <Layout role="forwarder">
+        <Layout role="haulier">
             <div className="max-w-4xl mx-auto mb-10">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold">View Consignment Note PDF</h1>

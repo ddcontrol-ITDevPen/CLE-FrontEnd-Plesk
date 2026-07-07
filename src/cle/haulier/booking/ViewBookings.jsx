@@ -226,7 +226,7 @@ export function ViewBookings() {
                         </button>
                         {data.status !== "Assigned" &&
                         <button className="flex items-center bg-system-color text-white font-bold rounded-lg px-4 py-2 gap-3 cursor-pointer"
-                                onClick={() => navigate(`/haulier/booking/view/eCSN/${data.containerId}`)}>
+                                onClick={() => navigate(`/cle/view/eCSN/${data.containerId}`)}>
                             <FileText
                                 size={20}
                                 className="text-blue-600-600 cursor-pointer hover:text-blue-800" />
@@ -257,7 +257,7 @@ export function ViewBookings() {
                             <div className="flex justify-between"><span className="text-gray-500">Type of Trip</span> <span className="font-bold">{data.booking?.tripType || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">ETA</span> <span className="font-bold">{data.booking?.eta || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">POD/POL</span> <span className="font-bold">{data.booking?.portLocation || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Seal No.</span> <span className="font-bold">{data.booking?.sealNumber || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Seal No.</span> <span className="font-bold">{data.booking?.sealNumber || data.sealNumber || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Forwarding Remarks</span> <span className="font-bold italic">{data.booking?.forwardingRemarks || "N/A"}</span></div>
                         </div>
                         <div className="space-y-3">
@@ -322,10 +322,10 @@ export function ViewBookings() {
                 </div>
                 {(data.status !== "Assigned" && data.status !== "Deleted" && data.status !== "Rejected") && (
                 <Section title="Enroute Information">
-                    <InfoRow label="Driver" value={`${assignedHaulier?.driver?.name} (${assignedHaulier?.driver?.mobileNumber} / ${assignedHaulier?.driver?.emailAddress})`} />
-                    <InfoRow label="PM Number" value={assignedHaulier.primeMover?.plateNumber} />
-                    <InfoRow label="Trailer Number" value={`${assignedHaulier.trailer?.plateNumber} - ${assignedHaulier.trailer?.type}`} />
-                    <InfoRow label="Time Slot" value={`${assignedHaulier?.timeSlot?.date} @ ${assignedHaulier?.timeSlot?.time}`} />
+                    <InfoRow label="Driver" value={assignedHaulier?.driverName || "N/A"} />
+                    <InfoRow label="PM Number" value={assignedHaulier?.primeMoverPlate || "N/A"} />
+                    <InfoRow label="Trailer Number" value={assignedHaulier?.trailerPlate || "N/A"} />
+                    <InfoRow label="Time Slot" value={assignedHaulier?.timeSlotDate ? `${assignedHaulier.timeSlotDate} @ ${assignedHaulier.timeSlotTime}` : "N/A"} />
                     <InfoRow label="ROT Date" value={data.rotDate} />
                 </Section>
                 )}

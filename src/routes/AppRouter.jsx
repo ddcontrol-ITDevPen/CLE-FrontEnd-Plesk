@@ -25,9 +25,9 @@ import {TrailerManagement} from "../cle/haulier/management/TrailerManagement.jsx
 import {AddPrimeMover} from "../cle/haulier/management/AddPrimeMover.jsx";
 import {AddTrailer} from "../cle/haulier/management/AddTrailer.jsx";
 import {EditAssignBooking} from "../cle/haulier/booking/EditAssignBooking.jsx";
-import {ViewECsnPDF} from "../cle/haulier/booking/ViewBookingPDF.jsx";
 import {CreateBookingForm} from "../cle/haulier/booking/CreateBookingForm.jsx";
 import {EditCreateBooking} from "../cle/haulier/booking/EditCreateBooking.jsx";
+import {CLEViewBookingPDF} from "../cle/haulier/booking/CLEViewBookingPDF.jsx";
 import {ALEForwardingDashboard} from "../ale/forwarding/dashboard/ForwardingDashboard.jsx";
 import {ALEAddROTForm} from "../ale/forwarding/ROT/AddROTForm.jsx";
 import {ALEROTHistory} from "../ale/forwarding/ROTHistory/ROTHistory.jsx";
@@ -49,7 +49,7 @@ import {ALETrailerManagement} from "../ale/haulier/management/TrailerManagement.
 import {ALEAddPrimeMover} from "../ale/haulier/management/AddPrimeMover.jsx";
 import {ALEAddTrailer} from "../ale/haulier/management/AddTrailer.jsx";
 import {ALEEditAssignBooking} from "../ale/haulier/booking/EditAssignBooking.jsx";
-import {ALEViewECsnPDF} from "../ale/haulier/booking/ViewBookingPDF.jsx";
+import {ViewBookingPDF} from "../ale/haulier/booking/ViewBookingPDF.jsx";
 import {ALECreateBookingForm} from "../ale/haulier/booking/CreateBookingForm.jsx";
 import {ALEEditCreateBooking} from "../ale/haulier/booking/EditCreateBooking.jsx";
 import {TerminalDashboard} from "../ale/terminal/TerminalDashboard.jsx";
@@ -265,14 +265,7 @@ export default function AppRouter() {
                         </ProtectedRoute>
                     }
                 />
-                <Route
-                    path="/booking/view/eCSN/:id"
-                    element={
-                        <ProtectedRoute>
-                            <ViewECsnPDF />
-                        </ProtectedRoute>
-                    }
-                />
+              
                 <Route
                     path="/haulier/booking/edit/form1/:id"
                     element={
@@ -501,10 +494,10 @@ export default function AppRouter() {
                 {/*    }*/}
                 {/*/>*/}
                 <Route
-                    path="/ale/booking/view/eCSN/:id"
+                    path="/ale/haulier/booking/view/eCSN/:id"
                     element={
                         <ProtectedRoute>
-                            <ALEViewECsnPDF />
+                            <ViewBookingPDF />
                         </ProtectedRoute>
                     }
                 />
@@ -977,6 +970,14 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <HaulierEditBooking2/>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/cle/view/eCSN/:id"
+                    element={
+                        <ProtectedRoute>
+                            <CLEViewBookingPDF />
                         </ProtectedRoute>
                     }
                 />
