@@ -206,10 +206,10 @@ export function ConsigneeViewBooking() {
                 </div>
                 {(data.status !== "Assigned" && data.status !== "Deleted" && data.status !== "Rejected") && (
                     <Section title="Enroute Information">
-                        <InfoRow label="Driver" value={`${assignedHaulier?.driver?.name} (${assignedHaulier?.driver?.mobileNumber} / ${assignedHaulier?.driver?.emailAddress})`} />
-                        <InfoRow label="PM Number" value={assignedHaulier.primeMover?.plateNumber} />
-                        <InfoRow label="Trailer Number" value={`${assignedHaulier.trailer?.plateNumber} - ${assignedHaulier.trailer?.type}`} />
-                        <InfoRow label="Time Slot" value={`${assignedHaulier?.timeSlot?.date} @ ${assignedHaulier?.timeSlot?.time}`} />
+                        <InfoRow label="Driver" value={assignedHaulier?.driverName || "N/A"} />
+                        <InfoRow label="PM Number" value={assignedHaulier?.primeMoverPlate || "N/A"} />
+                        <InfoRow label="Trailer Number" value={assignedHaulier?.trailerPlate || "N/A"} />
+                        <InfoRow label="Time Slot" value={assignedHaulier?.timeSlotDate ? `${assignedHaulier.timeSlotDate} @ ${assignedHaulier.timeSlotTime}` : "N/A"} />
                         <InfoRow label="ROT Date" value={data.rotDate} />
                     </Section>
                 )}

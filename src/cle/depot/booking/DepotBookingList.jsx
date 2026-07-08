@@ -309,7 +309,7 @@ export function DepotBookingList() {
     const handleOpenGateOutModal = (container) => {
         setGateOutModal({
             isOpen: true,
-            containerId: container.containerId,
+            containerId: container.containerId || container.id,
             containerNumber: container.containerNumber || "",
             sealNumber: container.sealNumber || ""
         });
@@ -321,7 +321,7 @@ export function DepotBookingList() {
             toast.error("Both Container Number and Seal Number are required to proceed.");
             return;
         }
-
+        console.log("Confirming Gate-Out for ID:", gateOutModal.containerId); // <--- Add this debug line
         const toastId = toast.loading("Updating status to Gate-Out...");
         try {
             const user = await getUserById(localStorage.getItem("userId"));
@@ -868,7 +868,7 @@ export function DepotBookingList() {
                                                         {/* Step 4: Depot Manual Gate Out after Gated-In */}
                                                         {cont.status === "Gate-In" && (
                                                             <button
-                                                                onClick={() => handleOpenGateOutModal(cont.containerId)}
+                                                                onClick={() => handleOpenGateOutModal(cont)}
                                                                 className="p-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors" title="Manual Gate Out">
                                                                 <Clock size={18} />
                                                             </button>
