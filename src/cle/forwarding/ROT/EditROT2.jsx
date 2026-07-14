@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
@@ -110,6 +110,15 @@ export function EditROTForm2() {
                         rtGatedOutTime: container.rtGatedOutTime || null,
                         rtDeliveredTime: container.rtDeliveredTime || null,
                         rtRFCTime: container.rtRFCTime || null,
+                        // NEW
+                        externalConsigneeName: localEdits?.externalConsigneeName || container.externalConsigneeName || "",
+                        externalConsigneeAddress: localEdits?.externalConsigneeAddress || container.externalConsigneeAddress || "",
+                        externalConsigneeContact: localEdits?.externalConsigneeContact || container.externalConsigneeContact || "",
+                        externalConsigneeEmail: localEdits?.externalConsigneeEmail || container.externalConsigneeEmail || "",
+                        commodity: localEdits?.commodity || container.commodity || "",
+                        forwardingPicName : localEdits?.forwardingPicName || container.forwardingPicName || "",
+                        forwardingPicEmail : localEdits?.forwardingPicEmail || container.forwardingPicEmail || "",
+                        forwardingPicContact: localEdits?.forwardingPicContact || container.forwardingPicContact || "",
                     });
                 }
             } catch (error) {
@@ -244,6 +253,10 @@ export function EditROTForm2() {
                 RtDeliveredTime: containerData.rtDeliveredTime || null,
                 RtRFCTime: containerData.rtRFCTime || null,
                 UpdatedBy: updatedBy,
+                ExternalConsigneeName: containerData.externalConsigneeName || null,
+                ExternalConsigneeAddress: containerData.externalConsigneeAddress || null,
+                ExternalConsigneeContact: containerData.externalConsigneeContact || null,
+                ExternalConsigneeEmail: containerData.externalConsigneeEmail || null,
             };
 
             await updateContainer(id, containerPayload);
@@ -291,8 +304,6 @@ export function EditROTForm2() {
 
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                             <InputField label="Container No." value={containerData.containerNo} onChange={(e) => handleInputChange("containerNo", e.target.value)} error={errors.containerNo} />
-                            <SelectField label="Container Type" required options={["GP", "RF", "HC"]} value={containerData.containerType} onChange={(e) => handleInputChange("containerType", e.target.value)} />
-                           {/* <SelectField label="Container Size" required options={["20", "40", "45"]} value={containerData.containerSize} onChange={(e) => handleInputChange("containerSize", e.target.value)} />*/}
                             <SelectField
                                 label="Container Size"
                                 required
@@ -301,13 +312,7 @@ export function EditROTForm2() {
                                 onChange={(e) => handleContainerTypeChange(e.target.value)}
                                 error={errors.containerSize}
                             />
-                            <InputField label="ROT Date" required type="date" value={containerData.rotDate} onChange={(e) => handleInputChange("rotDate", e.target.value)} min="01/01/2025" error={errors.rotDate} />
-                            <InputField
-                                label="Container Tare Weight (kg)"
-                                type="number"
-                                value={containerData.tareWeight || ""} // ✅ Changed from container to containerData
-                                readOnly
-                            />
+                            <SelectField label="Container Type" required options={["GP", "RF", "HC"]} value={containerData.containerType} onChange={(e) => handleInputChange("containerType", e.target.value)} />
                             <InputField
                                 label="Cargo Weight (kg)"
                                 type="number"
@@ -316,22 +321,67 @@ export function EditROTForm2() {
                                     handleAutoChange("cargoWeight", e.target.value)
                                 }
                             />
-                            <InputField
+                           {/* <SelectField label="Container Size" required options={["20", "40", "45"]} value={containerData.containerSize} onChange={(e) => handleInputChange("containerSize", e.target.value)} />*/}
+                           
+                            <InputField label="ROT Date" required type="date" value={containerData.rotDate} onChange={(e) => handleInputChange("rotDate", e.target.value)} min="01/01/2025" error={errors.rotDate} />
+                            <SelectField label="Trailer Type" options={["2-Axle", "3-Axle", "Flatbed", "Gooseneck", "ISO Tank", "Lowbed", "Normal", "Reefer", "Side Loader", "Skeletal"]} value={containerData.trailerType} onChange={(e) => handleInputChange("trailerType", e.target.value)} />
+                            <InputField label="Port" value={allCompanies.find(c => c.companyCode === containerData.port)?.companyName || containerData.port} readOnly />
+                            <SelectField label="Consignee/Shipper" required options={consignees} value={containerData.consignee} onChange={(e) => handleInputChange("consignee", e.target.value)} error={errors.consignee} />
+                            {containerData.consignee === "OTHER" && (
+                                <>
+                                    <InputField
+                                        label="Consignee/Shipper Name"
+                                        value={container.externalConsigneeName}
+                                        onChange={(e) =>
+                                            handleInputChange(cIdx, "externalConsigneeName", e.target.value)
+                                        }
+                                    />
+
+                                    <InputField
+                                        label="Consignee/Shipper Address"
+                                        value={container.externalConsigneeAddress}
+                                        onChange={(e) =>
+                                            handleInputChange(cIdx, "externalConsigneeAddress", e.target.value)
+                                        }
+                                    />
+
+                                    <InputField
+                                        label="Consignee/Shipper Contact Number"
+                                        value={container.externalConsigneeContact}
+                                        onChange={(e) =>
+                                            handleInputChange(cIdx, "externalConsigneeContact", e.target.value)
+                                        }
+                                    />
+
+                                    <InputField
+                                        label="Consignee/Shipper Email Address"
+                                        value={container.externalConsigneeEmail}
+                                        onChange={(e) =>
+                                            handleInputChange(cIdx, "externalConsigneeEmail", e.target.value)
+                                        }
+                                    />
+                                </>
+                            )}
+                            <SelectField label="Haulier" required options={hauliers} value={containerData.haulier} onChange={(e) => handleInputChange("haulier", e.target.value)} />
+                            <SelectField label="Depot" required options={depots} value={containerData.depot} onChange={(e) => handleInputChange("depot", e.target.value)} />
+
+{/*                            <InputField
+                                label="Container Tare Weight (kg)"
+                                type="number"
+                                value={containerData.tareWeight || ""} // ✅ Changed from container to containerData
+                                readOnly
+                            />
+                          */}
+                          {/*  <InputField
                                 label="VGM (kg)"
                                 type="number"
                                 value={containerData.vgm || ""} // ✅ Changed from container to containerData
                                 readOnly
                                 className="bg-gray-100 font-bold"
-                            />
+                            />*/}
                            {/* <InputField label="VGM" value={containerData.vgm} onChange={(e) => handleInputChange("vgm", e.target.value)} />
 */}
-                            <SelectField label="Trailer Type" options={["Normal", "Tipper", "Air", "SL"]} value={containerData.trailerType} onChange={(e) => handleInputChange("trailerType", e.target.value)} />
-                            <SelectField label="Consignee/Shipper" required options={consignees} value={containerData.consignee} onChange={(e) => handleInputChange("consignee", e.target.value)} error={errors.consignee} />
-                            <SelectField label="Haulier" required options={hauliers} value={containerData.haulier} onChange={(e) => handleInputChange("haulier", e.target.value)} />
-                            <SelectField label="Depot" required options={depots} value={containerData.depot} onChange={(e) => handleInputChange("depot", e.target.value)} />
-
-                            <InputField label="Port" value={allCompanies.find(c => c.companyCode === containerData.port)?.companyName || containerData.port} readOnly />
-                          
+                            
                         </div>
 
                         <div className="mt-6 space-y-4">

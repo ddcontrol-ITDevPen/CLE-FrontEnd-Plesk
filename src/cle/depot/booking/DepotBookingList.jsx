@@ -539,6 +539,8 @@ export function DepotBookingList() {
                 if (movementType === "Export" && tripType === "Pick-up") return cont.depotName || "Depot";
                 if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
                 if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                if (movementType === "Import" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.depotName || "Depot";
+                if (movementType === "Export" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.depotName || "Depot";
             } else {
                 if (movementType === "Import") return cont.depotName || "Depot";
                 if (movementType === "Export") return cont.portName || "Port";
@@ -551,6 +553,8 @@ export function DepotBookingList() {
                 if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
                 if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
                 if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                if (movementType === "Import" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.portName || "Port";
+                if (movementType === "Export" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.portName || "Port";
             } else {
                 if (movementType === "Import") return cont.portName || "Port";
                 if (movementType === "Export") return cont.depotName || "Depot";

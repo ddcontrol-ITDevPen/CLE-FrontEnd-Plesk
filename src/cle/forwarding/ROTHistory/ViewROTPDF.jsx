@@ -29,9 +29,9 @@ export function ViewROTPDF() {
                         setBillingPartyName("N/A");
                     }
                 }
-                console.log(result);
+                console.log("result:", result);
                 const companyData = await getCompanyById(result.haulierId);
-                console.log(companyData);
+                console.log("company data:", companyData);
                 setCompany(companyData);
             } catch (err) {
                 console.error("Failed to fetch PDF data", err);
@@ -71,6 +71,8 @@ export function ViewROTPDF() {
                 if (movementType === "Export" && tripType === "Pick-up") return cont.depotName || "Depot";
                 if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
                 if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                if (movementType === "Import" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.depotName || "Depot";
+                if (movementType === "Export" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.depotName || "Depot";
             } else {
                 if (movementType === "Import") return cont.depotName || "Depot";
                 if (movementType === "Export") return cont.portName || "Port";
@@ -83,6 +85,8 @@ export function ViewROTPDF() {
                 if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
                 if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
                 if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                if (movementType === "Import" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.portName || "Port";
+                if (movementType === "Export" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.portName || "Port";
             } else {
                 if (movementType === "Import") return cont.portName || "Port";
                 if (movementType === "Export") return cont.depotName || "Depot";
@@ -141,14 +145,20 @@ export function ViewROTPDF() {
                     {/* Section: General Details */}
                     <PDFSectionHeader title="General Details" />
                     <div className="grid grid-cols-2 gap-x-4 mb-6" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: '16px', marginBottom: '24px' }}>
-                        <PDFRow label="Movement Type" value={booking.movementType} />
-                        <PDFRow label="Type of Trip" value={booking.tripType} />
-                        <PDFRow label="BL/Booking Number" value={booking.blOrBookingNumber} />
-                        <PDFRow label="SCN" value={booking.scn} />
-                        <PDFRow label="POD/POL" value={booking.portLocation} />
-                        <PDFRow label="ETA" value={booking.eta?.split('T')[0]} />
-                        <PDFRow label="Seal No." value={data.sealNumber} />
-                        <PDFRow label="Forwarder Remarks" value={booking.forwarderRemarks} />
+                        <PDFRow label="Booking Number" value={booking.blOrBookingNumber} />
+                        <PDFRow label="Status" value={booking.movementType} />
+                        <PDFRow label="ROT" value={booking.eta?.split('T')[0]} />
+                        <PDFRow label="Vessel Name/SCN" value={booking.scn} />
+                        <PDFRow label="No Of Container" value={data.booking?.containerQuantity || "N/A"} />
+                        <PDFRow label="Vessel ETA" value={booking.eta?.split('T')[0]} />
+                        <PDFRow label="Size" value={data.containerSize} />
+                        <PDFRow label="POD/POL" value={booking.portLocationName} />
+                        <PDFRow label="Type" value={data.containerType} />
+                        <PDFRow label="Depot" value={data.depotName} />
+                        <PDFRow label="Commodity" value={data.booking?.commodity || "N/A"} />
+                        <PDFRow label="Trip" value={booking.tripType} />
+                        <PDFRow label="BGM" value={data.vgm} />
+                        <PDFRow label="Forwarder Remarks" value={data.booking?.forwardingRemarks} />
                     </div>
 
                     {/* Section: Shipping Details */}

@@ -1,8 +1,16 @@
-﻿import { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
-import { CircleChevronDown, LucideArrowBigRightDash, LucideShieldUser, LucideTruck } from "lucide-react";
+import {
+    CircleChevronDown,
+    Clock,
+    Hash,
+    LucideArrowBigRightDash,
+    LucideShieldUser,
+    LucideTruck,
+    User
+} from "lucide-react";
 import { getCompanies } from "../../../services/companyService.js";
 import { getContainerById } from "../../../services/containerService.js";
 import { updateBooking } from "../../../services/bookingService.js";
@@ -19,7 +27,8 @@ export function HaulierEditBooking1() {
     const [billingParties, setBillingParties] = useState([]);
     const [depots, setDepots] = useState([]);
     const [consignees, setConsignees] = useState([]);
-
+ 
+    
     const [formData, setFormData] = useState({
         movementType: "",
         rotNumber: "",
@@ -74,6 +83,8 @@ export function HaulierEditBooking1() {
 
                 // 2. Fetch Existing Container/Booking Data
                 const container = await getContainerById(id);
+               
+               
                 if (container) {
                     const b = container.booking;
                     setFormData({
@@ -103,7 +114,7 @@ export function HaulierEditBooking1() {
                         depot: container.depotId || "",
                         depotChoice: b.depotChoice || "Single",
                         haulierChoice: b.haulierChoice || "Single",
-                        forwardingId: userCompanyCode
+                        forwardingId: b.forwardingId || ""
                     });
                 }
             } catch (error) {
@@ -251,13 +262,13 @@ export function HaulierEditBooking1() {
                                     <InputField label="Quantity" name="containerQuantity" value={formData.containerQuantity} readOnly />
                                     <SelectField label="Type" name="containerType" options={["GP", "RF", "HC"]} value={formData.containerType} onChange={handleChange} />
                                     <SelectField label="Size" name="containerSize" options={["20", "40", "45"]} value={formData.containerSize} onChange={handleChange} />
-                                    {/*   <InputField label="VGM" name="vgm" value={formData.vgm} onChange={handleChange} />*/}
+                                       <InputField label="VGM" name="vgm" value={formData.vgm} onChange={handleChange} />
                                     <SelectField label="Trailer" name="trailerType" options={["2-Axle","3-Axle","Flatbed","Gooseneck","ISO Tank","Lowbed","Normal","Reefer","Side Loader", "Skeletal"]} value={formData.trailerType} onChange={handleChange} />
                                     <InputField label="ROT Date" name="rotDate" type="date" value={formData.rotDate} onChange={handleChange} required />
                                 </div>
                             </div>
                         </div>
-
+                        
                         {/* --- SECTION 3: CUSTOMS & TRACKING --- */}
                         <div className="bg-white rounded-2xl shadow-sm border mt-5 border-gray-100 overflow-hidden">
                             <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 flex items-center gap-4 border-b border-purple-100">

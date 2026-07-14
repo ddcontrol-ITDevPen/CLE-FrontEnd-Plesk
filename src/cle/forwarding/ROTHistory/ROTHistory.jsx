@@ -111,7 +111,8 @@ export function ROTHistory ()  {
                     const dateB = new Date(getStatusTimestamp(b) || 0);
                     return dateB - dateA;
                 });
-            console.log(data);
+            console.log("B4 Filter", data);
+            console.log("A4 Filter", filteredData);
             setContainers(filteredData);
         } catch (error) {
             toast.error("Failed to fetch ROT history");
@@ -258,6 +259,8 @@ export function ROTHistory ()  {
                 if (movementType === "Export" && tripType === "Pick-up") return cont.depotName || "Depot";
                 if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
                 if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                if (movementType === "Import" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.depotName || "Depot";
+                if (movementType === "Export" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.depotName || "Depot";
             } else {
                 if (movementType === "Import") return cont.depotName || "Depot";
                 if (movementType === "Export") return cont.portName || "Port";
@@ -270,6 +273,8 @@ export function ROTHistory ()  {
                 if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
                 if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
                 if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                if (movementType === "Import" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.portName || "Port";
+                if (movementType === "Export" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.portName || "Port";
             } else {
                 if (movementType === "Import") return cont.portName || "Port";
                 if (movementType === "Export") return cont.depotName || "Depot";
@@ -490,7 +495,7 @@ export function ROTHistory ()  {
                             return (
                                 <tr key={cont.containerId} className="border-b hover:bg-gray-50 transition-colors">
                                     <td className="p-4 text-center">{recordNumber}</td>
-                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer" onClick={() => navigate(`/depot/booking/view/${cont.containerId}`)}>{cont.booking.blOrBookingNumber}</td>
+                                    <td className="p-4 font-semibold text-blue-600 break-all leading-tight cursor-pointer" onClick={() => navigate(`/forwarding/rot/view/${cont.containerId}`)}>{cont.booking.blOrBookingNumber}</td>
 
                                     <td className="p-4">{cont.containerNumber}</td>
                                     <td className="p-4">{cont.booking?.tripType ? `${cont.booking?.movementType} - ${cont.booking?.tripType}` : cont.booking?.movementType}</td>
@@ -513,8 +518,10 @@ export function ROTHistory ()  {
                                         <div className="flex items-center justify-center gap-3">
                                             <Eye size={18}
                                                  className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/forwarding/rot/view/${cont.containerId}`)}/>
+                                            {cont.status === "Assigned" &&
                                             <Edit size={18}
                                                   className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/forwarding/rot/edit/form1/${cont.containerId}`)}/>
+                                            }
                                             {cont.status !== "Deleted" &&
                                             <Trash2
                                                 size={18}

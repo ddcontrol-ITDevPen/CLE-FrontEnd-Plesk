@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "../../layout/Layout.jsx";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,6 +22,7 @@ export function EditROTForm() {
 
     const [formData, setFormData] = useState({
         movementType: "",
+        tripType: "",
         rotNumber: "",
         bookingNumber: "",
         houseBLNumber: "",
@@ -47,7 +48,16 @@ export function EditROTForm() {
         depot: "",
         depotChoice: "Single",
         haulierChoice: "Single",
-        forwardingId: ""
+        forwardingId: "",
+        // ADD THESE
+        externalConsigneeName: "",
+        externalConsigneeAddress: "",
+        externalConsigneeContact: "",
+        externalConsigneeEmail: "",
+        commodity:"",
+        forwardingPicName: "",
+        forwardingPicEmail: "",
+        forwardingPicContact: ""
     });
 
     const [errors, setErrors] = useState({});
@@ -78,6 +88,7 @@ export function EditROTForm() {
                     const b = container.booking;
                     setFormData({
                         movementType: b.movementType || "Import",
+                        tripType: b.tripType || "Round Trip",
                         rotNumber: b.rotNumber || "",
                         bookingNumber: b.blOrBookingNumber || "",
                         houseBLNumber: b.houseBLNumber || "",
@@ -103,7 +114,16 @@ export function EditROTForm() {
                         depot: container.depotId || "",
                         depotChoice: b.depotChoice || "Single",
                         haulierChoice: b.haulierChoice || "Single",
-                        forwardingId: userCompanyCode
+                        forwardingId: userCompanyCode,
+                        // ADD THESE
+                        externalConsigneeName: b.externalConsigneeName || "",
+                        externalConsigneeAddress: b.externalConsigneeAddress || "",
+                        externalConsigneeContact: b.externalConsigneeContact || "",
+                        externalConsigneeEmail: b.externalConsigneeEmail || "",
+                        commodity: b.commodity || "",
+                        forwardingPicName: b.forwardingPicName || "",
+                        forwardingPicEmail: b.forwardingPicEmail || "",
+                        forwardingPicContact: b.forwardingPicContact || "",
                     });
                 }
             } catch (error) {
@@ -117,15 +137,30 @@ export function EditROTForm() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        // --- NEW SAFE ADDITION ---
+        // If the input is blOrBookingNumber or scn, force it to uppercase
+        let processedValue = value;
+        if (name === "bookingNumber" || name === "scn" || name === "dicNumber" || name === "customFormNo" || name === "customReceiptNo" || name === "zbNumber" || name === "sealNo") {
+            processedValue = value.toUpperCase();
+        }
+        // -------------------------
+        
         setFormData(prev => {
-            const newData = { ...prev, [name]: value };
+            const newData = { ...prev, [name]: processedValue };
             if (name === "haulierChoice" && value === "Multiple") newData.haulier = "";
-            if (name === "depotChoice" && value === "Multiple") newData.depot = "";
+            if (name === "depotChoice" && value === "Multiple") newData.depot = ""
+            // Clear houseBLNumber if user switches to Export
+            if (name === "movementType" && value === "Export") newData.houseBLNumber = "";
             return newData;
         });
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
     };
-
+    
+    useEffect(() => {
+        localStorage.setItem("pendingROT", JSON.stringify(formData));
+    }, [formData]);
+    
     const handleNext = async (e) => {
         e.preventDefault();
         const newErrors = {};
@@ -192,46 +227,69 @@ export function EditROTForm() {
                                         ))}
                                     </div>
                                 </div>
-
+                                <div className="flex items-center gap-12 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                    <span className="text-sm font-semibold text-gray-700">Trip Type <span className="text-red-500">*</span></span>
+                                    <div className="flex gap-6">
+                                        {['Round Trip', 'MT Trip', 'Laden Trip'].map((type) => (
+                                            <label key={type} className="flex items-center gap-2 cursor-pointer group">
+                                                <input type="radio" name="tripType" checked={formData.tripType === type} value={type} onChange={handleChange} className="w-4 h-4 accent-blue-600" />
+                                                <span className={`text-sm ${formData.tripType === type ? 'font-bold text-system-color' : 'text-gray-500'}`}>{type}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <InputField label={formData.movementType === "Import" ? "BL No." : "Booking No."} name="bookingNumber" value={formData.bookingNumber} readOnly />
-                                    <InputField label="House BL No." name="houseBLNumber" value={formData.houseBLNumber} onChange={handleChange} error={errors.houseBLNumber} required/>
-                                    <InputField label="SCN" name="scn" value={formData.scn} onChange={handleChange} error={errors.scn} required />
-                                    <SelectField label={formData.movementType === "Import" ? "POD" : "POL"} name="portLocation" value={formData.portLocation} onChange={handleChange} error={errors.portLocation} options={ports.map(p => ({label: p.companyName, value: p.companyCode}))} />
+                                    <InputField label="Vessel Name/SCN" name="scn" value={formData.scn} onChange={handleChange} error={errors.scn} required />
+                                    <InputField label="Commodity" name="commodity" value={formData.commodity} onChange={handleChange} error={errors.commodity} required />
                                     <SelectField label="Shipping Agent" name="shippingAgent" value={formData.shippingAgent} onChange={handleChange} options={shippingAgents.map(s => ({label: s.companyName, value: s.companyCode}))} />
+                                    <SelectField
+                                        label="Haulier"
+                                        name="haulier"
+                                        value={formData.haulier}
+                                        onChange={handleChange}
+                                        error={errors.haulier}
+                                        options={hauliers.map(h => ({label: h.companyName, value: h.companyCode}))}
+                                    />
+                                    <InputField label="Forwarding Remarks" name="forwardingRemarks" value={formData.forwardingRemarks} onChange={handleChange} />
+                                    <SelectField label={formData.movementType === "Import" ? "POD" : "POL"} name="portLocation" value={formData.portLocation} onChange={handleChange} error={errors.portLocation} options={ports.map(p => ({label: p.companyName, value: p.companyCode}))} />
+                                    <SelectField
+                                        label="Depot"
+                                        name="depot"
+                                        value={formData.depot}
+                                        onChange={handleChange}
+                                        options={depots.map(d => ({label: d.companyName, value: d.companyCode}))}
+                                    />
+                                    <SelectField label="Consignee/Shipper" name="consignee" options={consignees.map(t => ({label: t.companyName, value: t.companyCode}))} value={formData.consignee} onChange={handleChange} />
+                                    {formData.consignee === "OTHER" && (
+                                        <>
+                                            <InputField label="Consignee/Shipper Name" name="externalConsigneeName" value={formData.externalConsigneeName} onChange={handleChange} error={errors.externalConsigneeName} required />
+                                            <InputField label="Consignee/Shipper Address" name="externalConsigneeAddress" value={formData.externalConsigneeAddress} onChange={handleChange} error={errors.externalConsigneeAddress} required />
+                                            <InputField label="Consignee/Shipper Contact Number" name="externalConsigneeContact" value={formData.externalConsigneeContact} onChange={handleChange} placeholder="e.g: 012-3456789" error={errors.externalConsigneeContact} required />
+                                            <InputField label="Consignee/Shipper Email Address" name="externalConsigneeEmail" value={formData.externalConsigneeEmail} onChange={handleChange} placeholder="john@example.com" error={errors.externalConsigneeEmail} required />
+                                        </>
+                                    )}
+                                    {/*<InputField label="House BL No." name="houseBLNumber" value={formData.houseBLNumber} onChange={handleChange} error={errors.houseBLNumber} required/>*/}
+                                    <InputField label="Forwarding PIC" name="forwardingPicName" value={formData.forwardingPicName} onChange={handleChange} error={errors.forwardingPicName} style={{ textTransform: 'none' }} required />
+                                    <InputField label="Email" name="forwardingPicEmail" value={formData.forwardingPicEmail} onChange={handleChange} error={errors.forwardingPicEmail} style={{ textTransform: 'none' }} required />
+                                    <InputField label="Phone No" name="forwardingPicContact" value={formData.forwardingPicContact} onChange={handleChange} placeholder="e.g: 012-3456789" error={errors.forwardingPicContact} style={{ textTransform: 'none' }} required />
                                     <SelectField label="Billing Party" name="billingParty" value={formData.billingParty} onChange={handleChange} options={billingParties.map(b => ({label: b.companyName, value: b.companyCode}))} />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                               {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="flex flex-col gap-2 p-4 bg-blue-50/30 rounded-xl border border-blue-100">
                                         <label className="text-sm font-semibold text-gray-800">Assigned Haulier</label>
                                         <div className="flex-1">
-                                            <SelectField
-                                                label=""
-                                                name="haulier"
-                                                value={formData.haulier}
-                                                onChange={handleChange}
-                                                error={errors.haulier}
-                                                options={hauliers.map(h => ({label: h.companyName, value: h.companyCode}))}
-                                            />
+                                            
                                         </div>
                                     </div>
-
                                     <div className="flex flex-col gap-2 p-4 bg-blue-50/30 rounded-xl border border-blue-100">
                                         <label className="text-sm font-semibold text-gray-800">Assigned Depot</label>
                                         <div className="flex-1">
-                                            <SelectField
-                                                label=""
-                                                name="depot"
-                                                value={formData.depot}
-                                                onChange={handleChange}
-                                                options={depots.map(d => ({label: d.companyName, value: d.companyCode}))}
-                                            />
+                                           
                                         </div>
                                     </div>
-                                    <SelectField label="Consignee/Shipper" name="consignee" options={consignees.map(t => ({label: t.companyName, value: t.companyCode}))} value={formData.consignee} onChange={handleChange} />
-                                    <InputField label="Forwarding Remarks" name="forwardingRemarks" value={formData.forwardingRemarks} onChange={handleChange} />
-                                </div>
+                                </div>*/}
                             </div>
                         </div>
 
@@ -249,11 +307,11 @@ export function EditROTForm() {
                             <div className="p-8">
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                     <InputField label="Quantity" name="containerQuantity" value={formData.containerQuantity} readOnly />
-                                    <SelectField label="Type" name="containerType" options={["GP", "RF", "HC"]} value={formData.containerType} onChange={handleChange} />
                                     <SelectField label="Size" name="containerSize" options={["20", "40", "45"]} value={formData.containerSize} onChange={handleChange} />
-                                 {/*   <InputField label="VGM" name="vgm" value={formData.vgm} onChange={handleChange} />*/}
-                                    <SelectField label="Trailer" name="trailerType" options={["2-Axle","3-Axle","Flatbed","Gooseneck","ISO Tank","Lowbed","Normal","Reefer","Side Loader", "Skeletal"]} value={formData.trailerType} onChange={handleChange} />
+                                    <SelectField label="Type" name="containerType" options={["GP", "RF", "HC"]} value={formData.containerType} onChange={handleChange} />
                                     <InputField label="ROT Date" name="rotDate" type="date" value={formData.rotDate} onChange={handleChange} required />
+                                    {/*   <InputField label="VGM" name="vgm" value={formData.vgm} onChange={handleChange} />*/}
+                                    <SelectField label="Trailer" name="trailerType" options={["2-Axle","3-Axle","Flatbed","Gooseneck","ISO Tank","Lowbed","Normal","Reefer","Side Loader", "Skeletal"]} value={formData.trailerType} onChange={handleChange} />
                                 </div>
                             </div>
                         </div>
@@ -271,7 +329,7 @@ export function EditROTForm() {
                             </div>
                             <div className="p-8 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <InputField label="ETA" name="eta" type="date" value={formData.eta} onChange={handleChange} min="01/01/2025" />
+                                    <InputField label="Vessel ETA" name="eta" type="date" value={formData.eta} onChange={handleChange} min="01/01/2025" />
                                     <InputField label="DIC No." name="dicNumber" value={formData.dicNumber} onChange={handleChange} />
                                     <InputField label="Custom Form No." name="customFormNo" value={formData.customFormNo} onChange={handleChange} />
                                     <InputField label="Custom Receipt No." name="customReceiptNo" value={formData.customReceiptNo} onChange={handleChange} />

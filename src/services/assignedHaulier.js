@@ -30,3 +30,8 @@ export const getAssignedHaulierByContainerId = async (id) => {
     const res = await api.get(`${BASE_URL}/container/${id}`);
     return res.data;
 }
+
+export const updateDispatchHaulier = async (id, assignedHaulier) => {
+    const res = await api.put(`${BASE_URL}/update-dispatch/${id}`, assignedHaulier);
+    return res.data;
+}

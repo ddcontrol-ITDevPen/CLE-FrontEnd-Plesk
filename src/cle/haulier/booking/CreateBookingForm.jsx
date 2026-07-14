@@ -256,8 +256,17 @@ export function CreateBookingForm() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        // --- NEW SAFE ADDITION ---
+        // If the input is blOrBookingNumber or scn, force it to uppercase
+        let processedValue = value;
+        if (name === "bookingNumber" || name === "scn" || name === "dicNumber" || name === "customFormNo" || name === "customReceiptNo" || name === "zbNumber" || name === "sealNo" || name === "containerNo") {
+            processedValue = value.toUpperCase();
+        }
+        // -------------------------
+        
         setFormData(prev => {
-            const newData = { ...prev, [name]: value };
+            const newData = { ...prev, [name]: processedValue };
             // if (name === "haulierChoice" && value === "Multiple") newData.haulier = "";
             // if (name === "depotChoice" && value === "Multiple") newData.depot = "";
             return newData;
@@ -387,7 +396,10 @@ export function CreateBookingForm() {
         if (!formData.billingParty) newErrors.billingParty = "Billing Party is required!";
         if (!formData.containerType) newErrors.containerType = "Container Type is required!";
         if (!formData.containerSize) newErrors.containerSize = "Container Size is required!";
-
+// 👇 ADD / REPLACE CONTAINER NO CONDITION HERE 👇
+        if (formData.movementType === "Import" && (!formData.containerNo || formData.containerNo.trim() === "")) {
+            newErrors.containerNo = "Container Number is required for Imports!";
+        }
         if (!formData.haulier) newErrors.haulier = "Please select a Haulier!";
         if (!formData.depot) newErrors.depot = "Please select a Depot!";
         // if (!formData.haulierChoice) {
@@ -615,11 +627,11 @@ export function CreateBookingForm() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <InputField label={formData.movementType === "Import" ? "BL No." : "Booking No."} name="bookingNumber" value={formData.bookingNumber} onChange={handleChange} error={errors.bookingNumber} required />
-                                    <InputField label="House BL No." name="houseBLNumber" value={formData.houseBLNumber} onChange={handleChange} error={errors.houseBLNumber}/>
+                                  {/*  <InputField label="House BL No." name="houseBLNumber" value={formData.houseBLNumber} onChange={handleChange} error={errors.houseBLNumber}/>*/}
                                     <InputField label="SCN" name="scn" value={formData.scn} onChange={handleChange} error={errors.scn} required />
+                                    <SelectField label="Billing Party" name="billingParty" value={formData.billingParty} onChange={handleChange} error={errors.billingParty} required options={billingParties.map(b => ({label: b.companyName, value: b.companyCode}))} />
                                     <SelectField label={formData.movementType === "Import" ? "POD" : "POL"} name="portLocation" value={formData.portLocation} onChange={handleChange} error={errors.portLocation} required options={ports.map(p => ({label: p.companyName, value: p.companyCode}))} />
                                     <SelectField label="Shipping Agent" name="shippingAgent" value={formData.shippingAgent} onChange={handleChange} error={errors.shippingAgent} required options={shippingAgents.map(s => ({label: s.companyName, value: s.companyCode}))} />
-                                    <SelectField label="Billing Party" name="billingParty" value={formData.billingParty} onChange={handleChange} error={errors.billingParty} required options={billingParties.map(b => ({label: b.companyName, value: b.companyCode}))} />
                                     <SelectField label="Fowarding Agent" name="forwarding" value={formData.forwarding} onChange={handleChange} error={errors.forwarding} required options={forwardings.map(b => ({label: b.companyName, value: b.companyCode}))} />
                                     <InputField label="Haulier Remarks" name="haulierRemarks" value={formData.haulierRemarks} onChange={handleChange} placeholder="* Commodity/Special Handling/Others *" />
                                 </div>
@@ -674,7 +686,14 @@ export function CreateBookingForm() {
                             </div>
                             <div className="p-8">
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                    <InputField label="Container No." name="containerNo" value={formData.containerNo} onChange={handleChange} error={errors.containerNo} />
+                                    <InputField 
+                                        label="Container No." 
+                                        name="containerNo" 
+                                        value={formData.containerNo} 
+                                        onChange={handleChange} 
+                                        error={errors.containerNo}
+                                        required={formData.movementType === "Import"} // <-- True if Import, False if Export
+                                    />
                                     <SelectField label="Type" name="containerType" required options={["GP", "RF", "HC"]} value={formData.containerType} onChange={handleChange} error={errors.containerType} />
                                     {/*<SelectField label="Size" name="containerSize" required options={["20", "40", "45"]} value={formData.containerSize} onChange={handleChange} error={errors.containerSize} />*/}
                                     <SelectField

@@ -144,6 +144,7 @@ export function ALEAddROTForm() {
             weight: stateBooking.weight || stateBooking.Weight || savedData.weight || 0.0,
             ssmNumber: stateBooking.ssmNumber || savedData.ssmNumber || "",
             size: stateBooking.size || savedData.size || "",
+            
         }));
 
         if (isPreloaded) {

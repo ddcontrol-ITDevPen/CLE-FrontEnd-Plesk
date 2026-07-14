@@ -286,6 +286,8 @@ export function YourBookings ()  {
                 if (movementType === "Export" && tripType === "Pick-up") return cont.depotName || "Depot";
                 if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
                 if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                if (movementType === "Import" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.depotName || "Depot";
+                if (movementType === "Export" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.depotName || "Depot";
             } else {
                 if (movementType === "Import") return cont.depotName || "Depot";
                 if (movementType === "Export") return cont.portName || "Port";
@@ -298,6 +300,8 @@ export function YourBookings ()  {
                 if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
                 if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
                 if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                if (movementType === "Import" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.portName || "Port";
+                if (movementType === "Export" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.portName || "Port";
             } else {
                 if (movementType === "Import") return cont.portName || "Port";
                 if (movementType === "Export") return cont.depotName || "Depot";
@@ -543,7 +547,7 @@ export function YourBookings ()  {
                                                          className="text-gray-600 cursor-pointer hover:text-blue-600" onClick={() => navigate(`/haulier/booking/view/${cont.containerId}`)}/>
                                                     {["Assigned", "Enroute"].includes(cont.status) && (
                                                         <Edit size={18}
-                                                              className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/haulier/booking/edit1/${cont.containerId}`)}/>
+                                                              className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/haulier/booking/accepted/edit/${cont.containerId}`)}/>
                                                        /* <Edit size={18}
                                                               className="text-green-600 cursor-pointer hover:text-green-800" onClick={() => navigate(`/haulier/booking/edit/form1/${cont.containerId}`)}/>*/
                                                     )}

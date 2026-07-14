@@ -68,6 +68,23 @@ export function AssignBooking() {
                     houseBLNumber: container.booking?.houseBLNumber || "",
                     containerNumber: container.containerNumber || "",
                     rotNumber: container.rotNumber || "",
+                    scn: container.booking?.scn || "",
+                    commodity : container.booking?.commodity || "",
+                    movementType: container.booking?.movementType || "",
+                    tripType: container.booking?.tripType || "",
+                    eta: container.booking?.eta || "",
+                    portLocation: container.booking?.portLocation || "",
+                    portLocationName: container.booking?.portLocationName || "",
+                    sealNumber: container.booking?.sealNumber || "",
+                    forwardingRemarks: container.booking?.forwardingRemarks || "",
+                    customFormNo: container.booking?.customFormNo || "",
+                    customReceiptNo: container.booking?.customReceiptNo || "",
+                    dicNumber: container.booking?.dicNumber || "",
+                    zbNumber: container.booking?.zbNumber || "",
+                    containerQuantity: container.booking?.containerQuantity || "",
+                    forwardingPicName : container.booking?.forwardingPicName || "",
+                    forwardingPicContact : container.booking?.forwardingPicContact || "",
+                    forwardingPicEmail : container.booking?.forwardingPicEmail || "",
                     containerId: id
                 }));
 
@@ -192,12 +209,41 @@ export function AssignBooking() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Section 1: Read-Only Container Info */}
-                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/*  <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-6">
                         <InputField label="BL Number" value={formData.blNumber} readOnly />
                         <InputField label="House BL Number" value={formData.houseBLNumber} readOnly />
                         <InputField label="Container Number" value={formData.containerNumber} readOnly />
+                    </div>*/}
+                    {/* General Information */}
+                    <div className="bg-card-color p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 className="text-system-color font-bold mb-4 border-b pb-2">General Information</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-12 text-sm">
+                            <div className="space-y-3">
+                                <div className="flex justify-between"><span className="text-gray-500">ROT Number.</span> <span className="font-bold">{formData.rotNumber || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">BL/Booking Number</span> <span className="font-bold">{formData.blNumber || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Commodity</span> <span className="font-bold">{formData.commodity || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Vessel Name/SCN.</span> <span className="font-bold">{formData.scn || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Movement Type</span> <span className="font-bold text-blue-600">{formData.movementType || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Forwarding PIC Name</span> <span className="font-bold">{formData.forwardingPicName || "N/A"}</span></div>
+                            </div>
+                            <div className="space-y-3">
+                                <div className="flex justify-between"><span className="text-gray-500">Type of Trip</span> <span className="font-bold">{formData.tripType || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">ETA</span> <span className="font-bold">{formData.eta || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">POD/POL</span> <span className="font-bold">{formData.portLocationName || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Seal No.</span> <span className="font-bold">{formData.sealNumber || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Forwarding Remarks</span> <span className="font-bold italic">{formData.forwardingRemarks || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Forwarding PIC Contact No.</span> <span className="font-bold">{formData.forwardingPicContact || "N/A"}</span></div>
+                            </div>
+                            <div className="space-y-3">
+                                <div className="flex justify-between"><span className="text-gray-500">Custom Form No.</span> <span className="font-bold">{formData.customFormNo || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Custom Receipt No.</span> <span className="font-bold">{formData.customReceiptNo || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">DIC Number</span> <span className="font-bold">{formData.dicNumber || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">ZB Number</span> <span className="font-bold">{formData.zbNumber || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Container Quantity</span> <span className="font-bold">{formData.containerQuantity || "N/A"}</span></div>
+                                  <div className="flex justify-between"><span className="text-gray-500">Forwarding PIC Contact No.</span> <span className="font-bold">{formData.forwardingPicContact || "N/A"}</span></div>
+                            </div>
+                        </div>
                     </div>
-
                     {/* Section 2: Assignment Form */}
                     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 text-white flex items-center gap-4">

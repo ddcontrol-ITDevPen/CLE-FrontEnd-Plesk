@@ -66,6 +66,8 @@ export function ViewBookings() {
                 if (movementType === "Export" && tripType === "Pick-up") return cont.depotName || "Depot";
                 if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
                 if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
+                if (movementType === "Import" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.depotName || "Depot";
+                if (movementType === "Export" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.depotName || "Depot";
             } else {
                 if (movementType === "Import") return cont.depotName || "Depot";
                 if (movementType === "Export") return cont.portName || "Port";
@@ -78,6 +80,8 @@ export function ViewBookings() {
                 if (movementType === "Export" && tripType === "Drop-off") return cont.portName || "Port";
                 if (movementType === "Import" && tripType === "Pick-up & Drop-off") return cont.depotName || "Depot";
                 if (movementType === "Export" && tripType === "Pick-up & Drop-off") return cont.portName || "Port";
+                if (movementType === "Import" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.portName || "Port";
+                if (movementType === "Export" && (tripType === "Round Trip" || tripType === "MT Trip" || tripType === "Laden Trip")) return cont.portName || "Port";
             } else {
                 if (movementType === "Import") return cont.portName || "Port";
                 if (movementType === "Export") return cont.depotName || "Depot";
@@ -249,9 +253,10 @@ export function ViewBookings() {
                         <div className="space-y-3">
                             <div className="flex justify-between"><span className="text-gray-500">ROT Number.</span> <span className="font-bold">{data.rotNumber || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">BL/Booking Number</span> <span className="font-bold">{data.booking?.blOrBookingNumber || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">House BL Number</span> <span className="font-bold">{data.booking?.houseBLNumber || "N/A"}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">SCN.</span> <span className="font-bold">{data.booking?.scn || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Commodity</span> <span className="font-bold">{data.booking?.commodity || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Vessel Name/SCN.</span> <span className="font-bold">{data.booking?.scn || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Movement Type</span> <span className="font-bold text-blue-600">{data.booking?.movementType || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Forwarding PIC Name</span> <span className="font-bold">{data.booking?.forwardingPicName || "N/A"}</span></div>
                         </div>
                         <div className="space-y-3">
                             <div className="flex justify-between"><span className="text-gray-500">Type of Trip</span> <span className="font-bold">{data.booking?.tripType || "N/A"}</span></div>
@@ -259,6 +264,7 @@ export function ViewBookings() {
                             <div className="flex justify-between"><span className="text-gray-500">POD/POL</span> <span className="font-bold">{data.booking?.portLocation || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Seal No.</span> <span className="font-bold">{data.booking?.sealNumber || data.sealNumber || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Forwarding Remarks</span> <span className="font-bold italic">{data.booking?.forwardingRemarks || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Forwarding PIC Contact No.</span> <span className="font-bold">{data.booking?.forwardingPicContact || "N/A"}</span></div>
                         </div>
                         <div className="space-y-3">
                             <div className="flex justify-between"><span className="text-gray-500">Custom Form No.</span> <span className="font-bold">{data.booking?.customFormNo || "N/A"}</span></div>
@@ -266,6 +272,7 @@ export function ViewBookings() {
                             <div className="flex justify-between"><span className="text-gray-500">DIC Number</span> <span className="font-bold">{data.booking?.dicNumber || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">ZB Number</span> <span className="font-bold">{data.booking?.zbNumber || "N/A"}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Container Quantity</span> <span className="font-bold">{data.booking?.containerQuantity || "N/A"}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Forwarding PIC Email</span> <span className="font-bold">{data.booking?.forwardingPicEmail || "N/A"}</span></div>
                         </div>
                     </div>
                 </div>
@@ -296,14 +303,59 @@ export function ViewBookings() {
                         <InfoRow label="PIC Email" value={forwarding.emailAddress} />
                     </Section>
 
-                    <Section title="Consignee Information">
+                   {/* <Section title="Consignee Information">
                         <InfoRow label="Name" value={data.consignee?.companyName} />
                         <InfoRow label="Address" value={data.toAddress?.map(a => a.address).join(", ")} />
                         <InfoRow label="PIC Name" value={data.consignee?.picName} />
                         <InfoRow label="PIC Number" value={data.consignee?.handphoneNumber} />
                         <InfoRow label="PIC Email" value={data.consignee?.emailAddress} />
-                    </Section>
+                    </Section>*/}
+                    <Section title="Consignee Information">
+                        <InfoRow
+                            label="Name"
+                            value={
+                                data.consigneeId === "OTHER"
+                                    ? data.externalConsigneeName
+                                    : data.consignee?.companyName
+                            }
+                        />
 
+                        <InfoRow
+                            label="Address"
+                            value={
+                                data.consigneeId === "OTHER"
+                                    ? data.externalConsigneeAddress
+                                    : data.toAddress?.map(a => a.address).join(", ")
+                            }
+                        />
+
+                        <InfoRow
+                            label="PIC Name"
+                            value={
+                                data.consigneeId === "OTHER"
+                                    ? data.externalConsigneeName
+                                    : data.consignee?.picName
+                            }
+                        />
+
+                        <InfoRow
+                            label="PIC Number"
+                            value={
+                                data.consigneeId === "OTHER"
+                                    ? data.externalConsigneeContact
+                                    : data.consignee?.handphoneNumber
+                            }
+                        />
+
+                        <InfoRow
+                            label="PIC Email"
+                            value={
+                                data.consigneeId === "OTHER"
+                                    ? data.externalConsigneeEmail
+                                    : data.consignee?.emailAddress
+                            }
+                        />
+                    </Section>
                     <Section title="Port Information">
                         <InfoRow label="Name" value={data.port?.companyName} />
                         <InfoRow label="Address" value={data.port?.address} />

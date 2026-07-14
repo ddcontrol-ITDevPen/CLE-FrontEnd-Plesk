@@ -80,7 +80,16 @@ export function AddROTForm2() {
                 port: initialPort,
                 haulier: initialHaulier,
                 rotDate: savedData.rotDate || "",
-                addresses: [""]
+                addresses: [""],
+                // NEW
+                externalConsigneeName: savedData.externalConsigneeName || "",
+                externalConsigneeAddress: savedData.externalConsigneeAddress || "",
+                externalConsigneeContact: savedData.externalConsigneeContact || "",
+                externalConsigneeEmail: savedData.externalConsigneeEmail || "",
+                commodity: savedData.commodity || "",
+                forwardingPicName : savedData.forwardingPicName || "",
+                forwardingPicEmail : savedData.forwardingPicEmail || "",
+                forwardingPicContact: savedData.forwardingPicContact || "",
             };
 
             const initialContainers = Array.from({ length: qty }, () => ({
@@ -97,10 +106,23 @@ export function AddROTForm2() {
             setIsDepotsLoading(true);
             setIsPortsLoading(true);
             try {
-                const data = await getCompanies();
+                const data = await getCompanies();``
                 if (Array.isArray(data)) {
                     setAllCompanies(data);
                     const consignee = data.filter(h => h.role === "Consignee").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
+                    
+                   /* const consignee = [
+                        ...data
+                            .filter(h => h.role === "Consignee")
+                            .map(h => ({
+                                companyName: h.companyName,
+                                companyCode: h.companyCode
+                            })),
+                        {
+                            companyName: "Other",
+                            companyCode: "OTHER"
+                        }
+                    ];*/
                     const depot = data.filter(h => h.role === "Depot").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
                     const port = data.filter(h => h.role === "Port").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
                     const haulier = data.filter(h => h.role === "Haulier").map(h => ({companyName: h.companyName, companyCode: h.companyCode}));
@@ -112,13 +134,25 @@ export function AddROTForm2() {
                     setPorts(port);
                     setHauliers(haulier);
 
+                    // --- UPDATED FIX IS PLACED HERE ---
                     setContainers(prevContainers => prevContainers.map(cont => {
+                        // Check if page 1 selected "OTHER"
+                        if (cont.consignee === "OTHER") {
+                            return {
+                                ...cont,
+                                // Pull the address text input typed from Page 1
+                                addresses: [savedData.externalConsigneeAddress || ""]
+                            };
+                        }
+
+                        // Otherwise mapping standard database company profile address
                         const selectedCompany = data.find(c => c.companyCode === cont.consignee);
                         return {
                             ...cont,
                             addresses: selectedCompany ? [selectedCompany.address] : [""]
                         };
                     }));
+                    // ----------------------------------
                 }
             } catch (error) {
                 console.error("Failed to load information:", error);
@@ -163,27 +197,80 @@ export function AddROTForm2() {
     };
 
     const handleInputChange = (contIndex, field, value) => {
-        const newContainers = [...containers];
-        newContainers[contIndex][field] = value;
+        let processedValue = value;
 
-        // Auto-fill logic: If "Consignee" changes, update only the first address
+        // Auto convert Container No to uppercase
+        if (field === "containerNo" && typeof value === "string") {
+            processedValue = value.toUpperCase();
+        }
+
+        const newContainers = [...containers];
+        newContainers[contIndex][field] = processedValue;
+
+        // Auto-fill consignee address
+      /*  if (field === "consignee") {
+            const selectedCompany = allCompanies.find(
+                c => c.companyCode === processedValue
+            );
+
+            newContainers[contIndex].addresses[0] = selectedCompany
+                ? selectedCompany.address
+                : "";
+        }*/
         if (field === "consignee") {
-            const selectedCompany = allCompanies.find(c => c.companyCode === value);
-            if (selectedCompany) {
-                newContainers[contIndex].addresses[0] = selectedCompany.address;
+
+            if (processedValue === "OTHER") {
+
+                newContainers[contIndex].externalConsigneeName =
+                    prevData.externalConsigneeName || "";
+
+                newContainers[contIndex].externalConsigneeAddress =
+                    prevData.externalConsigneeAddress || "";
+
+                newContainers[contIndex].externalConsigneeContact =
+                    prevData.externalConsigneeContact || "";
+
+                newContainers[contIndex].externalConsigneeEmail =
+                    prevData.externalConsigneeEmail || "";
+
+                newContainers[contIndex].addresses = [
+                    prevData.externalConsigneeAddress || ""
+                ];
+
             } else {
-                newContainers[contIndex].addresses[0] = "";
+
+                const selectedCompany = allCompanies.find(
+                    c => c.companyCode === processedValue
+                );
+
+                newContainers[contIndex].addresses = [
+                    selectedCompany?.address || ""
+                ];
+
+                newContainers[contIndex].externalConsigneeName = "";
+                newContainers[contIndex].externalConsigneeAddress = "";
+                newContainers[contIndex].externalConsigneeContact = "";
+                newContainers[contIndex].externalConsigneeEmail = "";
             }
         }
 
-        // NEW LOGIC: Calculate VGM dynamically when Cargo Weight changes
+        // for external Consignee
+        if (field === "externalConsigneeAddress") {
+            newContainers[contIndex].addresses[0] = processedValue;
+        }
+        
+        // Auto calculate VGM
         if (field === "cargoWeight" || field === "tareWeight") {
             const tare = parseFloat(newContainers[contIndex].tareWeight) || 0;
             const cargo = parseFloat(newContainers[contIndex].cargoWeight) || 0;
-            newContainers[contIndex].vgm = (tare + cargo > 0) ? (tare + cargo).toString() : "";
+
+            newContainers[contIndex].vgm =
+                tare + cargo > 0 ? (tare + cargo).toString() : "";
         }
+
         setContainers(newContainers);
     };
+    
     const handleAutoChange = (index, field, value) => {
         setContainers(prev => {
             const updated = [...prev];
@@ -243,6 +330,11 @@ export function AddROTForm2() {
 
         containers.forEach((container, index) => {
 
+            // 2. NEW LOGIC: Mandatory only if Movement Type is "Import"
+            if (prevData.movementType === "Import" && (!container.containerNo || container.containerNo.trim() === "")) {
+                newErrors[`${index}-containerNo`] = "Container number is required for Imports";
+            }
+            
             if (container.containerNo && container.containerNo.length > 12) {
                 newErrors[`${index}-containerNo`] = "Container number cannot be more than 12 characters";
             }
@@ -251,7 +343,7 @@ export function AddROTForm2() {
             }
             if (!container.containerSize) {
                 newErrors[`${index}-containerSize`] = "Container size is required";
-            }
+            } 
             if (!container.consignee) {
                 newErrors[`${index}-consignee`] = "Consignee name is required";
             }
@@ -277,6 +369,9 @@ export function AddROTForm2() {
             const userData = await getUserById(localStorage.getItem("userId"));
             const companyCode = await userData.companyCode;
             const formattedEta = prevData.eta ? new Date(prevData.eta).toISOString().split('T')[0] : null;
+            const externalContainer = containers.find(
+                c => c.consignee === "OTHER"
+            );
             const bookingPayload = {
                 rotNumber: prevData.rotNumber,
                 blOrBookingNumber: prevData.bookingNumber,
@@ -299,10 +394,18 @@ export function AddROTForm2() {
                 dicNumber: prevData.dicNumber || "",
                 zbNumber: prevData.zbNumber || "",
                 containerQuantity: prevData.containerQuantity || "",
+
+                // --- ADD THESE FIELDS ---
+                isExternalConsignee: prevData.consignee === "OTHER",
+                externalConsigneeName: externalContainer?.externalConsigneeName || null,
+                externalConsigneeAddress: externalContainer?.externalConsigneeAddress || null,
+                externalConsigneeContact: externalContainer?.externalConsigneeContact || null,
+                externalConsigneeEmail: externalContainer?.externalConsigneeEmail || null,
             };
             console.log(bookingPayload);
 
             const savedBooking = await registerBooking(bookingPayload);
+            console.log("Result from registerBooking", bookingPayload);
             const rotNumber = savedBooking.rotNumber;
 
             const docTypes = {
@@ -341,14 +444,19 @@ export function AddROTForm2() {
                     Status: "Assigned",
                     AssignedTime: new Date().toISOString(),
                     ROTNumber: prevData.rotNumber,
+                    ExternalConsigneeName: cont.externalConsigneeName || null,
+                    ExternalConsigneeAddress: cont.externalConsigneeAddress || null,
+                    ExternalConsigneeContact: cont.externalConsigneeContact || null,
+                    ExternalConsigneeEmail: cont.externalConsigneeEmail || null,
                     ToAddress: cont.addresses
                         .filter(addr => addr.trim() !== "")
                         .map(addr => ({ Address: addr }))
                 };
-                console.log(containerPayload);
-
+                
+                console.log("Container Payload");
+                console.log(JSON.stringify(containerPayload, null, 2));
                 const savedContainer = await registerContainer(containerPayload);
-
+                console.log("Result from registerContainer", savedContainer);
                 // if (cont.addresses && cont.addresses.length > 0) {
                 //     for (const addr of cont.addresses) {
                 //         if (addr.trim() !== "") {
@@ -366,11 +474,19 @@ export function AddROTForm2() {
             setTimeout(() => navigate("/forwarding/rot/history"), 2000);
         } catch (error) {
             console.error("Save failed:", error);
-            if (error.response && error.response.data) {
-                console.log("Backend Validation Errors:", error.response.data);
+            if (error.response) {
+                console.log("Status:", error.response.status);
+                console.log("Response:", error.response.data);
+
+                if (error.response.data?.errors) {
+                    Object.entries(error.response.data.errors).forEach(([key, value]) => {
+                        console.log(`${key}:`, value);
+                    });
+                }
             }
+
             setIsSubmitting(false);
-            toast.error(error.response?.data?.message || "Failed to save record. Please check your connection.");
+            toast.error("Failed to save record.");
         }
     };
 
@@ -421,41 +537,49 @@ export function AddROTForm2() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                <InputField label="Container No." subLabel="4 alphabets & 7 numbers" value={container.containerNo} onChange={(e) => handleInputChange(cIdx, "containerNo", e.target.value)} error={errors[`${cIdx}-containerNo`]} />
-                                <SelectField label="Container Type" required options={["GP", "RF", "HC"]} value={container.containerType} onChange={(e) => handleInputChange(cIdx, "containerType", e.target.value)} error={errors[`${cIdx}-containerType`]} />
-                                <SelectField 
-                                    label="Container Size" 
-                                    required options={["20", "40", "45"]} 
+                                <InputField 
+                                    label="Container No." 
+                                    name="containerNumber"
+                                    subLabel="4 alphabets & 7 numbers"
+                                    required={prevData.movementType === "Import"} // <-- Dynamically add red asterisk
+                                    value={container.containerNo} 
+                                    onChange={(e) => handleInputChange(cIdx, "containerNo", e.target.value)} 
+                                    error={errors[`${cIdx}-containerNo`]} 
+                                />
+                                <SelectField
+                                    label="Container Size"
+                                    required options={["20", "40", "45"]}
                                     value={container.containerSize}
                                     onChange={(e) => {
                                         // Call the type change function to auto-calculate tareWeight and VGM!
                                         handleContainerTypeChange(cIdx, e.target.value, container.containerType);
                                     }}
-                                    error={errors[`${cIdx}-containerSize`]} 
+                                    error={errors[`${cIdx}-containerSize`]}
                                 />
-                                <InputField label="ROT Date" name="rotDate" type="date" value={container.rotDate} onChange={(e) => handleInputChange(cIdx, "rotDate", e.target.value)} error={errors[`${cIdx}-rotDate`]} required placeholder="(DD/MM/YYYY)" min={yesterday} max="2099-12-31" />
-                                <InputField
-                                    label="Container Tare Weight (kg)"
-                                    type="number"
-                                    value={container.tareWeight || ""}
-                                    readOnly
-                                />
+                                <SelectField label="Container Type" required options={["GP", "RF", "HC"]} value={container.containerType} onChange={(e) => handleInputChange(cIdx, "containerType", e.target.value)} error={errors[`${cIdx}-containerType`]} />
                                 <InputField
                                     label="Cargo Weight (kg)"
                                     type="number"
                                     value={container.cargoWeight || ""}
                                     onChange={(e) => handleAutoChange(cIdx, "cargoWeight", e.target.value)}
                                 />
-                                <InputField
+                                <InputField label="ROT Date" name="rotDate" type="date" value={container.rotDate} onChange={(e) => handleInputChange(cIdx, "rotDate", e.target.value)} error={errors[`${cIdx}-rotDate`]} required placeholder="(DD/MM/YYYY)" min={yesterday} max="2099-12-31" />
+                              {/*  <InputField
+                                    label="Container Tare Weight (kg)"
+                                    type="number"
+                                    value={container.tareWeight || ""}
+                                    readOnly
+                                />*/}
+                               {/* <InputField
                                     label="VGM (kg)"
                                     type="number"
                                     value={container.vgm || ""}
                                     readOnly 
                                     className="bg-gray-100 font-bold"
-                                />
+                                />*/}
                                {/* <InputField label="VGM(Kg)" value={container.vgm} onChange={(e) => handleInputChange(cIdx, "vgm", e.target.value)} />*/}
                                 <SelectField label="Trailer Type" options={["2-Axle", "3-Axle", "Flatbed", "Gooseneck", "ISO Tank", "Lowbed", "Normal", "Reefer", "Side Loader", "Skeletal"]} value={container.trailerType} onChange={(e) => handleInputChange(cIdx, "trailerType", e.target.value)} />
-                                
+                                <InputField label="Port" required value={allCompanies.find(c => c.companyCode === container.port)?.companyName || container.port || ""} onChange={(e) => handleInputChange(cIdx, "port", e.target.value)} readOnly/>
                                 <SelectField
                                     label="Consignee/Shipper"
                                     required
@@ -464,7 +588,41 @@ export function AddROTForm2() {
                                     onChange={(e) => handleInputChange(cIdx, "consignee", e.target.value)}
                                     error={errors[`${cIdx}-consignee`]}
                                 />
+                                {container.consignee === "OTHER" && (
+                                    <>
+                                        <InputField
+                                            label="Consignee/Shipper Name"
+                                            value={container.externalConsigneeName}
+                                            onChange={(e) =>
+                                                handleInputChange(cIdx, "externalConsigneeName", e.target.value)
+                                            }
+                                        />
 
+                                        <InputField
+                                            label="Consignee/Shipper Address"
+                                            value={container.externalConsigneeAddress}
+                                            onChange={(e) =>
+                                                handleInputChange(cIdx, "externalConsigneeAddress", e.target.value)
+                                            }
+                                        />
+
+                                        <InputField
+                                            label="Consignee/Shipper Contact Number"
+                                            value={container.externalConsigneeContact}
+                                            onChange={(e) =>
+                                                handleInputChange(cIdx, "externalConsigneeContact", e.target.value)
+                                            }
+                                        />
+
+                                        <InputField
+                                            label="Consignee/Shipper Email Address"
+                                            value={container.externalConsigneeEmail}
+                                            onChange={(e) =>
+                                                handleInputChange(cIdx, "externalConsigneeEmail", e.target.value)
+                                            }
+                                        />
+                                    </>
+                                )}
                                 <SelectField
                                     label="Haulier"
                                     required
@@ -475,7 +633,6 @@ export function AddROTForm2() {
                                 />
                                 
                                 <SelectField label="Depot" name="depot" value={container.depot} onChange={(e) => handleInputChange(cIdx, "depot", e.target.value)} options={depots.map(d => ({label: d.companyName, value: d.companyCode}))} error={errors[`${cIdx}-depot`]} required />
-                                <InputField label="Port" required value={allCompanies.find(c => c.companyCode === container.port)?.companyName || container.port || ""} onChange={(e) => handleInputChange(cIdx, "port", e.target.value)} readOnly/>
                                 
                             </div>
 

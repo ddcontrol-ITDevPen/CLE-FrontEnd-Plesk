@@ -20,7 +20,7 @@ import { getTimeSlots, updateTimeSlot, getTimeSlotById } from "../../../services
 import {
     getAssignedHaulierByContainerId,
     getAssignedHauliers,
-    updateAssignedHaulier
+    updateDispatchHaulier
 } from "../../../services/assignedHaulier.js";
 import { getUserById } from "../../../services/userService.js";
 
@@ -66,12 +66,44 @@ export function EditAssignBooking() {
                     getPrimeMovers(),
                     getTrailers(),
                     getTimeSlots(),
-                    getAssignedHaulierByContainerId(id)
+                    // ADD A .catch() block to handle the 404 gracefully:
+                    getAssignedHaulierByContainerId(id).catch(err => {
+                        console.warn("No assignment found for this container ID yet:", err);
+                        return null;
+                    })
                 ]);
 
                 setContainer(containerData);
                 setAssignedHaulier(assignedHaulierData);
-                console.log(assignedHaulierData);
+
+                // Fallback configuration so the page fields still get filled up by the container details even if assignedHaulierData is missing!
+                if (containerData) {
+                    setFormData(prev => ({
+                        ...prev,
+                        blOrBookingNumber: containerData.booking?.blOrBookingNumber || "",
+                        containerNumber: containerData.containerNumber || "",
+                        rotNumber: containerData.rotNumber || "",
+                        scn: containerData.booking?.scn || "",
+                        commodity: containerData.booking?.commodity || "",
+                        movementType: containerData.booking?.movementType || "",
+                        tripType: containerData.booking?.tripType || "",
+                        eta: containerData.booking?.eta || "",
+                        portLocation: containerData.booking?.portLocation || "",
+                        sealNumber: containerData.booking?.sealNumber || "",
+                        forwardingRemarks: containerData.booking?.forwardingRemarks || "",
+                        customFormNo: containerData.booking?.customFormNo || "",
+                        customReceiptNo: containerData.booking?.customReceiptNo || "",
+                        dicNumber: containerData.booking?.dicNumber || "",
+                        zbNumber: containerData.booking?.zbNumber || "",
+                        containerQuantity: containerData.booking?.containerQuantity || "",
+                        forwardingPicName : containerData.booking?.forwardingPicName || "",
+                        forwardingPicContact : containerData.booking?.forwardingPicContact || "",
+                        forwardingPicEmail : containerData.booking?.forwardingPicEmail || "",
+                    }));
+                }
+                
+                console.log("containerData:", containerData);
+                console.log("assignedHaulierData:", assignedHaulierData);
 
                 const user = await getUserById(localStorage.getItem("userId"));
                 const haulierId = user.companyCode;
@@ -93,10 +125,21 @@ export function EditAssignBooking() {
 
                     setFormData({
                         id: assignedHaulierData.id,
-                        blNumber: containerData.booking?.blOrBookingNumber || "",
-                        houseBLNumber: containerData.booking?.houseBLNumber || "",
+                        blOrBookingNumber: containerData.booking?.blOrBookingNumber || "",
                         containerNumber: containerData.containerNumber || "",
                         rotNumber: containerData.rotNumber || "",
+                        scn: containerData.booking?.scn || "",
+                        movementType: containerData.booking?.movementType || "",
+                        tripType: containerData.booking?.tripType || "",
+                        eta: containerData.booking?.eta || "",
+                        portLocation: containerData.booking?.portLocation || "",
+                        sealNumber: containerData.booking?.sealNumber || "",
+                        forwardingRemarks: containerData.booking?.forwardingRemarks || "",
+                        customFormNo: containerData.booking?.customFormNo || "",
+                        customReceiptNo: containerData.booking?.customReceiptNo || "",
+                        dicNumber: containerData.booking?.dicNumber || "",
+                        zbNumber: containerData.booking?.zbNumber || "",
+                        containerQuantity: containerData.booking?.containerQuantity || "",
                         driverId: assignedHaulierData.driverId,
                         pmId: assignedHaulierData.pmId,
                         trailerId: assignedHaulierData.trailerId,
@@ -141,9 +184,16 @@ export function EditAssignBooking() {
             setErrors(newErrors);
             return;
         }
-
+        // Extract exact properties targeting UpdateDispatchAssetsDto explicitly
+        const cleanAssetPayload = {
+            Id: Number(formData.id),
+            DriverId: formData.driverId,
+            PMId: formData.pmId,
+            TimeSlotId: formData.timeSlotId,
+            TrailerId: formData.trailerId || null
+        };
         try {
-            await updateAssignedHaulier(formData.id, formData);
+            await updateDispatchHaulier(formData.id, cleanAssetPayload);
             if (formData.timeSlotId !== assignedHaulier.timeSlotId) {
                 // Revert OLD slot (+1)
                 const oldSlot = await getTimeSlotById(assignedHaulier.timeSlotId);
@@ -153,7 +203,7 @@ export function EditAssignBooking() {
                 await updateTimeSlot(newSlot.id, { ...newSlot, totalSlot: newSlot.totalSlot - 1 });
             }
             toast.success("Assignment updated successfully!");
-            setTimeout(() => navigate("/haulier/booking/accepted"), 1500);
+            setTimeout(() => navigate("/haulier/booking"), 1500);
         } catch (error) {
             toast.error("Failed to update assignment");
             console.error(error);
@@ -177,12 +227,42 @@ export function EditAssignBooking() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                  {/*  <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-6">
                         <InputField label="BL Number" value={formData.blNumber} readOnly />
                         <InputField label="House BL Number" value={formData.houseBLNumber} readOnly />
                         <InputField label="Container Number" value={formData.containerNumber} readOnly />
+                    </div>*/}
+                    {/* General Information */}
+                    <div className="bg-card-color p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 className="text-system-color font-bold mb-4 border-b pb-2">General Information</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-12 text-sm">
+                            <div className="space-y-3">
+                                <div className="flex justify-between"><span className="text-gray-500">ROT Number.</span> <span className="font-bold">{formData.rotNumber || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">BL/Booking Number</span> <span className="font-bold">{formData.blOrBookingNumber || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Commodity</span> <span className="font-bold">{formData.commodity || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Vessel Name/SCN.</span> <span className="font-bold">{formData.scn || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Movement Type</span> <span className="font-bold text-blue-600">{formData.movementType || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Forwarding PIC Name</span> <span className="font-bold">{formData.forwardingPicName || "N/A"}</span></div>
+                            </div>
+                            <div className="space-y-3">
+                                <div className="flex justify-between"><span className="text-gray-500">Type of Trip</span> <span className="font-bold">{formData.tripType || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">ETA</span> <span className="font-bold">{formData.eta || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">POD/POL</span> <span className="font-bold">{formData.portLocation || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Seal No.</span> <span className="font-bold">{formData.sealNumber || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Forwarding Remarks</span> <span className="font-bold italic">{formData.forwardingRemarks || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Forwarding PIC Contact No.</span> <span className="font-bold">{formData.forwardingPicContact || "N/A"}</span></div>
+                            </div>
+                            <div className="space-y-3">
+                                <div className="flex justify-between"><span className="text-gray-500">Custom Form No.</span> <span className="font-bold">{formData.customFormNo || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Custom Receipt No.</span> <span className="font-bold">{formData.customReceiptNo || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">DIC Number</span> <span className="font-bold">{formData.dicNumber || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">ZB Number</span> <span className="font-bold">{formData.zbNumber || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Container Quantity</span> <span className="font-bold">{formData.containerQuantity || "N/A"}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Forwarding PIC Contact No.</span> <span className="font-bold">{formData.forwardingPicContact || "N/A"}</span></div>
+                            </div>
+                        </div>
                     </div>
-
                     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-6 text-white flex items-center gap-4">
                             <div className="bg-white/20 p-2 rounded-lg"><LucideTruck size={24} /></div>
@@ -205,10 +285,13 @@ export function EditAssignBooking() {
                                 error={errors.timeSlotId}
                                 required
                                 disabled={!selectedDate}
-                                options={filteredSlots.map(s => ({
-                                    label: `${s.time} ${s.id === assignedHaulier?.timeSlotId ? '(Current)' : `(${s.totalSlot} left)`}`,
-                                    value: s.id
-                                }))}
+                                options={filteredSlots.map(s => {
+                                    const availableCount = s.pickUpTotalSlot ?? s.dropOffTotalSlot ?? s.totalSlot ?? 0;
+                                    return {
+                                        label: `${s.time} ${s.id === assignedHaulier?.timeSlotId ? '(Current)' : `(${availableCount} left)`}`,
+                                        value: s.id
+                                    };
+                                })}
                             />
                             <SelectField label="Trailer No." name="trailerId" icon={<LucideTruck size={18}/>} value={formData.trailerId} onChange={handleChange} error={errors.trailerId} required options={trailers.map(t => ({ label: `${t.plateNumber} - ${t.type}`, value: t.id }))} />
                         </div>
